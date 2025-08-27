@@ -1,0 +1,10 @@
+{
+  "name": "submind-v1_1",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "node-fetch": "^3.3.2",
+    "openai": "^4.56.0",
+    "@supabase/supabase-js": "^2.45.0"
+  }
+}

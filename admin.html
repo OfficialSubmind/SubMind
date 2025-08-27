@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/><title>SubMind Admin</title><link rel="stylesheet" href="/styles.css"/><style>
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.card{background:#0e1219;border:1px solid #1c2742;padding:12px;border-radius:12px}
+.row{display:flex;gap:8px;align-items:center}input,select{background:#10151f;border:1px solid #1c2742;color:#e6e8ea;border-radius:10px;padding:8px;width:100%}
+.small{font-size:12px;color:#9aa3ad}pre{max-height:360px;overflow:auto}@media (max-width:900px){.grid{grid-template-columns:1fr}}
+</style></head>
+<body><div class="app"><header class="header"><div class="brand">SubMind Admin</div><nav class="nav"><a href="/">Home</a></nav></header>
+<main class="main"><section class="panel"><h1>Logs</h1><div class="row"><input id="token" placeholder="Admin token"/><button id="set">Use token</button><button id="refresh">Refresh</button>
+<select id="limit"><option value="25">25</option><option value="50">50</option><option value="100">100</option></select></div>
+<div id="status" class="small"></div><div id="list" class="grid"></div>
+<div id="detail" class="card" style="margin-top:12px; display:none;"><div class="row"><strong id="hdr"></strong></div><pre id="json"></pre></div></section></main></div>
+<script>
+const tokenEl=document.getElementById('token');const setBtn=document.getElementById('set');const refreshBtn=document.getElementById('refresh');const listEl=document.getElementById('list');const statusEl=document.getElementById('status');const limitEl=document.getElementById('limit');const detail=document.getElementById('detail');const hdr=document.getElementById('hdr');const jsonEl=document.getElementById('json');
+tokenEl.value=localStorage.getItem('submind_admin_token')||'';setBtn.onclick=()=>{localStorage.setItem('submind_admin_token',tokenEl.value);statusEl.textContent='Token saved';};
+refreshBtn.onclick=async()=>{const token=localStorage.getItem('submind_admin_token')||tokenEl.value;statusEl.textContent='Loading...';listEl.innerHTML='';detail.style.display='none';
+try{const res=await fetch('/api/admin/list?limit='+encodeURIComponent(limitEl.value),{headers:{'x-admin-token':token}});if(!res.ok){throw new Error(await res.text());}
+const rows=await res.json();statusEl.textContent=`Loaded ${rows.length}`;for(const r of rows){const div=document.createElement('div');div.className='card';
+div.innerHTML=`<div class="row"><strong>${r.created_at}</strong> <span class="small">• score ${r.trust_weighted_score ?? r.reliability_score ?? '–'}</span></div>
+<div class="small">${r.summary ?? '(no summary)'} </div><div class="small">entropy: ${r.source_entropy ?? '–'} • trust: C ${r.trust_confirmed||0} • I ${r.trust_inferred||0} • X ${r.trust_corrupted||0}</div>
+<button data-id="${r.id}">View JSON</button>`;div.querySelector('button').onclick=async()=>{const rr=await fetch('/api/admin/get?id='+encodeURIComponent(r.id),{headers:{'x-admin-token':token}});if(!rr.ok){alert(await rr.text());return;}
+const full=await rr.json();hdr.textContent=`${full.id} • ${full.created_at}`;jsonEl.textContent=JSON.stringify(full.output,null,2);detail.style.display='block';window.scrollTo({top:document.body.scrollHeight,behavior:'smooth'});};listEl.appendChild(div);}}
+catch(e){statusEl.textContent=e.message;}};refreshBtn.click();
+</script></body></html>

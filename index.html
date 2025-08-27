@@ -1,0 +1,12 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/><title>SubMind — Predictive Foresight</title><link rel="stylesheet" href="/styles.css"/></head>
+<body><div class="app"><header class="header"><div class="brand">SubMind</div><nav class="nav"><a href="/">Home</a><a href="/admin" class="muted">Admin</a></nav></header>
+<main class="main"><section class="panel"><h1>Forecast anything</h1><p>Paste an article, notes, or links. SubMind returns a prediction timeline, actions, risks, and metrics. v1.1 adds trust-weighted scoring.</p>
+<label>Input</label><textarea id="input" placeholder="Paste text here. Optionally include URLs on separate lines."></textarea>
+<div class="row"><button id="run">Run Forecast</button><label class="toggle"><input type="checkbox" id="fetchUrls" checked/><span>Fetch included URLs</span></label></div>
+<div id="status"></div><pre id="out" class="out"></pre></section></main>
+<footer class="footer"><div>v1.1 • Trust weights</div><div><a href="https://www.submind.us" target="_blank" rel="noreferrer">submind.us</a> • <a href="https://www.submind.world" target="_blank" rel="noreferrer">submind.world</a></div></footer></div>
+<script>
+const runBtn=document.getElementById('run');const input=document.getElementById('input');const fetchUrls=document.getElementById('fetchUrls');const out=document.getElementById('out');const status=document.getElementById('status');
+async function callAPI(){const body={query:input.value,fetchUrls:fetchUrls.checked};out.textContent="";status.textContent="Running...";try{const res=await fetch('/api/predict',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});if(!res.ok){const tx=await res.text();throw new Error(tx||('HTTP '+res.status));}const data=await res.json();status.textContent="";out.textContent=JSON.stringify(data,null,2);}catch(e){status.textContent="Error";out.textContent=e.message;}}runBtn.addEventListener('click',callAPI);
+</script></body></html>
