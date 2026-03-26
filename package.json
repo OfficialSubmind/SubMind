@@ -1,7 +1,8 @@
 {
-  "name": "submind-v1_1",
+  "name": "submind-v2",
   "private": true,
   "type": "module",
+  "engines": { "node": ">=18" },
   "dependencies": {
     "node-fetch": "^3.3.2",
     "openai": "^4.56.0",
