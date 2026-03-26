@@ -3,7 +3,6 @@ import nodeFetch from "node-fetch";
 import { URL } from "node:url";
 
 const SYSTEM_PROMPT = `You are SubMind, an advanced evidence-led foresight and trend prediction engine. Your core mission is to detect, validate, and score emerging trends by cross-referencing multiple sources, identifying signal convergence, and quantifying prediction confidence.
-
 Rules:
 - Output MUST be valid JSON matching the schema below. No extra text outside the JSON.
 - Base conclusions ONLY on the provided input text and fetched URL content.
@@ -14,7 +13,6 @@ Rules:
 - Identify hidden connections between signals that a human analyst might miss.
 - Detect trend velocity: accelerating, steady, decelerating, reversing.
 - Compute reliability_score 0-100 reflecting source quality, agreement, and evidence density.
-
 JSON schema (fill every field):
 {
   "summary": "one-paragraph neutral synopsis",
@@ -57,6 +55,20 @@ JSON schema (fill every field):
 
 export const config = { api: { bodyParser: { sizeLimit: "2mb" } } };
 
+// ── Gemini keys pool (rotate through all on 429) ────────────────────────────
+function getGeminiKeys() {
+  const keys = [];
+  // Primary key from env
+  if (process.env.GEMINI_API_KEY) keys.push(process.env.GEMINI_API_KEY);
+  // Additional keys from env (comma-separated pool)
+  if (process.env.GEMINI_API_KEYS) {
+    process.env.GEMINI_API_KEYS.split(",").map(k => k.trim()).filter(Boolean).forEach(k => {
+      if (!keys.includes(k)) keys.push(k);
+    });
+  }
+  return keys;
+}
+
 function extractUrls(text) {
   const urlRegex = /(https?:\/\/[^\s]+)/g;
   return Array.from(new Set((text.match(urlRegex) || []).map(u => u.trim())));
@@ -92,7 +104,6 @@ function parseWeightsEnv() {
     return JSON.parse(raw) || {};
   } catch { return {}; }
 }
-
 const WEIGHTS = parseWeightsEnv();
 
 function hostWeight(host) {
@@ -104,21 +115,17 @@ function hostWeight(host) {
   if (host.includes("nature.com") || host.includes("science.org") || host.includes("pubmed")) return 1.30;
   return 1;
 }
-
 function stanceFactor(s) {
   const v = String(s || "").toLowerCase();
   return v === "supporting" ? 1.0 : v === "conflicting" ? 0.9 : 0.95;
 }
-
 function trustFactor(t) {
   const v = String(t || "").toLowerCase();
   return v === "confirmed" ? 1.0 : v === "corrupted" ? 0.2 : 0.6;
 }
-
 function safeHost(u) {
   try { return new URL(u).host.toLowerCase(); } catch { return null; }
 }
-
 function scoreFromSources(sources) {
   let num = 0, den = 0;
   let counts = { supporting:0, neutral:0, conflicting:0, confirmed:0, inferred:0, corrupted:0 };
@@ -126,8 +133,7 @@ function scoreFromSources(sources) {
     for (const s of sources) {
       const w = hostWeight(safeHost(s?.url)) * stanceFactor(s?.stance) * trustFactor(s?.trust);
       const sal = typeof s?.salience === "number" ? Math.max(0, Math.min(1, s.salience)) : 0.5;
-      num += w * sal * 100;
-      den += sal;
+      num += w * sal * 100; den += sal;
       const stance = String(s?.stance || "neutral").toLowerCase();
       const trust = String(s?.trust || "inferred").toLowerCase();
       if (counts[stance] !== undefined) counts[stance]++;
@@ -136,7 +142,6 @@ function scoreFromSources(sources) {
   }
   return { source_score: Math.max(0, Math.min(100, den > 0 ? num/den : 0)), counts };
 }
-
 function shannonEntropy(arr) {
   const total = arr.reduce((a, b) => a + b, 0);
   if (total === 0) return 0;
@@ -149,7 +154,6 @@ function shannonEntropy(arr) {
   const maxH = Math.log2(arr.length || 1);
   return maxH ? h/maxH : 0;
 }
-
 function countTrust(sources) {
   const t = { confirmed:0, inferred:0, corrupted:0 };
   if (Array.isArray(sources)) {
@@ -162,7 +166,6 @@ function countTrust(sources) {
   }
   return t;
 }
-
 function makeSupabase() {
   const url = process.env.SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE;
@@ -170,39 +173,110 @@ function makeSupabase() {
   return createClient(url, key, { auth: { persistSession: false } });
 }
 
-// ── Google Gemini API call (free tier) ──────────────────────
+// ── Gemini API call with key rotation ────────────────────────────────────────
 async function callGemini(prompt, userContent) {
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) throw new Error("GEMINI_API_KEY not set");
+  const keys = getGeminiKeys();
+  if (!keys.length) throw new Error("No GEMINI_API_KEY configured");
 
   const model = process.env.GEMINI_MODEL || "gemini-2.0-flash";
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
-
   const body = {
     system_instruction: { parts: [{ text: prompt }] },
     contents: [{ role: "user", parts: [{ text: userContent }] }],
-    generationConfig: {
+    generationConfig: { temperature: 0.15, maxOutputTokens: 8192, responseMimeType: "application/json" }
+  };
+
+  let lastError = null;
+  for (const apiKey of keys) {
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+    try {
+      const res = await nodeFetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+        timeout: 60000
+      });
+      if (res.status === 429 || res.status === 400) {
+        lastError = new Error(`Gemini key ${apiKey.slice(-6)}: HTTP ${res.status}`);
+        continue; // Try next key
+      }
+      if (!res.ok) {
+        const errText = await res.text();
+        throw new Error(`Gemini API error ${res.status}: ${errText.slice(0, 300)}`);
+      }
+      const data = await res.json();
+      const text = data?.candidates?.[0]?.content?.parts?.[0]?.text || "{}";
+      return { result: JSON.parse(text), provider: "gemini", model };
+    } catch (e) {
+      if (e.message && (e.message.includes("429") || e.message.includes("400"))) {
+        lastError = e;
+        continue;
+      }
+      throw e;
+    }
+  }
+  throw lastError || new Error("All Gemini keys exhausted");
+}
+
+// ── Hugging Face Inference API fallback ──────────────────────────────────────
+async function callHuggingFace(prompt, userContent) {
+  const hfToken = process.env.HF_API_TOKEN || "";
+  // Use Mistral 7B via HF serverless inference
+  const model = "mistralai/Mistral-7B-Instruct-v0.2";
+  const url = `https://api-inference.huggingface.co/models/${model}`;
+
+  const fullPrompt = `<s>[INST] ${prompt}\n\nINPUT:\n${userContent.slice(0, 6000)} [/INST]`;
+
+  const headers = { "Content-Type": "application/json" };
+  if (hfToken) headers["Authorization"] = `Bearer ${hfToken}`;
+
+  const body = {
+    inputs: fullPrompt,
+    parameters: {
+      max_new_tokens: 4096,
       temperature: 0.15,
-      maxOutputTokens: 8192,
-      responseMimeType: "application/json"
+      return_full_text: false
     }
   };
 
   const res = await nodeFetch(url, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers,
     body: JSON.stringify(body),
-    timeout: 60000
+    timeout: 120000
   });
 
   if (!res.ok) {
     const errText = await res.text();
-    throw new Error(`Gemini API error ${res.status}: ${errText.slice(0, 300)}`);
+    throw new Error(`HuggingFace error ${res.status}: ${errText.slice(0, 200)}`);
   }
 
   const data = await res.json();
-  const text = data?.candidates?.[0]?.content?.parts?.[0]?.text || "{}";
-  return JSON.parse(text);
+  let text = Array.isArray(data) ? data[0]?.generated_text : data?.generated_text;
+  if (!text) throw new Error("No response from HuggingFace");
+
+  // Extract JSON from the response
+  const jsonMatch = text.match(/\{[\s\S]*\}/);
+  if (!jsonMatch) throw new Error("No JSON found in HF response");
+
+  return { result: JSON.parse(jsonMatch[0]), provider: "huggingface", model };
+}
+
+// ── Main AI call with fallback chain ─────────────────────────────────────────
+async function callAI(systemPrompt, userContent) {
+  // Try Gemini first (with key rotation)
+  try {
+    return await callGemini(systemPrompt, userContent);
+  } catch (geminiErr) {
+    console.warn("Gemini failed:", geminiErr.message, "— trying HuggingFace fallback");
+  }
+
+  // Fallback to Hugging Face
+  try {
+    return await callHuggingFace(systemPrompt, userContent);
+  } catch (hfErr) {
+    console.error("HuggingFace also failed:", hfErr.message);
+    throw new Error(`All AI providers failed. Gemini quota likely exceeded. Please try again later or check API keys. HF error: ${hfErr.message}`);
+  }
 }
 
 export default async function handler(req, res) {
@@ -229,9 +303,12 @@ export default async function handler(req, res) {
     analysis_date: new Date().toISOString()
   });
 
-  let parsed;
+  let parsed, provider, usedModel;
   try {
-    parsed = await callGemini(SYSTEM_PROMPT, userContent);
+    const result = await callAI(SYSTEM_PROMPT, userContent);
+    parsed = result.result;
+    provider = result.provider;
+    usedModel = result.model;
   } catch (e) {
     return res.status(500).send(String(e));
   }
@@ -250,9 +327,10 @@ export default async function handler(req, res) {
   parsed.trust_confirmed = trust.confirmed;
   parsed.trust_inferred = trust.inferred;
   parsed.trust_corrupted = trust.corrupted;
-  parsed.engine_version = "2.1";
+  parsed.engine_version = "2.2";
   parsed.analysis_date = new Date().toISOString();
-  parsed.model = process.env.GEMINI_MODEL || "gemini-2.0-flash";
+  parsed.model = usedModel;
+  parsed.provider = provider;
 
   try {
     const supabase = makeSupabase();
