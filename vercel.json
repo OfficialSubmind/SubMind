@@ -1,51 +1,19 @@
 {
   "version": 2,
   "builds": [
-    {
-      "src": "index.html",
-      "use": "@vercel/static"
-    },
-    {
-      "src": "admin.html",
-      "use": "@vercel/static"
-    },
-    {
-      "src": "styles.css",
-      "use": "@vercel/static"
-    },
-    {
-      "src": "api/predict.js",
-      "use": "@vercel/node"
-    },
-    {
-      "src": "api/admin/list.js",
-      "use": "@vercel/node"
-    },
-    {
-      "src": "api/admin/get.js",
-      "use": "@vercel/node"
-    }
+    { "src": "index.html", "use": "@vercel/static" },
+    { "src": "admin.html", "use": "@vercel/static" },
+    { "src": "styles.css", "use": "@vercel/static" },
+    { "src": "api/predict.js", "use": "@vercel/node" },
+    { "src": "api/admin/list.js", "use": "@vercel/node" },
+    { "src": "api/admin/get.js", "use": "@vercel/node" }
   ],
   "routes": [
-    {
-      "src": "/api/predict",
-      "dest": "/api/predict.js"
-    },
-    {
-      "src": "/api/admin/list",
-      "dest": "/api/admin/list.js"
-    },
-    {
-      "src": "/api/admin/get",
-      "dest": "/api/admin/get.js"
-    },
-    {
-      "src": "/admin",
-      "dest": "/admin.html"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/index.html"
-    }
+    { "src": "/api/predict", "dest": "/api/predict.js" },
+    { "src": "/api/admin/list", "dest": "/api/admin/list.js" },
+    { "src": "/api/admin/get", "dest": "/api/admin/get.js" },
+    { "src": "/admin", "dest": "/admin.html" },
+    { "src": "/styles.css", "dest": "/styles.css" },
+    { "src": "/(.*)", "dest": "/index.html" }
   ]
 }
