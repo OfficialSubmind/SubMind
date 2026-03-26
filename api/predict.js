@@ -221,21 +221,21 @@ async function callGemini(prompt, userContent) {
 async function callHuggingFace(prompt, userContent) {
   const hfToken = process.env.HF_API_TOKEN || "";
   // Use Mistral 7B via HF serverless inference
-  const model = "mistralai/Mistral-7B-Instruct-v0.2";
-  const url = `https://api-inference.huggingface.co/models/${model}`;
-
-  const fullPrompt = `<s>[INST] ${prompt}\n\nINPUT:\n${userContent.slice(0, 6000)} [/INST]`;
+  const model = "meta-llama/Meta-Llama-3-8B-Instruct";
+  const url = `https://router.huggingface.co/hf-inference/models/${model}/v1/chat/completions`;
 
   const headers = { "Content-Type": "application/json" };
   if (hfToken) headers["Authorization"] = `Bearer ${hfToken}`;
 
   const body = {
-    inputs: fullPrompt,
-    parameters: {
-      max_new_tokens: 4096,
-      temperature: 0.15,
-      return_full_text: false
-    }
+    model: model,
+    messages: [
+      { role: "system", content: prompt },
+      { role: "user", content: userContent.slice(0, 6000) }
+    ],
+    max_tokens: 4096,
+    temperature: 0.15,
+    stream: false
   };
 
   const res = await nodeFetch(url, {
@@ -251,8 +251,8 @@ async function callHuggingFace(prompt, userContent) {
   }
 
   const data = await res.json();
-  let text = Array.isArray(data) ? data[0]?.generated_text : data?.generated_text;
-  if (!text) throw new Error("No response from HuggingFace");
+  const text = data?.choices?.[0]?.message?.content;
+  if (!text) throw new Error("No response from HuggingFace: " + JSON.stringify(data).slice(0, 200));
 
   // Extract JSON from the response
   const jsonMatch = text.match(/\{[\s\S]*\}/);
