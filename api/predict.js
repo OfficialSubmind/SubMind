@@ -2,8 +2,8 @@ import { createClient } from "@supabase/supabase-js";
 import nodeFetch from "node-fetch";
 import { URL } from "node:url";
 
-// SubMind v3.0 - Multi-provider AI: Claude+Cerebras+Gemini+HF fallback chain
-// Enhanced schema with real_story, beneficiaries, weak_signals, autonomous_queries
+// SubMind v3.1 - Multi-provider AI: Cerebras(primary)+Claude+Gemini+HF fallback chain
+// Fixes: JSON error responses, provider chain priority, Vercel timeout, robust JSON extraction
 
 const SYSTEM_PROMPT = `You are SubMind, an autonomous evidence-led foresight and intelligence engine. You find connections, patterns, and signals that human analysts miss.
 
@@ -68,7 +68,12 @@ JSON schema (fill EVERY field with real data):
   "notes": ""
 }`;
 
-export const config = { api: { bodyParser: { sizeLimit: "4mb" } } };
+export const config = {
+  api: {
+    bodyParser: { sizeLimit: "4mb" }
+  },
+  maxDuration: 60
+};
 
 function getGeminiKeys() {
   const keys = [];
@@ -91,9 +96,9 @@ async function fetchUrlsIfAny(urls, limit = 8) {
   for (const url of urls.slice(0, limit)) {
     try {
       const res = await nodeFetch(url, {
-        timeout: 15000,
+        timeout: 12000,
         headers: {
-          "User-Agent": "SubMind/3.0 (+https://submind.us)",
+          "User-Agent": "SubMind/3.1 (+https://submind.us)",
           "Accept-Language": "en-US,en;q=0.9"
         }
       });
@@ -106,14 +111,18 @@ async function fetchUrlsIfAny(urls, limit = 8) {
         .replace(/<nav[\s\S]*?<\/nav>/gi, " ")
         .replace(/<footer[\s\S]*?<\/footer>/gi, " ")
         .replace(/<[^>]+>/g, " ")
-        .replace(/\s+/g, " ").trim().slice(0, 45000);
+        .replace(/\s+/g, " ").trim().slice(0, 40000);
       out.push({ url, title, metaDesc, text, status: res.status, chars: text.length });
-    } catch (e) { out.push({ url, error: String(e) }); }
+    } catch (e) {
+      out.push({ url, error: String(e) });
+    }
   }
   return out;
 }
 
-function parseWeightsEnv() { try { return JSON.parse(process.env.SUBMIND_TRUST_WEIGHTS || "{}") || {}; } catch { return {}; } }
+function parseWeightsEnv() {
+  try { return JSON.parse(process.env.SUBMIND_TRUST_WEIGHTS || "{}") || {}; } catch { return {}; }
+}
 const WEIGHTS = parseWeightsEnv();
 
 function hostWeight(host) {
@@ -152,7 +161,7 @@ function shannonEntropy(arr) {
   const total = arr.reduce((a,b)=>a+b,0);
   if (!total) return 0;
   let h=0;
-  for (const v of arr) { if(v<=0)continue; const p=v/total; h+=-p*Math.log2(p); }
+  for (const v of arr) { if(v<=0) continue; const p=v/total; h+=-p*Math.log2(p); }
   const maxH=Math.log2(arr.length||1);
   return maxH?h/maxH:0;
 }
@@ -162,9 +171,9 @@ function countTrust(sources) {
   if (Array.isArray(sources)) {
     for (const s of sources) {
       const v=(s?.trust||"").toLowerCase();
-      if(v==="confirmed")t.confirmed++;
-      else if(v==="inferred")t.inferred++;
-      else if(v==="corrupted")t.corrupted++;
+      if(v==="confirmed") t.confirmed++;
+      else if(v==="inferred") t.inferred++;
+      else if(v==="corrupted") t.corrupted++;
     }
   }
   return t;
@@ -176,22 +185,58 @@ function makeSupabase() {
   return createClient(url,key,{auth:{persistSession:false}});
 }
 
+// Robust JSON extraction - handles truncated/wrapped responses
+function extractJSON(text) {
+  if (!text) throw new Error("Empty response");
+  // Try direct parse first
+  const trimmed = text.trim();
+  if (trimmed.startsWith('{')) {
+    try { return JSON.parse(trimmed); } catch {}
+  }
+  // Find largest JSON object
+  const matches = [...trimmed.matchAll(/\{/g)];
+  for (const match of matches) {
+    const start = match.index;
+    let depth = 0, inStr = false, escape = false;
+    for (let i = start; i < trimmed.length; i++) {
+      const ch = trimmed[i];
+      if (escape) { escape = false; continue; }
+      if (ch === '\\') { escape = true; continue; }
+      if (ch === '"' && !escape) { inStr = !inStr; continue; }
+      if (!inStr) {
+        if (ch === '{') depth++;
+        else if (ch === '}') { depth--; if (depth === 0) {
+          try { return JSON.parse(trimmed.slice(start, i+1)); } catch {}
+        }}
+      }
+    }
+  }
+  throw new Error("No valid JSON found in response");
+}
+
 async function callClaude(prompt, userContent) {
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) throw new Error("No ANTHROPIC_API_KEY");
   const model = process.env.CLAUDE_MODEL || "claude-3-5-haiku-20241022";
   const res = await nodeFetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
-    headers: { "Content-Type": "application/json", "x-api-key": apiKey, "anthropic-version": "2023-06-01" },
-    body: JSON.stringify({ model, max_tokens: 8192, system: prompt, messages: [{ role: "user", content: userContent }] }),
-    timeout: 90000
+    headers: {
+      "Content-Type": "application/json",
+      "x-api-key": apiKey,
+      "anthropic-version": "2023-06-01"
+    },
+    body: JSON.stringify({
+      model,
+      max_tokens: 8192,
+      system: prompt,
+      messages: [{ role: "user", content: userContent }]
+    }),
+    timeout: 55000
   });
-  if (!res.ok) { const t = await res.text(); throw new Error("Claude " + res.status + ": " + t.slice(0,200)); }
+  if (!res.ok) { const t = await res.text(); throw new Error("Claude " + res.status + ": " + t.slice(0,300)); }
   const data = await res.json();
   const text = data?.content?.[0]?.text || "{}";
-  const m = text.match(/\{[\s\S]*\}/);
-  if (!m) throw new Error("No JSON in Claude response");
-  return { result: JSON.parse(m[0]), provider: "claude", model };
+  return { result: extractJSON(text), provider: "claude", model };
 }
 
 async function callCerebras(prompt, userContent) {
@@ -200,17 +245,27 @@ async function callCerebras(prompt, userContent) {
   const model = process.env.CEREBRAS_MODEL || "llama3.1-8b";
   const res = await nodeFetch("https://api.cerebras.ai/v1/chat/completions", {
     method: "POST",
-    headers: { "Content-Type": "application/json", "Authorization": "Bearer " + apiKey },
-    body: JSON.stringify({ model, messages: [{ role: "system", content: prompt }, { role: "user", content: userContent.slice(0, 10000) }], max_tokens: 8192, temperature: 0.15, stream: false }),
-    timeout: 60000
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer " + apiKey
+    },
+    body: JSON.stringify({
+      model,
+      messages: [
+        { role: "system", content: prompt },
+        { role: "user", content: userContent.slice(0, 12000) }
+      ],
+      max_tokens: 8192,
+      temperature: 0.15,
+      stream: false
+    }),
+    timeout: 45000
   });
-  if (!res.ok) { const t = await res.text(); throw new Error("Cerebras " + res.status + ": " + t.slice(0,200)); }
+  if (!res.ok) { const t = await res.text(); throw new Error("Cerebras " + res.status + ": " + t.slice(0,300)); }
   const data = await res.json();
   const text = data?.choices?.[0]?.message?.content;
   if (!text) throw new Error("No response from Cerebras");
-  const m = text.match(/\{[\s\S]*\}/);
-  if (!m) throw new Error("No JSON in Cerebras response");
-  return { result: JSON.parse(m[0]), provider: "cerebras", model };
+  return { result: extractJSON(text), provider: "cerebras", model };
 }
 
 async function callGemini(prompt, userContent) {
@@ -226,53 +281,89 @@ async function callGemini(prompt, userContent) {
   for (const apiKey of keys) {
     const url = "https://generativelanguage.googleapis.com/v1beta/models/" + model + ":generateContent?key=" + apiKey;
     try {
-      const res = await nodeFetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body), timeout: 60000 });
+      const res = await nodeFetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+        timeout: 50000
+      });
       if (res.status === 429 || res.status === 400) { lastError = new Error("Gemini HTTP " + res.status); continue; }
       if (!res.ok) { const t = await res.text(); throw new Error("Gemini " + res.status + ": " + t.slice(0,200)); }
       const data = await res.json();
       const text = data?.candidates?.[0]?.content?.parts?.[0]?.text || "{}";
-      return { result: JSON.parse(text), provider: "gemini", model };
-    } catch (e) { if (e.message?.includes("429") || e.message?.includes("400")) { lastError=e; continue; } throw e; }
+      return { result: extractJSON(text), provider: "gemini", model };
+    } catch (e) {
+      if (e.message?.includes("429") || e.message?.includes("400")) { lastError=e; continue; }
+      throw e;
+    }
   }
   throw lastError || new Error("All Gemini keys exhausted");
 }
 
 async function callHuggingFace(prompt, userContent) {
   const hfToken = process.env.HF_API_TOKEN || "";
+  if (!hfToken) throw new Error("HuggingFace 401: no HF_API_TOKEN configured");
   const model = "meta-llama/Meta-Llama-3-8B-Instruct";
   const url = "https://router.huggingface.co/hf-inference/models/" + model + "/v1/chat/completions";
-  const headers = { "Content-Type": "application/json" };
-  if (hfToken) headers["Authorization"] = "Bearer " + hfToken;
+  const headers = { "Content-Type": "application/json", "Authorization": "Bearer " + hfToken };
   const res = await nodeFetch(url, {
-    method: "POST", headers,
-    body: JSON.stringify({ model, messages: [{ role: "system", content: prompt }, { role: "user", content: userContent.slice(0, 6000) }], max_tokens: 4096, temperature: 0.15, stream: false }),
-    timeout: 120000
+    method: "POST",
+    headers,
+    body: JSON.stringify({
+      model,
+      messages: [{ role: "system", content: prompt }, { role: "user", content: userContent.slice(0, 6000) }],
+      max_tokens: 4096,
+      temperature: 0.15,
+      stream: false
+    }),
+    timeout: 90000
   });
   if (!res.ok) { const t = await res.text(); throw new Error("HuggingFace " + res.status + ": " + t.slice(0,200)); }
   const data = await res.json();
   const text = data?.choices?.[0]?.message?.content;
   if (!text) throw new Error("No response from HuggingFace");
-  const m = text.match(/\{[\s\S]*\}/);
-  if (!m) throw new Error("No JSON in HF response");
-  return { result: JSON.parse(m[0]), provider: "huggingface", model };
+  return { result: extractJSON(text), provider: "huggingface", model };
 }
 
+// v3.1 provider chain: Cerebras(fast,working) → Claude(best,needs key) → Gemini(quota issues) → HF(last resort)
 async function callAI(systemPrompt, userContent, preferredProvider) {
-  const chain = [];
   const pref = (preferredProvider || "auto").toLowerCase();
-  if ((pref === "claude" || pref === "auto") && process.env.ANTHROPIC_API_KEY) chain.push({ name: "claude", fn: () => callClaude(systemPrompt, userContent) });
-  if (pref === "cerebras" && process.env.CEREBRAS_API_KEY) chain.push({ name: "cerebras", fn: () => callCerebras(systemPrompt, userContent) });
-  if (getGeminiKeys().length && !chain.find(p=>p.name==="gemini")) chain.push({ name: "gemini", fn: () => callGemini(systemPrompt, userContent) });
-  if (process.env.CEREBRAS_API_KEY && !chain.find(p=>p.name==="cerebras")) chain.push({ name: "cerebras", fn: () => callCerebras(systemPrompt, userContent) });
-  if (process.env.ANTHROPIC_API_KEY && !chain.find(p=>p.name==="claude")) chain.push({ name: "claude", fn: () => callClaude(systemPrompt, userContent) });
-  chain.push({ name: "huggingface", fn: () => callHuggingFace(systemPrompt, userContent) });
+  const chain = [];
 
-  let lastErr;
-  for (const p of chain) {
-    try { console.log("SubMind: trying " + p.name); return await p.fn(); }
-    catch (e) { console.warn("SubMind: " + p.name + " failed: " + e.message); lastErr = e; }
+  if (pref === "cerebras") {
+    if (process.env.CEREBRAS_API_KEY) chain.push({ name: "cerebras", fn: () => callCerebras(systemPrompt, userContent) });
+  } else if (pref === "claude") {
+    if (process.env.ANTHROPIC_API_KEY) chain.push({ name: "claude", fn: () => callClaude(systemPrompt, userContent) });
+  } else if (pref === "gemini") {
+    if (getGeminiKeys().length) chain.push({ name: "gemini", fn: () => callGemini(systemPrompt, userContent) });
+  } else {
+    // auto: Cerebras first (fast + free + working), then Claude, then Gemini
+    if (process.env.CEREBRAS_API_KEY) chain.push({ name: "cerebras", fn: () => callCerebras(systemPrompt, userContent) });
+    if (process.env.ANTHROPIC_API_KEY) chain.push({ name: "claude", fn: () => callClaude(systemPrompt, userContent) });
+    if (getGeminiKeys().length) chain.push({ name: "gemini", fn: () => callGemini(systemPrompt, userContent) });
   }
-  throw new Error("All AI providers failed. Last: " + (lastErr?.message));
+
+  // Always add fallbacks
+  if (!chain.find(p=>p.name==="claude") && process.env.ANTHROPIC_API_KEY)
+    chain.push({ name: "claude", fn: () => callClaude(systemPrompt, userContent) });
+  if (!chain.find(p=>p.name==="cerebras") && process.env.CEREBRAS_API_KEY)
+    chain.push({ name: "cerebras", fn: () => callCerebras(systemPrompt, userContent) });
+  if (!chain.find(p=>p.name==="gemini") && getGeminiKeys().length)
+    chain.push({ name: "gemini", fn: () => callGemini(systemPrompt, userContent) });
+  if (process.env.HF_API_TOKEN)
+    chain.push({ name: "huggingface", fn: () => callHuggingFace(systemPrompt, userContent) });
+
+  const errors = [];
+  for (const p of chain) {
+    try {
+      console.log("SubMind: trying " + p.name);
+      return await p.fn();
+    } catch (e) {
+      console.warn("SubMind: " + p.name + " failed: " + e.message);
+      errors.push(p.name + ": " + e.message);
+    }
+  }
+  throw new Error("All AI providers failed. Errors: " + errors.join(" | "));
 }
 
 export default async function handler(req, res) {
@@ -280,11 +371,12 @@ export default async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type, X-Provider");
   if (req.method === "OPTIONS") return res.status(200).end();
-  if (req.method !== "POST") return res.status(405).send("Method not allowed");
+  if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
 
   const { query, fetchUrls, provider = "auto", deepMode = false } = req.body || {};
+
   if (!query || typeof query !== "string" || query.trim().length < 10) {
-    return res.status(400).send("Provide more input text (minimum ~10 characters).");
+    return res.status(400).json({ error: "Provide more input text (minimum ~10 characters)." });
   }
 
   const urls = extractUrls(query);
@@ -292,32 +384,44 @@ export default async function handler(req, res) {
   if (fetchUrls && urls.length) fetched = await fetchUrlsIfAny(urls, deepMode ? 12 : 8);
 
   const userContent = JSON.stringify({
-    input: query, fetched_sources: fetched, fetched_count: fetched.length,
-    url_count: urls.length, analysis_date: new Date().toISOString(), deep_mode: deepMode
+    input: query,
+    fetched_sources: fetched,
+    fetched_count: fetched.length,
+    url_count: urls.length,
+    analysis_date: new Date().toISOString(),
+    deep_mode: deepMode
   });
 
   let parsed, providerUsed, usedModel;
   try {
     const result = await callAI(SYSTEM_PROMPT, userContent, provider);
-    parsed = result.result; providerUsed = result.provider; usedModel = result.model;
-  } catch (e) { return res.status(500).send(String(e)); }
+    parsed = result.result;
+    providerUsed = result.provider;
+    usedModel = result.model;
+  } catch (e) {
+    return res.status(500).json({ error: String(e.message), engine_version: "3.1" });
+  }
 
-  if (!parsed || typeof parsed !== "object") return res.status(500).send("AI returned invalid data");
+  if (!parsed || typeof parsed !== "object") {
+    return res.status(500).json({ error: "AI returned invalid data", engine_version: "3.1" });
+  }
 
   const { source_score, counts } = scoreFromSources(parsed?.sources);
   const stanceEntropy = shannonEntropy([counts.supporting, counts.neutral, counts.conflicting]);
   const trustEntropy = shannonEntropy([counts.confirmed, counts.inferred, counts.corrupted]);
   const source_entropy = Number(((stanceEntropy + trustEntropy) / 2).toFixed(3));
-  const modelScore = typeof parsed?.reliability_score === "number" ? Math.max(0,Math.min(100,parsed.reliability_score)) : 50;
+  const modelScore = typeof parsed?.reliability_score === "number"
+    ? Math.max(0, Math.min(100, parsed.reliability_score)) : 50;
   const trust_weighted_score = Math.round(0.5 * modelScore + 0.5 * source_score);
   const trust = countTrust(parsed?.sources);
 
   parsed.trust_weighted_score = trust_weighted_score;
+  parsed.score = trust_weighted_score; // alias for frontend compat
   parsed.source_entropy = source_entropy;
   parsed.trust_confirmed = trust.confirmed;
   parsed.trust_inferred = trust.inferred;
   parsed.trust_corrupted = trust.corrupted;
-  parsed.engine_version = "3.0";
+  parsed.engine_version = "3.1";
   parsed.analysis_date = new Date().toISOString();
   parsed.model = usedModel;
   parsed.provider = providerUsed;
@@ -327,13 +431,22 @@ export default async function handler(req, res) {
     const supabase = makeSupabase();
     if (supabase) {
       await supabase.from("predictions").insert({
-        input_text: query.slice(0, 50000), fetched, output: parsed,
-        reliability_score: modelScore, trust_weighted_score, source_entropy,
-        trust_confirmed: trust.confirmed, trust_inferred: trust.inferred, trust_corrupted: trust.corrupted,
-        provider: providerUsed, engine_version: "3.0"
+        input_text: query.slice(0, 50000),
+        fetched,
+        output: parsed,
+        reliability_score: modelScore,
+        trust_weighted_score,
+        source_entropy,
+        trust_confirmed: trust.confirmed,
+        trust_inferred: trust.inferred,
+        trust_corrupted: trust.corrupted,
+        provider: providerUsed,
+        engine_version: "3.1"
       });
     }
-  } catch (e) { console.error("Supabase log error:", e); }
+  } catch (e) {
+    console.error("Supabase log error:", e);
+  }
 
   return res.status(200).json(parsed);
 }
