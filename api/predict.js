@@ -197,7 +197,7 @@ async function callClaude(prompt, userContent) {
 async function callCerebras(prompt, userContent) {
   const apiKey = process.env.CEREBRAS_API_KEY;
   if (!apiKey) throw new Error("No CEREBRAS_API_KEY");
-  const model = process.env.CEREBRAS_MODEL || "llama3.1-70b";
+  const model = process.env.CEREBRAS_MODEL || "llama3.1-8b";
   const res = await nodeFetch("https://api.cerebras.ai/v1/chat/completions", {
     method: "POST",
     headers: { "Content-Type": "application/json", "Authorization": "Bearer " + apiKey },
