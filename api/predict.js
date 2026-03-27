@@ -1,367 +1,628 @@
-import { createClient } from "@supabase/supabase-js";
 import nodeFetch from "node-fetch";
 import { URL } from "node:url";
 
-// SubMind v4.0 — Autonomous Reasoning Intelligence Engine
-// Claude-primary | Cerebras-fast | Gemini-fallback
-// Full causal chain, counterpoint validation, source authentication, timeline reconstruction
+// ================================================================
+// SUBMIND v5.0 — AUTONOMOUS INTELLIGENCE ENGINE
+// ================================================================
+// Architecture: INGEST → NORMALIZE → CLUSTER → SCORE →
+//               GLASS_FANG_VALIDATE → NEMESIS_COUNTER → NARRATE →
+//               FORECAST → BACKTEST → NODE_WEAVE → OUTPUT
+// ================================================================
+// Glass Fang: Parallel validation security layer — stress tests 
+//             every output, detects vulnerabilities, fishes bad info
+// Nemesis Engine: Adversarial counter-validator — runs ghost rival
+//                 processes to prove the analysis wrong
+// Node Weaver: Hyper-complex knowledge graph of interconnected events
+//              showing live macro trends and ripple effects
+// ================================================================
 
-export const config = { api: { bodyParser: { sizeLimit: "4mb" } }, maxDuration: 60 };
+export const config = { api: { bodyParser: { sizeLimit: "8mb" } }, maxDuration: 120 };
 
-// ─── MASTER SYSTEM PROMPT ───────────────────────────────────────────────────
-const SYSTEM_PROMPT = `You are SubMind — an autonomous reasoning intelligence engine that functions like a cross between a geopolitical analyst, quant hedge fund researcher, investigative journalist, and systems-thinking expert.
+// ── SUBSCRIPTION TIER DEFINITIONS ─────────────────────────────
+const SUBSCRIPTION_TIERS = {
+  OBSERVER: {
+    name: 'Observer',
+    level: 0,
+    maxDepth: 1,
+    features: ['Basic analysis', 'Top 3 sources', 'Headline timeline'],
+    nodeLimit: 10,
+    forecastDays: 30
+  },
+  ANALYST: {
+    name: 'Analyst',
+    level: 1,
+    maxDepth: 2,
+    features: ['Full causal chain', 'Counterpoint validation', 'Extended timeline', '15 sources'],
+    nodeLimit: 50,
+    forecastDays: 180
+  },
+  ORACLE: {
+    name: 'Oracle',
+    level: 2,
+    maxDepth: 3,
+    features: ['Glass Fang scan', 'Nemesis Engine', 'Full node web', 'Macro lens', 'Unlimited sources'],
+    nodeLimit: 500,
+    forecastDays: 730
+  },
+  SOVEREIGN: {
+    name: 'Sovereign',
+    level: 3,
+    maxDepth: 5,
+    features: ['All Oracle features', 'PROMETHEUS integration', 'API access', 'Private deployment'],
+    nodeLimit: -1,
+    forecastDays: 3650
+  }
+};
 
-Your purpose: take ANY input (news, data, claims, events) and produce the kind of deep, multi-layered intelligence report that would impress a senior analyst at Goldman Sachs, a policy director at a think tank, or a senior intelligence officer. NOT a chatbot. NOT a summarizer. A REASONING ENGINE.
+function getTier(tierName) {
+  return SUBSCRIPTION_TIERS[tierName?.toUpperCase()] || SUBSCRIPTION_TIERS.OBSERVER;
+}
 
-CORE REASONING FRAMEWORK:
-1. CAUSAL CHAIN ANALYSIS: Trace events from root cause → intermediate effects → downstream consequences. Map the FULL causal graph, not just the surface event.
-2. COUNTERPOINT VALIDATION: For every major claim, generate the strongest counterargument. Rate the counterpoint's validity 0-100. If valid counterpoints exist, adjust confidence accordingly.
-3. FRICTION POINT IDENTIFICATION: Where do the facts conflict? What data points SHOULDN'T coexist but do? These are the most important signals.
-4. FOLLOW THE INCENTIVES: Who has financial, political, or strategic incentive for this outcome? Who benefits from narrative X vs narrative Y?
-5. ASYMMETRIC INFORMATION DETECTION: What does the market/public not yet know? What signals are hiding in plain sight?
-6. SYSTEMIC RISK MAPPING: Is this event a symptom of a deeper structural issue? What cascade failures become possible?
-7. ORIGIN-TO-FUTURE TIMELINE: Reconstruct the historical origin of this trend, map the current inflection point, and project probabilistic futures in specific time windows with leading indicators.
-8. SOURCE TRIANGULATION: Cross-validate claims. Grade each source on: domain authority, publication recency, editorial independence, known bias orientation, and corroboration count.
-9. NARRATIVE WARFARE DETECTION: Are there competing narratives? Who controls each? What does each narrative hide or amplify?
-10. WEAK SIGNAL AMPLIFICATION: Surface the non-obvious early indicators that most analysts would dismiss as noise but represent signal.
+// ── TRUST TIER SYSTEM ─────────────────────────────────────────
+const TRUST_TIERS = {
+  T1: { min: 0.75, label: 'T1 CONFIRMED', color: '#00ff88' },
+  T2: { min: 0.50, label: 'T2 PROBABLE', color: '#88ff00' },
+  T3: { min: 0.25, label: 'T3 UNCERTAIN', color: '#ffaa00' },
+  T4: { min: 0.00, label: 'T4 DISPUTED', color: '#ff4444' }
+};
 
-OUTPUT RULES:
-- Every field MUST be populated with real, specific, substantive content. No placeholders. No vague generalities.
-- Use precise numbers, named entities, specific timeframes wherever possible.
-- Uncertainty is fine — but express it with calibrated confidence scores, not omission.
-- If a field truly has no data, explain WHY in the notes field.
-- The output is for sophisticated users. Do NOT simplify. DO be precise.
-- ALL output must be valid JSON. Zero text outside JSON object.
+function classifyTrust(score) {
+  if (score >= 0.75) return TRUST_TIERS.T1;
+  if (score >= 0.50) return TRUST_TIERS.T2;
+  if (score >= 0.25) return TRUST_TIERS.T3;
+  return TRUST_TIERS.T4;
+}
 
-SCHEMA — fill every single field:
+// ── MASTER SYSTEM PROMPT ──────────────────────────────────────
+function buildSystemPrompt(tier) {
+  const tierObj = getTier(tier);
+  
+  return `You are SubMind v5.0 — the world's most advanced autonomous intelligence validation engine. 
+You are NOT a chatbot. You are a reasoning engine that:
+1. Traces events to their PATIENT ZERO origin (earliest causal source, not most popular)  
+2. Builds KNOWLEDGE GRAPHS of interconnected events with weighted confidence scores
+3. Runs GLASS FANG validation — a parallel shadow analysis that stress-tests every conclusion
+4. Deploys NEMESIS ENGINE — adversarial ghost rival processes that argue the opposite to weed out weak logic
+5. Weaves NODE NETWORKS showing how disparate events connect across time and domain
+6. Maps MACRO TRENDS that the top 1% use to predict the future — ripple effects on culture, markets, geopolitics
+7. Provides PREDICTIVE TIMELINES with probability ranges and confidence intervals
+8. BACKTESTS predictions against historical patterns for calibration
+
+ACTIVE TIER: ${tierObj.name} (Level ${tierObj.level})
+DEPTH LIMIT: ${tierObj.maxDepth} causal layers
+FORECAST HORIZON: ${tierObj.forecastDays} days
+NODE LIMIT: ${tierObj.nodeLimit === -1 ? 'Unlimited' : tierObj.nodeLimit}
+
+CRITICAL RULES:
+- NEVER regurgitate. Always SYNTHESIZE, CONNECT, and INFER.
+- Every claim must have a confidence weight (0.0-1.0)
+- Distinguish CONFIRMED (>0.75), PROBABLE (0.50-0.75), UNCERTAIN (0.25-0.50), DISPUTED (<0.25)
+- Identify Patient Zero source — the FIRST causally relevant event, not just the most cited
+- Separate factual payload from emotional/narrative payload in every source
+- Preserve weak signals for future reactivation
+- Flag all unstated assumptions and implicit hypotheses
+
+OUTPUT FORMAT (strict JSON):
 {
-  "summary": "3-5 sentence executive brief. Must include: the non-obvious insight, named actors, specific numbers, and why this matters beyond the headline.",
-  "real_story": "The underlying causal story. What systemic pressure, structural shift, or hidden incentive is actually driving this? What is the event a SYMPTOM of?",
-  "origin_analysis": "Historical origin of this trend/event. When did the root cause begin? What was the first domino? Trace back minimum 2-5 years.",
-  "causal_chain": [
-    {"step": 1, "event": "root cause event", "date_approx": "YYYY or 'Q1 2023'", "mechanism": "how this caused the next step", "evidence": "supporting data/source", "confidence": 0.85}
-  ],
-  "counterpoints": [
-    {"claim": "the main claim being challenged", "counterargument": "strongest opposing case with specific evidence", "validity_score": 75, "resolution": "how to reconcile the tension", "adjusts_confidence_by": -0.05}
-  ],
-  "friction_points": [
-    {"observation_a": "fact A", "observation_b": "contradicting fact B", "tension": "why these shouldn't coexist", "implication": "what the contradiction reveals"}
-  ],
-  "beneficiaries": ["specific named entity + HOW they benefit, by how much"],
-  "harmed_parties": ["specific named entity + HOW they are harmed, with scale"],
-  "prediction_timeline": [
-    {"window": "0-3 months", "events": [{"event": "specific prediction", "probability": 0.75, "rationale": "causal reasoning", "confidence_factors": ["factor1"], "leading_indicators": ["observable signal to watch"], "invalidating_signals": ["what would disprove this"]}]},
-    {"window": "3-12 months", "events": [{"event": "", "probability": 0.6, "rationale": "", "confidence_factors": [], "leading_indicators": [], "invalidating_signals": []}]},
-    {"window": "12-36 months", "events": [{"event": "", "probability": 0.5, "rationale": "", "confidence_factors": [], "leading_indicators": [], "invalidating_signals": []}]},
-    {"window": "3-10 years", "events": [{"event": "", "probability": 0.4, "rationale": "", "confidence_factors": [], "leading_indicators": [], "invalidating_signals": []}]}
-  ],
-  "trend_meta": {
-    "topic": "concise trend label",
-    "category": "technology|finance|geopolitics|health|culture|environment|defense|energy|other",
-    "velocity": "accelerating|steady|decelerating|reversing|emerging",
-    "momentum_score": 72,
-    "novelty_score": 65,
-    "signal_strength": "weak|moderate|strong|very_strong",
-    "time_to_mainstream": "6-12 months",
-    "contrarian_angle": "what the consensus is missing entirely",
-    "asymmetric_edge": "what sophisticated actors know that the market does not",
-    "systemic_risk_level": "low|medium|high|critical",
-    "geographic_scope": "local|regional|national|global"
-  },
-  "narratives": [
-    {"label": "Narrative label", "dominant_framing": "how mainstream media/institutions frame this", "alternative_framing": "what the counter-narrative argues", "drivers": ["who pushes this narrative"], "counterpoints": ["what weakens this narrative"], "status": "confirmed|inferred|contested", "source_count": 3, "narrative_controller": "who benefits from this framing being dominant"}
-  ],
-  "signal_connections": [
-    {"signal_a": "event/trend A", "signal_b": "event/trend B", "connection_type": "causal|correlational|competitive|synergistic|antagonistic", "strength": 0.75, "insight": "why this connection matters", "why_overlooked": "why most analysts miss this link", "time_lag_months": 6}
-  ],
-  "opportunities": [
-    {"action": "specific actionable step", "why_now": "time-sensitive rationale", "requirements": ["prerequisite"], "risks": ["downside"], "timeframe": "6 months", "expected_value_note": "risk-adjusted assessment", "urgency": "immediate|near_term|long_term", "asymmetric_edge": "information/positioning advantage"}
-  ],
-  "risks": [
-    {"risk": "specific named risk", "severity": "low|medium|high|critical", "probability": 0.35, "mitigation": "specific mitigation strategy", "early_warning_signals": ["observable trigger"], "systemic_risk": false, "cascade_potential": "what else breaks if this occurs", "time_horizon": "3-6 months"}
-  ],
-  "weak_signals": [
-    {"signal": "non-obvious early indicator", "domain": "sector/field where signal appears", "why_matters": "causal path from this signal to main trend", "strength": "nascent|weak|building", "estimated_lag_months": 9, "tracking_method": "how to monitor this signal"}
-  ],
-  "sources": [
-    {"title": "source title", "url": "url if available", "published": "date", "salience": 0.8, "stance": "supporting|neutral|conflicting", "trust": "confirmed|inferred|corrupted", "credibility_score": 80, "domain_type": "academic|government|news|industry|social|think_tank|primary_data", "bias_indicators": "known bias or agenda", "corroboration_count": 2, "key_claim": "the specific claim this source supports"}
-  ],
-  "reliability_score": 72,
-  "validation_matrix": {
-    "source_agreement": 0.7,
-    "cross_validation_count": 4,
-    "contradictions_found": 1,
-    "data_freshness_score": 80,
-    "narrative_diversity_score": 0.65,
-    "expert_consensus_level": "contested|emerging|moderate|strong",
-    "primary_data_available": false
-  },
-  "autonomous_queries": [
-    "specific follow-up research query 1 — what SubMind would search next to deepen this",
-    "specific follow-up query 2",
-    "specific follow-up query 3",
-    "specific follow-up query 4",
-    "specific follow-up query 5"
-  ],
-  "intelligence_gaps": ["what key information is MISSING that would change this analysis"],
-  "monitoring_protocol": "what to watch weekly/monthly to track this trend's evolution",
-  "notes": "any analyst caveats, methodology notes, or limitations"
+  "submind_version": "5.0",
+  "tier": "${tierObj.name}",
+  "topic": string,
+  "patient_zero": { "event": string, "date": string, "confidence": 0-1, "significance": string },
+  "trust_classification": { "score": 0-1, "tier": "T1|T2|T3|T4", "label": string },
+  "executive_summary": string (2-3 sentences max, macro lens view),
+  "causal_chain": [{ "step": 1, "event": string, "date": string, "confidence": 0-1, "source_type": string, "causal_weight": 0-1 }],
+  "knowledge_nodes": [{ "id": string, "label": string, "category": "EVENT|ACTOR|TREND|RISK|OPPORTUNITY", "weight": 0-1, "connections": [string] }],
+  "counterpoints": [{ "claim": string, "counter": string, "resolution": string, "confidence": 0-1 }],
+  "friction_points": [{ "point": string, "severity": "LOW|MEDIUM|HIGH|CRITICAL", "probability": 0-1 }],
+  "glass_fang_flags": [{ "type": string, "severity": string, "detail": string }],
+  "nemesis_challenges": [{ "challenged_claim": string, "adversarial_argument": string, "verdict": "SURVIVES|WEAKENED|REFUTED", "strength": 0-1 }],
+  "macro_trends": [{ "trend": string, "timeframe": string, "affected_domains": [string], "probability": 0-1 }],
+  "timeline": [{ "date": string, "event": string, "significance": 0-1, "is_predicted": boolean }],
+  "predictive_forecast": [{ "scenario": string, "probability": 0-1, "timeframe": string, "key_drivers": [string] }],
+  "weak_signals": [string],
+  "sources_analyzed": number,
+  "confidence_weights": { "overall": 0-1, "sourcing": 0-1, "logic": 0-1, "prediction": 0-1 }
 }`;
+}
 
-// ─── HELPERS ────────────────────────────────────────────────────────────────
-function getGeminiKeys() {
-  const keys = [];
-  if (process.env.GEMINI_API_KEY) keys.push(process.env.GEMINI_API_KEY);
-  if (process.env.GEMINI_API_KEYS) {
-    process.env.GEMINI_API_KEYS.split(",").map(k => k.trim()).filter(Boolean)
-      .forEach(k => { if (!keys.includes(k)) keys.push(k); });
+// ── AI PROVIDER ROUTER ────────────────────────────────────────
+const PROVIDERS = {
+  claude: async (prompt, topic, tier) => {
+    const key = process.env.ANTHROPIC_API_KEY;
+    if (!key) throw new Error('ANTHROPIC_API_KEY missing');
+    const tierObj = getTier(tier);
+    const maxTokens = tierObj.level >= 2 ? 8000 : tierObj.level === 1 ? 5000 : 3000;
+    
+    const r = await nodeFetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: {
+        "x-api-key": key,
+        "anthropic-version": "2023-06-01",
+        "content-type": "application/json"
+      },
+      body: JSON.stringify({
+        model: "claude-opus-4-5",
+        max_tokens: maxTokens,
+        system: buildSystemPrompt(tier),
+        messages: [{ role: "user", content: prompt }]
+      })
+    });
+    
+    if (!r.ok) {
+      const err = await r.text();
+      throw new Error(`Claude API error ${r.status}: ${err.substring(0,200)}`);
+    }
+    
+    const d = await r.json();
+    return {
+      text: d.content?.[0]?.text || '',
+      provider: 'claude',
+      model: 'claude-opus-4-5',
+      tokens: d.usage
+    };
+  },
+
+  cerebras: async (prompt, topic, tier) => {
+    const key = process.env.CEREBRAS_API_KEY;
+    if (!key) throw new Error('CEREBRAS_API_KEY missing');
+    const model = process.env.CEREBRAS_MODEL || 'qwen-3-235b-a22b-instruct-2507';
+    const tierObj = getTier(tier);
+    const maxTokens = tierObj.level >= 2 ? 8192 : 4096;
+    
+    const r = await nodeFetch("https://api.cerebras.ai/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${key}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        model,
+        max_tokens: maxTokens,
+        messages: [
+          { role: "system", content: buildSystemPrompt(tier) },
+          { role: "user", content: prompt }
+        ],
+        temperature: 0.3
+      })
+    });
+    
+    if (!r.ok) {
+      const err = await r.text();
+      throw new Error(`Cerebras error ${r.status}: ${err.substring(0,200)}`);
+    }
+    
+    const d = await r.json();
+    return {
+      text: d.choices?.[0]?.message?.content || '',
+      provider: 'cerebras',
+      model,
+      tokens: d.usage
+    };
+  },
+
+  gemini: async (prompt, topic, tier) => {
+    const keysRaw = process.env.GEMINI_API_KEYS || process.env.GEMINI_API_KEY || '';
+    const keys = keysRaw.split(',').map(k => k.trim()).filter(Boolean);
+    if (!keys.length) throw new Error('GEMINI_API_KEY missing');
+    const key = keys[Math.floor(Math.random() * keys.length)];
+    const tierObj = getTier(tier);
+    const maxTokens = tierObj.level >= 2 ? 8192 : 4096;
+    
+    const r = await nodeFetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${key}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          system_instruction: { parts: [{ text: buildSystemPrompt(tier) }] },
+          contents: [{ role: "user", parts: [{ text: prompt }] }],
+          generationConfig: { maxOutputTokens: maxTokens, temperature: 0.3, responseMimeType: "application/json" }
+        })
+      }
+    );
+    
+    if (!r.ok) {
+      const err = await r.text();
+      throw new Error(`Gemini error ${r.status}: ${err.substring(0,200)}`);
+    }
+    
+    const d = await r.json();
+    const text = d.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    return { text, provider: 'gemini', model: 'gemini-2.5-flash', tokens: null };
   }
-  return keys;
-}
+};
 
-function extractUrls(text) {
-  const rx = /(https?:\/\/[^\s"'<>]+)/g;
-  return Array.from(new Set((text.match(rx) || []).map(u => u.replace(/[.,;!?)]+$/, "").trim())));
-}
-
-async function fetchUrlsIfAny(urls, limit = 8) {
-  const out = [];
-  for (const url of urls.slice(0, limit)) {
+// ── PROVIDER SELECTION ────────────────────────────────────────
+async function callAI(prompt, topic, tier, preferredProvider) {
+  const order = ['claude', 'cerebras', 'gemini'];
+  
+  if (preferredProvider && PROVIDERS[preferredProvider]) {
     try {
-      const res = await nodeFetch(url, {
-        timeout: 12000,
-        headers: { "User-Agent": "SubMind/4.0 (+https://submind.us)", "Accept-Language": "en-US,en;q=0.9" }
-      });
-      const html = await res.text();
-      const title = (html.match(/<title[^>]*>([^<]+)<\/title>/i) || [])[1] || "";
-      const metaDesc = (html.match(/<meta[^>]+name=["']description["'][^>]+content=["']([^"']+)/i) || [])[1] || "";
-      const text = html
-        .replace(/<script[\s\S]*?<\/script>/gi, " ").replace(/<style[\s\S]*?<\/style>/gi, " ")
-        .replace(/<nav[\s\S]*?<\/nav>/gi, " ").replace(/<footer[\s\S]*?<\/footer>/gi, " ")
-        .replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim().slice(0, 40000);
-      out.push({ url, title, metaDesc, text, status: res.status, chars: text.length });
-    } catch (e) { out.push({ url, error: String(e) }); }
-  }
-  return out;
-}
-
-function parseWeightsEnv() { try { return JSON.parse(process.env.SUBMIND_TRUST_WEIGHTS || "{}") || {}; } catch { return {}; } }
-const WEIGHTS = parseWeightsEnv();
-function hostWeight(host) {
-  if (!host) return 1; if (WEIGHTS[host]) return Number(WEIGHTS[host]) || 1;
-  if (host.endsWith(".gov")) return 1.40; if (host.endsWith(".edu")) return 1.30;
-  if (host.includes("reuters") || host.includes("apnews") || host.includes("bbc")) return 1.25;
-  if (host.includes("nature.com") || host.includes("pubmed") || host.includes("arxiv")) return 1.35;
-  if (host.includes("wsj.com") || host.includes("ft.com") || host.includes("economist")) return 1.20;
-  if (host.includes("twitter") || host.includes("reddit")) return 0.80;
-  return 1;
-}
-function stanceFactor(s) { const v = String(s||"").toLowerCase(); return v==="supporting"?1:v==="conflicting"?0.9:0.95; }
-function trustFactor(t) { const v = String(t||"").toLowerCase(); return v==="confirmed"?1:v==="corrupted"?0.2:0.6; }
-function safeHost(u) { try { return new URL(u).host.toLowerCase(); } catch { return null; } }
-function shannonEntropy(arr) {
-  const tot = arr.reduce((a,b)=>a+b,0); if (!tot) return 0;
-  let h=0; for (const v of arr) { if(v<=0) continue; const p=v/tot; h+=-p*Math.log2(p); }
-  return Math.log2(arr.length||1) ? h/Math.log2(arr.length) : 0;
-}
-function scoreFromSources(sources) {
-  let num=0, den=0, counts={supporting:0,neutral:0,conflicting:0,confirmed:0,inferred:0,corrupted:0};
-  if (Array.isArray(sources)) {
-    for (const s of sources) {
-      const w = hostWeight(safeHost(s?.url)) * stanceFactor(s?.stance) * trustFactor(s?.trust);
-      const sal = typeof s?.salience==="number" ? Math.max(0,Math.min(1,s.salience)) : 0.5;
-      num += w*sal*100; den += sal;
-      const stance=String(s?.stance||"neutral").toLowerCase(), trust=String(s?.trust||"inferred").toLowerCase();
-      if(counts[stance]!==undefined) counts[stance]++; if(counts[trust]!==undefined) counts[trust]++;
+      return await PROVIDERS[preferredProvider](prompt, topic, tier);
+    } catch (e) {
+      console.error(`[SubMind] ${preferredProvider} failed: ${e.message}`);
     }
   }
-  return { source_score: Math.max(0,Math.min(100,den>0?num/den:0)), counts };
-}
-function countTrust(sources) {
-  const t={confirmed:0,inferred:0,corrupted:0};
-  if (Array.isArray(sources)) { for (const s of sources) { const v=(s?.trust||"").toLowerCase(); if(v==="confirmed") t.confirmed++; else if(v==="inferred") t.inferred++; else if(v==="corrupted") t.corrupted++; } }
-  return t;
-}
-function makeSupabase() {
-  const url=process.env.SUPABASE_URL, key=process.env.SUPABASE_SERVICE_ROLE;
-  if(!url||!key) return null; return createClient(url,key,{auth:{persistSession:false}});
+  
+  for (const p of order) {
+    if (p === preferredProvider) continue;
+    try {
+      const result = await PROVIDERS[p](prompt, topic, tier);
+      if (result.text) return result;
+    } catch (e) {
+      console.error(`[SubMind] ${p} failed: ${e.message}`);
+    }
+  }
+  
+  throw new Error('All AI providers failed');
 }
 
-// Robust JSON extractor — handles markdown fences, extra text, truncation
+// ── JSON PARSER WITH FALLBACK ─────────────────────────────────
 function extractJSON(text) {
-  if (!text) throw new Error("Empty response");
-  const cleaned = text.replace(/^[`]{3}json\s*/i,'').replace(/[`]{3}\s*$/,'').trim();
-  if (cleaned.startsWith('{')) { try { return JSON.parse(cleaned); } catch {} }
-  const matches = [...cleaned.matchAll(/\{/g)];
-  for (const m of matches) {
-    let depth=0, inStr=false, escape=false;
-    for (let i=m.index; i<cleaned.length; i++) {
-      const ch=cleaned[i];
-      if (escape) { escape=false; continue; } if (ch==='\\') { escape=true; continue; }
-      if (ch==='"' && !escape) { inStr=!inStr; continue; }
-      if (!inStr) { if(ch==='{') depth++; else if(ch==='}') { depth--; if(depth===0) { try { return JSON.parse(cleaned.slice(m.index,i+1)); } catch {} } } }
+  const jsonBlockMatch = text.match(/```(?:json)?\s*([\s\S]*?)```/);
+  if (jsonBlockMatch) {
+    try { return JSON.parse(jsonBlockMatch[1]); } catch(e) {}
+  }
+  
+  const braceMatch = text.match(/\{[\s\S]*\}/);
+  if (braceMatch) {
+    try { return JSON.parse(braceMatch[0]); } catch(e) {}
+  }
+  
+  // Aggressive extraction
+  try {
+    const start = text.indexOf('{');
+    const end = text.lastIndexOf('}');
+    if (start !== -1 && end > start) {
+      return JSON.parse(text.substring(start, end + 1));
     }
+  } catch(e) {}
+  
+  return null;
+}
+
+// ── GLASS FANG VALIDATOR ──────────────────────────────────────
+// Runs parallel shadow validation on AI output
+async function glassFangValidate(primaryOutput, topic, tier, provider) {
+  const tierObj = getTier(tier);
+  if (tierObj.level < 2) {
+    // Basic Glass Fang for lower tiers
+    return {
+      glassFangVersion: '1.0',
+      enabled: false,
+      trustScore: primaryOutput.confidence_weights?.overall || 0.7,
+      tier_gate: 'Oracle or Sovereign tier required for full Glass Fang'
+    };
   }
-  throw new Error("No valid JSON in response");
-}
+  
+  const shadowPrompt = `You are GLASS FANG — SubMind's adversarial security validator.
+Your ONLY job is to find what is WRONG with this analysis. Be maximally adversarial and critical.
+Be a ruthless devil's advocate. Find every vulnerability, logical gap, unsupported claim, 
+and hidden assumption.
 
-// ─── AI PROVIDERS ────────────────────────────────────────────────────────────
-async function callClaude(prompt, userContent) {
-  const apiKey = process.env.ANTHROPIC_API_KEY;
-  if (!apiKey) throw new Error("ANTHROPIC_API_KEY not set");
-  const model = process.env.CLAUDE_MODEL || "claude-3-5-sonnet-20241022";
-  const res = await nodeFetch("https://api.anthropic.com/v1/messages", {
-    method: "POST",
-    headers: { "Content-Type": "application/json", "x-api-key": apiKey, "anthropic-version": "2023-06-01" },
-    body: JSON.stringify({ model, max_tokens: 8192, system: prompt, messages: [{ role: "user", content: userContent }] }),
-    timeout: 55000
-  });
-  if (!res.ok) { const t = await res.text(); throw new Error("Claude HTTP " + res.status + ": " + t.slice(0,300)); }
-  const data = await res.json();
-  const text = data?.content?.[0]?.text || "{}";
-  return { result: extractJSON(text), provider: "claude", model };
-}
+Analysis to stress-test:
+Topic: ${topic}
+Summary: ${primaryOutput.executive_summary || ''}
+Key claims: ${JSON.stringify(primaryOutput.causal_chain?.slice(0,5) || [])}
+Predictions: ${JSON.stringify(primaryOutput.predictive_forecast?.slice(0,3) || [])}
 
-async function callCerebras(prompt, userContent) {
-  const apiKey = process.env.CEREBRAS_API_KEY;
-  if (!apiKey) throw new Error("CEREBRAS_API_KEY not set");
-  const model = process.env.CEREBRAS_MODEL || "qwen-3-235b-a22b-instruct-2507";
-  const res = await nodeFetch("https://api.cerebras.ai/v1/chat/completions", {
-    method: "POST",
-    headers: { "Content-Type": "application/json", "Authorization": "Bearer " + apiKey },
-    body: JSON.stringify({ model, messages: [{ role: "system", content: prompt }, { role: "user", content: userContent.slice(0, 14000) }], max_tokens: 8192, temperature: 0.1, stream: false }),
-    timeout: 45000
-  });
-  if (!res.ok) { const t = await res.text(); throw new Error("Cerebras HTTP " + res.status + ": " + t.slice(0,300)); }
-  const data = await res.json();
-  const text = data?.choices?.[0]?.message?.content;
-  if (!text) throw new Error("No content from Cerebras");
-  return { result: extractJSON(text), provider: "cerebras", model };
-}
-
-async function callGemini(prompt, userContent) {
-  const keys = getGeminiKeys(); if (!keys.length) throw new Error("No GEMINI_API_KEY");
-  const model = process.env.GEMINI_MODEL || "gemini-2.0-flash";
-  const body = { system_instruction: { parts: [{ text: prompt }] }, contents: [{ role: "user", parts: [{ text: userContent }] }], generationConfig: { temperature: 0.1, maxOutputTokens: 8192, responseMimeType: "application/json" } };
-  let lastError = null;
-  for (const apiKey of keys) {
-    try {
-      const res = await nodeFetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body), timeout: 50000 });
-      if (res.status === 429 || res.status === 400) { lastError = new Error("Gemini " + res.status); continue; }
-      if (!res.ok) { const t = await res.text(); throw new Error("Gemini " + res.status + ": " + t.slice(0,200)); }
-      const data = await res.json();
-      const text = data?.candidates?.[0]?.content?.parts?.[0]?.text || "{}";
-      return { result: extractJSON(text), provider: "gemini", model };
-    } catch (e) { if (e.message?.includes("429") || e.message?.includes("400")) { lastError=e; continue; } throw e; }
-  }
-  throw lastError || new Error("All Gemini keys exhausted");
-}
-
-// v4.0 chain: Claude(best reasoning) → Cerebras(fast 235B) → Gemini(fallback)
-async function callAI(systemPrompt, userContent, preferredProvider) {
-  const pref = (preferredProvider || "auto").toLowerCase();
-  const hasClaude = !!process.env.ANTHROPIC_API_KEY;
-  const hasCerebras = !!process.env.CEREBRAS_API_KEY;
-  const hasGemini = getGeminiKeys().length > 0;
-
-  let chain = [];
-  if (pref === "claude") {
-    if (hasClaude) chain.push({ name: "claude", fn: () => callClaude(systemPrompt, userContent) });
-    if (hasCerebras) chain.push({ name: "cerebras", fn: () => callCerebras(systemPrompt, userContent) });
-    if (hasGemini) chain.push({ name: "gemini", fn: () => callGemini(systemPrompt, userContent) });
-  } else if (pref === "cerebras") {
-    if (hasCerebras) chain.push({ name: "cerebras", fn: () => callCerebras(systemPrompt, userContent) });
-    if (hasClaude) chain.push({ name: "claude", fn: () => callClaude(systemPrompt, userContent) });
-    if (hasGemini) chain.push({ name: "gemini", fn: () => callGemini(systemPrompt, userContent) });
-  } else if (pref === "gemini") {
-    if (hasGemini) chain.push({ name: "gemini", fn: () => callGemini(systemPrompt, userContent) });
-    if (hasClaude) chain.push({ name: "claude", fn: () => callClaude(systemPrompt, userContent) });
-    if (hasCerebras) chain.push({ name: "cerebras", fn: () => callCerebras(systemPrompt, userContent) });
-  } else {
-    // auto: Claude first (best reasoning for intelligence work), Cerebras second (fast+capable), Gemini third
-    if (hasClaude) chain.push({ name: "claude", fn: () => callClaude(systemPrompt, userContent) });
-    if (hasCerebras) chain.push({ name: "cerebras", fn: () => callCerebras(systemPrompt, userContent) });
-    if (hasGemini) chain.push({ name: "gemini", fn: () => callGemini(systemPrompt, userContent) });
-  }
-
-  if (!chain.length) throw new Error("No AI providers configured");
-
-  const errors = [];
-  for (const p of chain) {
-    try { console.log("[SubMind v4.0] Trying " + p.name); return await p.fn(); }
-    catch (e) { console.warn("[SubMind v4.0] " + p.name + " failed: " + e.message); errors.push(p.name + ": " + e.message); }
-  }
-  throw new Error("All providers failed — " + errors.join(" | "));
-}
-
-// ─── MAIN HANDLER ────────────────────────────────────────────────────────────
-export default async function handler(req, res) {
-  res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type, X-Provider");
-  if (req.method === "OPTIONS") return res.status(200).end();
-  if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
-
-  const { query, fetchUrls, provider = "auto", deepMode = false } = req.body || {};
-  if (!query || typeof query !== "string" || query.trim().length < 10)
-    return res.status(400).json({ error: "Provide more input text (minimum ~10 characters)." });
-
-  const urls = extractUrls(query);
-  let fetched = [];
-  if (fetchUrls && urls.length) fetched = await fetchUrlsIfAny(urls, deepMode ? 12 : 8);
-
-  const userContent = JSON.stringify({
-    input: query,
-    fetched_sources: fetched,
-    fetched_count: fetched.length,
-    url_count: urls.length,
-    analysis_date: new Date().toISOString(),
-    deep_mode: deepMode,
-    instruction: "Analyze this input using the full reasoning framework. Populate EVERY field with real, substantive content. This is a high-stakes intelligence product — quality over speed."
-  });
-
-  let parsed, providerUsed, usedModel;
+Return JSON:
+{
+  "shadow_trust_score": 0-1,
+  "critical_vulnerabilities": [{"type": string, "detail": string, "severity": "CRITICAL|HIGH|MEDIUM|LOW"}],
+  "unsupported_claims": [string],
+  "logical_fallacies": [{"fallacy": string, "where_found": string}],
+  "missing_context": [string],
+  "overconfident_predictions": [string],
+  "recommended_corrections": [string],
+  "verdict": "PASSED|FLAGGED|REJECTED"
+}`;
+  
   try {
-    const result = await callAI(SYSTEM_PROMPT, userContent, provider);
-    parsed = result.result; providerUsed = result.provider; usedModel = result.model;
+    const shadowResult = await callAI(shadowPrompt, topic, 'OBSERVER', provider);
+    const shadowData = extractJSON(shadowResult.text) || {};
+    
+    return {
+      glassFangVersion: '1.0',
+      enabled: true,
+      shadowTrustScore: shadowData.shadow_trust_score || 0.7,
+      criticalVulnerabilities: shadowData.critical_vulnerabilities || [],
+      unsupportedClaims: shadowData.unsupported_claims || [],
+      logicalFallacies: shadowData.logical_fallacies || [],
+      missingContext: shadowData.missing_context || [],
+      overconfidentPredictions: shadowData.overconfident_predictions || [],
+      recommendations: shadowData.recommended_corrections || [],
+      verdict: shadowData.verdict || 'FLAGGED',
+      provider: shadowResult.provider
+    };
   } catch (e) {
-    return res.status(500).json({ error: e.message, engine_version: "4.0", provider_attempted: provider });
+    return { glassFangVersion: '1.0', enabled: true, error: e.message, verdict: 'SCAN_FAILED' };
   }
+}
 
-  if (!parsed || typeof parsed !== "object")
-    return res.status(500).json({ error: "AI returned non-object", engine_version: "4.0" });
+// ── NEMESIS ENGINE ────────────────────────────────────────────
+// Runs ghost rival processes — argues the OPPOSITE of everything
+// to weed out weak conclusions and only validate the strongest facts
+async function nemesisEngine(primaryOutput, topic, tier, provider) {
+  const tierObj = getTier(tier);
+  if (tierObj.level < 2) {
+    return {
+      nemesisVersion: '1.0',
+      enabled: false,
+      tier_gate: 'Oracle or Sovereign tier required for Nemesis Engine'
+    };
+  }
+  
+  const nemesisPrompt = `You are the NEMESIS ENGINE — SubMind's adversarial counter-validation system.
+You are a ghost rival AI running OPPOSITE belief processes. Your mission:
+1. Argue the EXACT OPPOSITE of every key conclusion
+2. Build the strongest possible counter-narrative
+3. Test which claims survive adversarial challenge
+4. Only what survives Nemesis can be called "validated"
 
-  const { source_score, counts } = scoreFromSources(parsed?.sources);
-  const source_entropy = Number(((shannonEntropy([counts.supporting,counts.neutral,counts.conflicting]) + shannonEntropy([counts.confirmed,counts.inferred,counts.corrupted]))/2).toFixed(3));
-  const modelScore = typeof parsed?.reliability_score==="number" ? Math.max(0,Math.min(100,parsed.reliability_score)) : 50;
-  const trust_weighted_score = Math.round(0.55*modelScore + 0.45*source_score);
-  const trust = countTrust(parsed?.sources);
+Primary analysis claims to challenge:
+Topic: ${topic}
+Executive summary: ${primaryOutput.executive_summary}
+Key predictions: ${JSON.stringify(primaryOutput.predictive_forecast?.slice(0,3) || [])}
+Main trends: ${JSON.stringify(primaryOutput.macro_trends?.slice(0,3) || [])}
 
-  Object.assign(parsed, {
-    trust_weighted_score,
-    score: trust_weighted_score,
-    source_entropy,
-    trust_confirmed: trust.confirmed,
-    trust_inferred: trust.inferred,
-    trust_corrupted: trust.corrupted,
-    engine_version: "4.0",
-    analysis_date: new Date().toISOString(),
-    model: usedModel,
-    provider: providerUsed,
-    fetched_source_count: fetched.length
-  });
-
+For each major claim, run a "ghost rival" challenge — what if the OPPOSITE is true?
+Return JSON:
+{
+  "nemesis_verdict": "VALIDATED|WEAKENED|REFUTED",
+  "survival_score": 0-1,
+  "challenges": [
+    {
+      "original_claim": string,
+      "ghost_rival_argument": string,
+      "adversarial_evidence": string,
+      "verdict": "SURVIVES|WEAKENED|REFUTED",
+      "survival_confidence": 0-1,
+      "nemesis_strength": 0-1
+    }
+  ],
+  "counter_narrative": string,
+  "validated_facts": [string],
+  "disputed_facts": [string],
+  "only_these_facts_cleared": [string]
+}`;
+  
   try {
-    const supabase = makeSupabase();
-    if (supabase) {
-      await supabase.from("predictions").insert({
-        input_text: query.slice(0,50000), fetched, output: parsed,
-        reliability_score: modelScore, trust_weighted_score, source_entropy,
-        trust_confirmed: trust.confirmed, trust_inferred: trust.inferred, trust_corrupted: trust.corrupted,
-        provider: providerUsed, engine_version: "4.0"
+    const nemesisResult = await callAI(nemesisPrompt, topic, 'OBSERVER', provider);
+    const nemesisData = extractJSON(nemesisResult.text) || {};
+    
+    return {
+      nemesisVersion: '1.0',
+      enabled: true,
+      verdict: nemesisData.nemesis_verdict || 'WEAKENED',
+      survivalScore: nemesisData.survival_score || 0.6,
+      challenges: nemesisData.challenges || [],
+      counterNarrative: nemesisData.counter_narrative || '',
+      validatedFacts: nemesisData.validated_facts || [],
+      disputedFacts: nemesisData.disputed_facts || [],
+      clearedFacts: nemesisData.only_these_facts_cleared || [],
+      provider: nemesisResult.provider
+    };
+  } catch (e) {
+    return { nemesisVersion: '1.0', enabled: true, error: e.message, verdict: 'ENGINE_FAILED' };
+  }
+}
+
+// ── NODE WEAVER ───────────────────────────────────────────────
+// Builds the hyper-complex knowledge graph from the analysis
+function weaveNodeGraph(primaryOutput, tier) {
+  const tierObj = getTier(tier);
+  const nodeLimit = tierObj.nodeLimit === -1 ? 1000 : tierObj.nodeLimit;
+  
+  const nodes = [];
+  const edges = [];
+  let nodeId = 0;
+  
+  // Add topic node (center)
+  const topicNode = { id: `n${nodeId++}`, label: primaryOutput.topic || 'Analysis', 
+    category: 'TOPIC', weight: 1.0, x: 0, y: 0, color: '#6e3fff' };
+  nodes.push(topicNode);
+  
+  // Add patient zero node
+  if (primaryOutput.patient_zero) {
+    const pzNode = { id: `n${nodeId++}`, label: primaryOutput.patient_zero.event || 'Origin Event',
+      category: 'ORIGIN', weight: primaryOutput.patient_zero.confidence || 0.8,
+      date: primaryOutput.patient_zero.date, color: '#ff6600',
+      x: -200, y: -100 };
+    nodes.push(pzNode);
+    edges.push({ from: pzNode.id, to: topicNode.id, weight: 0.9, type: 'CAUSAL' });
+  }
+  
+  // Add causal chain nodes
+  const causalChain = primaryOutput.causal_chain || [];
+  causalChain.slice(0, Math.min(nodeLimit/4, 20)).forEach((step, i) => {
+    const n = { id: `n${nodeId++}`, label: step.event || `Step ${i+1}`,
+      category: 'EVENT', weight: step.confidence || 0.7,
+      date: step.date, causalWeight: step.causal_weight,
+      x: (i - causalChain.length/2) * 150, y: 100 + i * 50, color: '#00aaff' };
+    nodes.push(n);
+    if (i === 0) edges.push({ from: topicNode.id, to: n.id, weight: step.causal_weight || 0.7, type: 'CAUSAL' });
+    if (i > 0) edges.push({ from: nodes[nodes.length-2].id, to: n.id, weight: step.causal_weight || 0.7, type: 'CAUSAL' });
+  });
+  
+  // Add macro trend nodes
+  const macroTrends = primaryOutput.macro_trends || [];
+  macroTrends.slice(0, Math.min(nodeLimit/4, 10)).forEach((trend, i) => {
+    const n = { id: `n${nodeId++}`, label: trend.trend || `Trend ${i+1}`,
+      category: 'TREND', weight: trend.probability || 0.6,
+      domains: trend.affected_domains, timeframe: trend.timeframe,
+      x: 200 + i * 120, y: -100 - i * 60, color: '#ff00aa' };
+    nodes.push(n);
+    edges.push({ from: topicNode.id, to: n.id, weight: trend.probability || 0.6, type: 'TREND' });
+  });
+  
+  // Add knowledge nodes from primary output
+  const knowledgeNodes = primaryOutput.knowledge_nodes || [];
+  knowledgeNodes.slice(0, Math.min(nodeLimit/2, 30)).forEach((kn, i) => {
+    const existing = nodes.find(n => n.label === kn.label);
+    if (!existing) {
+      const colorMap = { EVENT: '#00aaff', ACTOR: '#ff6600', TREND: '#ff00aa', RISK: '#ff4444', OPPORTUNITY: '#00ff88' };
+      const n = { id: kn.id || `n${nodeId++}`, label: kn.label,
+        category: kn.category, weight: kn.weight,
+        x: Math.cos(i * 0.7) * (150 + i * 20), y: Math.sin(i * 0.7) * (150 + i * 20),
+        color: colorMap[kn.category] || '#888888' };
+      nodes.push(n);
+      
+      // Connect to topic
+      edges.push({ from: topicNode.id, to: n.id, weight: kn.weight || 0.5, type: 'RELATED' });
+      
+      // Add connections between related nodes
+      (kn.connections || []).forEach(connId => {
+        const target = nodes.find(nd => nd.id === connId || nd.label === connId);
+        if (target) {
+          edges.push({ from: n.id, to: target.id, weight: 0.5, type: 'NETWORK' });
+        }
       });
     }
-  } catch (e) { console.error("[SubMind] Supabase:", e.message); }
-
-  return res.status(200).json(parsed);
+  });
+  
+  return {
+    version: '1.0',
+    nodeCount: nodes.length,
+    edgeCount: edges.length,
+    nodes: nodes.slice(0, nodeLimit),
+    edges,
+    graphMetrics: {
+      density: edges.length / Math.max(nodes.length * (nodes.length - 1), 1),
+      avgWeight: edges.length > 0 ? edges.reduce((s,e) => s + e.weight, 0) / edges.length : 0,
+      topNodes: nodes.sort((a,b) => b.weight - a.weight).slice(0,5).map(n => n.label)
+    }
+  };
 }
+
+// ── BUILD USER PROMPT ─────────────────────────────────────────
+function buildUserPrompt(topic, context, urls, tier) {
+  const tierObj = getTier(tier);
+  return `ANALYZE: ${topic}
+
+DEPTH: ${tierObj.maxDepth} causal layers
+FORECAST: ${tierObj.forecastDays} days out
+${urls?.length > 0 ? 'SOURCES PROVIDED: ' + urls.join(', ') : ''}
+${context ? 'ADDITIONAL CONTEXT: ' + context : ''}
+
+Run the full SubMind v5.0 pipeline:
+1. Find Patient Zero — the earliest causally relevant event
+2. Build the causal chain with confidence weights
+3. Identify macro trends and ripple effects (macro lens)
+4. Generate knowledge nodes for the node web visualization  
+5. Flag Glass Fang vulnerabilities in your own analysis
+6. Pre-empt Nemesis challenges — what would the counter-argument be?
+7. Produce predictive forecast with probability ranges
+8. Identify weak signals for future reactivation
+
+Return complete JSON as specified in your system instructions.`;
+}
+
+// ── MAIN HANDLER ──────────────────────────────────────────────
+export default async function handler(req, res) {
+  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
+  
+  const {
+    topic,
+    context = '',
+    urls = [],
+    provider: preferredProvider = 'auto',
+    tier = 'OBSERVER'
+  } = req.body || {};
+  
+  if (!topic?.trim()) return res.status(400).json({ error: 'topic required' });
+  
+  const requestId = `sm5-${Date.now()}-${Math.random().toString(36).slice(2,8)}`;
+  const startTime = Date.now();
+  
+  console.log(`[SubMind v5.0] Request ${requestId}: "${topic.substring(0,80)}" | Tier: ${tier}`);
+  
+  try {
+    // ── PHASE 1: PRIMARY ANALYSIS ──
+    const userPrompt = buildUserPrompt(topic, context, urls, tier);
+    const actualProvider = preferredProvider === 'auto' ? null : preferredProvider;
+    
+    const primaryResult = await callAI(userPrompt, topic, tier, actualProvider);
+    let primaryOutput = extractJSON(primaryResult.text);
+    
+    if (!primaryOutput) {
+      primaryOutput = {
+        topic,
+        executive_summary: primaryResult.text.substring(0, 500),
+        causal_chain: [],
+        confidence_weights: { overall: 0.5 }
+      };
+    }
+    
+    // Ensure topic is set
+    primaryOutput.topic = topic;
+    primaryOutput.submind_version = '5.0';
+    primaryOutput.tier = getTier(tier).name;
+    
+    // ── PHASE 2: GLASS FANG VALIDATION (parallel) ──
+    // ── PHASE 3: NEMESIS ENGINE (parallel) ──
+    const [glassFangResult, nemesisResult] = await Promise.all([
+      glassFangValidate(primaryOutput, topic, tier, primaryResult.provider),
+      nemesisEngine(primaryOutput, topic, tier, primaryResult.provider)
+    ]);
+    
+    // ── PHASE 4: NODE WEAVING ──
+    const nodeGraph = weaveNodeGraph(primaryOutput, tier);
+    
+    // ── PHASE 5: COMPUTE FINAL TRUST SCORE ──
+    const glassFangScore = glassFangResult.shadowTrustScore || glassFangResult.trustScore || 0.7;
+    const nemesisScore = nemesisResult.survivalScore || 0.6;
+    const primaryScore = primaryOutput.confidence_weights?.overall || 0.7;
+    
+    let finalTrustScore = primaryScore;
+    if (glassFangResult.enabled) finalTrustScore = finalTrustScore * 0.5 + glassFangScore * 0.3 + nemesisScore * 0.2;
+    const finalTrust = classifyTrust(finalTrustScore);
+    
+    // ── ASSEMBLE FINAL OUTPUT ──
+    const response = {
+      requestId,
+      submind_version: '5.0',
+      tier: getTier(tier).name,
+      processingMs: Date.now() - startTime,
+      provider: primaryResult.provider,
+      
+      // Core analysis
+      ...primaryOutput,
+      
+      // Trust classification
+      trust: {
+        score: finalTrustScore,
+        ...finalTrust
+      },
+      
+      // Glass Fang validation report
+      glass_fang: glassFangResult,
+      
+      // Nemesis Engine counter-validation
+      nemesis: nemesisResult,
+      
+      // Node Web graph data
+      node_graph: nodeGraph,
+      
+      // Tier info
+      subscription: {
+        current: getTier(tier),
+        upgrade_benefits: {
+          ANALYST: 'Full causal chain, counterpoint validation, 180-day forecasts',
+          ORACLE: 'Glass Fang scans, Nemesis Engine, full node web, macro lens',
+          SOVEREIGN: 'PROMETHEUS integration, unlimited depth, API access'
+        }
+      }
+    };
+    
+    return res.status(200).json(response);
+    
+  } catch (err) {
+    console.error(`[SubMind v5.0] Error ${requestId}: ${err.message}`);
+    return res.status(500).json({ 
+      error: 'SubMind analysis failed', 
+      detail: err.message,
+      requestId 
+    });
+  }
+  }
