@@ -3,66 +3,47 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>SubMind — Predictive Foresight Engine</title>
+<title>SubMind — Autonomous Intelligence Engine</title>
 <link rel="stylesheet" href="/styles.css"/>
 <style>
-.results{display:none;margin-top:24px}
-.results.visible{display:block}
-.score-bar-wrap{margin:16px 0}
-.score-bar-label{display:flex;justify-content:space-between;margin-bottom:6px;font-size:13px;color:#9aa3ad}
+.results{display:none;margin-top:24px}.results.visible{display:block}
+.score-bar-wrap{margin:16px 0}.score-bar-label{display:flex;justify-content:space-between;margin-bottom:6px;font-size:13px;color:#9aa3ad}
 .score-bar{height:10px;border-radius:99px;background:#1c2742;overflow:hidden}
 .score-bar-fill{height:100%;border-radius:99px;transition:width 1s ease}
-.score-fill-green{background:linear-gradient(90deg,#3ddc97,#26a96c)}
-.score-fill-yellow{background:linear-gradient(90deg,#f4b942,#e88c10)}
-.score-fill-red{background:linear-gradient(90deg,#ef476f,#c0203f)}
-.score-fill-blue{background:linear-gradient(90deg,#59f,#3377dd)}
+.score-fill-green{background:linear-gradient(90deg,#3ddc97,#26a96c)}.score-fill-yellow{background:linear-gradient(90deg,#f4b942,#e88c10)}.score-fill-red{background:linear-gradient(90deg,#ef476f,#c0203f)}.score-fill-blue{background:linear-gradient(90deg,#59f,#3377dd)}.score-fill-purple{background:linear-gradient(90deg,#a78bfa,#7c3aed)}
 .meta-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin:16px 0}
 .meta-pill{background:#0e1219;border:1px solid #1c2742;border-radius:10px;padding:10px 12px;text-align:center}
-.meta-pill .val{font-size:18px;font-weight:700;color:#e6e8ea}
-.meta-pill .lbl{font-size:11px;color:#9aa3ad;margin-top:2px;text-transform:uppercase;letter-spacing:.5px}
+.meta-pill .val{font-size:18px;font-weight:700;color:#e6e8ea}.meta-pill .lbl{font-size:11px;color:#9aa3ad;margin-top:2px;text-transform:uppercase;letter-spacing:.5px}
 .section-title{font-size:14px;font-weight:700;color:#59f;text-transform:uppercase;letter-spacing:.8px;margin:22px 0 10px}
+.subsection-title{font-size:12px;font-weight:700;color:#a78bfa;text-transform:uppercase;letter-spacing:.5px;margin:14px 0 8px}
 .timeline-row{display:grid;grid-template-columns:110px 1fr;gap:0;margin-bottom:2px}
 .t-window{background:#0d1117;border-radius:10px 0 0 10px;padding:10px 14px;font-size:12px;color:#9aa3ad;display:flex;align-items:center;font-weight:600;border:1px solid #1c2742;border-right:none}
 .t-events{background:#0e1219;border-radius:0 10px 10px 0;padding:10px 14px;border:1px solid #1c2742}
-.t-event{margin-bottom:8px}
-.t-event:last-child{margin-bottom:0}
+.t-event{margin-bottom:8px}.t-event:last-child{margin-bottom:0}
 .t-event-top{display:flex;align-items:center;gap:10px;margin-bottom:3px}
-.t-prob{font-size:13px;font-weight:700;min-width:38px}
-.t-name{font-size:13px;color:#e6e8ea;flex:1}
+.t-prob{font-size:13px;font-weight:700;min-width:38px}.t-name{font-size:13px;color:#e6e8ea;flex:1}
 .t-rationale{font-size:12px;color:#7a8490;margin-left:48px;line-height:1.4}
-.prob-high{color:#3ddc97}
-.prob-mid{color:#f4b942}
-.prob-low{color:#ef476f}
+.prob-high{color:#3ddc97}.prob-mid{color:#f4b942}.prob-low{color:#ef476f}
 .prob-bar{height:4px;border-radius:4px;background:#1c2742;overflow:hidden;margin-top:3px}
 .prob-bar-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,#59f,#8ab4ff)}
 .narrative-card{background:#0e1219;border:1px solid #1c2742;border-radius:12px;padding:14px;margin-bottom:10px}
 .narrative-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
 .narrative-label{font-weight:600;font-size:14px}
 .trust-badge{font-size:11px;padding:3px 8px;border-radius:99px;font-weight:600}
-.trust-confirmed{background:#1a3328;color:#3ddc97;border:1px solid #3ddc97}
-.trust-inferred{background:#2a2010;color:#f4b942;border:1px solid #f4b942}
-.trust-corrupted{background:#2a1018;color:#ef476f;border:1px solid #ef476f}
+.trust-confirmed{background:#1a3328;color:#3ddc97;border:1px solid #3ddc97}.trust-inferred{background:#2a2010;color:#f4b942;border:1px solid #f4b942}.trust-corrupted{background:#2a1018;color:#ef476f;border:1px solid #ef476f}
 .driver-list,.counter-list{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
 .driver-chip{font-size:11px;padding:3px 8px;border-radius:99px;background:#162033;color:#8ab4ff;border:1px solid #1c3050}
 .counter-chip{font-size:11px;padding:3px 8px;border-radius:99px;background:#1e1020;color:#cf9fff;border:1px solid #3a1060}
 .connection-card{background:#0e1219;border:1px solid #1c2742;border-radius:10px;padding:12px;margin-bottom:8px;display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:center}
 .conn-node{font-size:12px;color:#e6e8ea;padding:6px 10px;background:#0d1117;border-radius:8px;text-align:center}
-.conn-middle{text-align:center}
-.conn-type{font-size:10px;color:#59f;font-weight:700;text-transform:uppercase;letter-spacing:.5px}
-.conn-strength{font-size:11px;color:#9aa3ad}
+.conn-middle{text-align:center}.conn-type{font-size:10px;color:#59f;font-weight:700;text-transform:uppercase;letter-spacing:.5px}.conn-strength{font-size:11px;color:#9aa3ad}
 .conn-insight{font-size:12px;color:#7a8490;margin-top:8px;grid-column:1/-1;border-top:1px solid #1c2742;padding-top:8px}
+.conn-overlooked{font-size:11px;color:#a78bfa;margin-top:4px;grid-column:1/-1;font-style:italic}
 .risk-card{background:#0e1219;border-left:3px solid;border-radius:0 10px 10px 0;padding:12px;margin-bottom:8px}
-.risk-critical{border-color:#ef476f}
-.risk-high{border-color:#f4b942}
-.risk-medium{border-color:#59f}
-.risk-low{border-color:#3ddc97}
-.risk-header{display:flex;justify-content:space-between;margin-bottom:6px}
-.risk-name{font-weight:600;font-size:13px}
+.risk-critical{border-color:#ef476f}.risk-high{border-color:#f4b942}.risk-medium{border-color:#59f}.risk-low{border-color:#3ddc97}
+.risk-header{display:flex;justify-content:space-between;margin-bottom:6px}.risk-name{font-weight:600;font-size:13px}
 .severity-badge{font-size:11px;padding:2px 7px;border-radius:99px;font-weight:600}
-.sev-critical{background:#2a1018;color:#ef476f}
-.sev-high{background:#2a2010;color:#f4b942}
-.sev-medium{background:#0e1a2a;color:#59f}
-.sev-low{background:#0e2220;color:#3ddc97}
+.sev-critical{background:#2a1018;color:#ef476f}.sev-high{background:#2a2010;color:#f4b942}.sev-medium{background:#0e1a2a;color:#59f}.sev-low{background:#0e2220;color:#3ddc97}
 .risk-mitigation{font-size:12px;color:#7a8490;margin-top:4px}
 .warning-chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px}
 .warning-chip{font-size:10px;padding:2px 7px;background:#1c2742;color:#9aa3ad;border-radius:99px}
@@ -76,43 +57,61 @@
 .opp-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
 .opp-action{font-weight:600;font-size:14px;flex:1}
 .urgency-badge{font-size:11px;padding:3px 8px;border-radius:99px;font-weight:600;margin-left:8px}
-.urg-immediate{background:#1a3328;color:#3ddc97;border:1px solid #3ddc97}
-.urg-near_term{background:#2a2010;color:#f4b942;border:1px solid #f4b942}
-.urg-long_term{background:#0e1a2a;color:#59f;border:1px solid #267fff}
-.opp-why{font-size:12px;color:#9aa3ad;margin-bottom:8px}
+.urg-immediate{background:#1a3328;color:#3ddc97;border:1px solid #3ddc97}.urg-near_term{background:#2a2010;color:#f4b942;border:1px solid #f4b942}.urg-long_term{background:#0e1a2a;color:#59f;border:1px solid #267fff}
+.opp-why{font-size:12px;color:#9aa3ad;margin-bottom:6px}
+.opp-edge{font-size:12px;color:#a78bfa;margin-bottom:4px;font-style:italic}
 .opp-ev{font-size:12px;color:#7a8490;font-style:italic}
 .validation-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px}
 .val-cell{background:#0e1219;border:1px solid #1c2742;border-radius:10px;padding:12px;text-align:center}
-.val-num{font-size:24px;font-weight:700;color:#59f}
-.val-lbl{font-size:11px;color:#9aa3ad;margin-top:3px;text-transform:uppercase;letter-spacing:.5px}
+.val-num{font-size:24px;font-weight:700;color:#59f}.val-lbl{font-size:11px;color:#9aa3ad;margin-top:3px;text-transform:uppercase;letter-spacing:.5px}
 .notes-box{background:#0d1117;border:1px dashed #1c3050;border-radius:10px;padding:14px;font-size:13px;color:#7a8490;line-height:1.6;white-space:pre-wrap}
 .tabs{display:flex;gap:4px;margin-bottom:16px;flex-wrap:wrap}
 .tab-btn{padding:7px 14px;border-radius:8px;border:1px solid #1c2742;background:transparent;color:#9aa3ad;cursor:pointer;font-size:13px;font-weight:500;transition:all .15s}
-.tab-btn.active{background:#162033;color:#59f;border-color:#267fff}
-.tab-btn:hover:not(.active){border-color:#267fff;color:#ccd}
-.tab-pane{display:none}
-.tab-pane.active{display:block}
+.tab-btn.active{background:#162033;color:#59f;border-color:#267fff}.tab-btn:hover:not(.active){border-color:#267fff;color:#ccd}
+.tab-pane{display:none}.tab-pane.active{display:block}
 .spinner{display:inline-block;width:16px;height:16px;border:2px solid rgba(89,153,255,.3);border-top-color:#59f;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:8px}
 @keyframes spin{to{transform:rotate(360deg)}}
-.summary-box{background:#0e1219;border:1px solid #1c2742;border-radius:12px;padding:16px;font-size:14px;line-height:1.7;color:#c8d1db;margin-bottom:16px}
+.summary-box{background:#0e1219;border:1px solid #1c2742;border-radius:12px;padding:16px;font-size:14px;line-height:1.7;color:#c8d1db;margin-bottom:12px}
+.real-story-box{background:#0d1117;border:1px solid #267fff;border-radius:12px;padding:16px;font-size:14px;line-height:1.7;color:#c8d1db;margin-bottom:12px}
+.real-story-label{font-size:11px;color:#59f;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px}
+.party-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.party-card{background:#0e1219;border-radius:10px;padding:10px 12px}
+.party-card.gains{border:1px solid #3ddc97}.party-card.loses{border:1px solid #ef476f}
+.party-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
+.party-gains .party-label{color:#3ddc97}.party-loses .party-label{color:#ef476f}
+.party-item{font-size:12px;color:#c8d1db;padding:2px 0}
 .score-hero{display:flex;gap:16px;align-items:center;background:#0e1219;border:1px solid #1c2742;border-radius:14px;padding:16px;margin-bottom:16px;flex-wrap:wrap}
 .score-circle{width:72px;height:72px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:22px;font-weight:800;flex-shrink:0;border:3px solid}
-.score-circle.green{border-color:#3ddc97;color:#3ddc97;background:rgba(61,220,151,.08)}
-.score-circle.yellow{border-color:#f4b942;color:#f4b942;background:rgba(244,185,66,.08)}
-.score-circle.red{border-color:#ef476f;color:#ef476f;background:rgba(239,71,111,.08)}
+.score-circle.green{border-color:#3ddc97;color:#3ddc97;background:rgba(61,220,151,.08)}.score-circle.yellow{border-color:#f4b942;color:#f4b942;background:rgba(244,185,66,.08)}.score-circle.red{border-color:#ef476f;color:#ef476f;background:rgba(239,71,111,.08)}
 .score-circle .score-sub{font-size:10px;font-weight:500;opacity:.7;margin-top:1px}
 .score-hero-right{flex:1;min-width:180px}
 .score-hero-topic{font-size:16px;font-weight:700;margin-bottom:4px}
 .score-hero-meta{font-size:12px;color:#9aa3ad}
 .vel-badge{display:inline-block;padding:2px 8px;border-radius:99px;font-size:11px;font-weight:600;margin-left:6px}
-.vel-accelerating{background:#1a3328;color:#3ddc97}
-.vel-emerging{background:#162033;color:#59f}
-.vel-steady{background:#1c2742;color:#9aa3ad}
-.vel-decelerating{background:#2a2010;color:#f4b942}
-.vel-reversing{background:#2a1018;color:#ef476f}
+.vel-accelerating{background:#1a3328;color:#3ddc97}.vel-emerging{background:#162033;color:#59f}.vel-steady{background:#1c2742;color:#9aa3ad}.vel-decelerating{background:#2a2010;color:#f4b942}.vel-reversing{background:#2a1018;color:#ef476f}
+.provider-badge{font-size:10px;padding:2px 6px;border-radius:99px;background:#0d1117;color:#9aa3ad;border:1px solid #1c2742;margin-left:6px}
+.weak-signal-card{background:#0e1219;border:1px solid #1c2742;border-radius:10px;padding:10px 12px;margin-bottom:8px;display:flex;gap:12px;align-items:flex-start}
+.ws-strength{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:4px}
+.ws-nascent{background:#9aa3ad}.ws-weak{background:#f4b942}.ws-building{background:#3ddc97}
+.ws-content{flex:1}
+.ws-signal{font-size:13px;font-weight:600;color:#e6e8ea;margin-bottom:2px}
+.ws-domain{font-size:11px;color:#59f;margin-bottom:4px}
+.ws-why{font-size:12px;color:#7a8490;line-height:1.4}
+.ws-lag{font-size:11px;color:#9aa3ad;margin-top:4px}
+.query-card{background:#0e1219;border:1px solid #1c2742;border-radius:8px;padding:10px 14px;margin-bottom:6px;display:flex;align-items:center;gap:10px;cursor:pointer;transition:border-color .15s}
+.query-card:hover{border-color:#267fff}
+.query-icon{font-size:14px;color:#59f;flex-shrink:0}
+.query-text{font-size:13px;color:#c8d1db}
 .export-bar{display:flex;gap:8px;margin-top:16px;justify-content:flex-end}
 .export-btn{font-size:12px;padding:6px 12px;border-radius:8px;border:1px solid #1c2742;background:transparent;color:#9aa3ad;cursor:pointer;transition:all .15s}
 .export-btn:hover{border-color:#267fff;color:#59f}
+.provider-selector{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.provider-btn{font-size:12px;padding:5px 10px;border-radius:8px;border:1px solid #1c2742;background:transparent;color:#9aa3ad;cursor:pointer;transition:all .15s}
+.provider-btn.active{background:#162033;color:#59f;border-color:#267fff}
+.provider-btn:hover:not(.active){border-color:#267fff;color:#ccd}
+.contrarian-box{background:#1a0d2a;border:1px solid #7c3aed;border-radius:10px;padding:12px;margin-bottom:12px}
+.contrarian-label{font-size:11px;color:#a78bfa;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
+.contrarian-text{font-size:13px;color:#c8d1db;line-height:1.5}
 </style>
 </head>
 <body>
@@ -126,14 +125,23 @@
 </header>
 <main class="main" style="flex-direction:column;align-items:center;padding:24px 16px">
 <section class="panel" style="max-width:960px;width:100%">
-  <h1 style="margin:0 0 4px">Predict anything</h1>
-  <p style="margin:0 0 16px;color:#9aa3ad">Paste text, URLs, or mixed content. SubMind cross-validates sources, scores credibility, maps signal connections, and generates a structured prediction timeline.</p>
-  <label>Input</label>
-  <textarea id="input" placeholder="Paste articles, news, research, tweets, or URLs. Mix multiple sources for stronger multi-source validation."></textarea>
-  <div class="row" style="margin-top:12px;flex-wrap:wrap;gap:10px">
-    <button id="run">&#9654; Run Forecast</button>
+  <h1 style="margin:0 0 4px">Autonomous Intelligence Engine</h1>
+  <p style="margin:0 0 16px;color:#9aa3ad">SubMind cross-validates sources, detects hidden signals, identifies who benefits & who loses, and surfaces insights a human analyst would miss.</p>
+  <label>Input — paste text, URLs, articles, research, or mixed sources</label>
+  <textarea id="input" placeholder="Paste articles, news, research, tweets, or URLs. Mix multiple sources for stronger multi-source validation." style="min-height:140px"></textarea>
+  <div class="row" style="margin-top:12px;flex-wrap:wrap;gap:10px;align-items:center">
+    <button id="run">&#9654; Run Analysis</button>
     <label class="toggle"><input type="checkbox" id="fetchUrls" checked/><span>Auto-fetch URLs</span></label>
-    <label class="toggle"><input type="checkbox" id="useGpt4"/><span>GPT-4o (deeper)</span></label>
+    <label class="toggle"><input type="checkbox" id="deepMode"/><span>Deep Mode (12 sources)</span></label>
+  </div>
+  <div style="margin-top:10px">
+    <div style="font-size:12px;color:#9aa3ad;margin-bottom:6px">AI Provider:</div>
+    <div class="provider-selector">
+      <button class="provider-btn active" data-provider="auto">Auto (Best Available)</button>
+      <button class="provider-btn" data-provider="claude">Claude</button>
+      <button class="provider-btn" data-provider="gemini">Gemini</button>
+      <button class="provider-btn" data-provider="cerebras">Cerebras (Fast)</button>
+    </div>
   </div>
   <div id="status" style="min-height:24px;margin-top:10px;color:#9aa3ad;font-size:13px"></div>
 </section>
@@ -148,18 +156,30 @@
 </section>
 </main>
 <footer class="footer">
-  <div>SubMind v2.0 &bull; Trust-weighted &bull; Multi-source validation</div>
-  <div><a href="https://www.submind.us" target="_blank" rel="noreferrer">submind.us</a> &bull; <a href="https://www.submind.world" target="_blank" rel="noreferrer">submind.world</a></div>
+  <div>SubMind v3.0 &bull; Autonomous Intelligence &bull; Multi-provider AI</div>
+  <div><a href="https://www.submind.us" target="_blank" rel="noreferrer">submind.us</a></div>
 </footer>
 </div>
 <script>
+let selectedProvider = 'auto';
+let lastData = null;
+
+// Provider buttons
+document.querySelectorAll('.provider-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.provider-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    selectedProvider = btn.dataset.provider;
+  });
+});
+
 const runBtn=document.getElementById('run');
 const inputEl=document.getElementById('input');
 const fetchUrlsCb=document.getElementById('fetchUrls');
-const useGpt4Cb=document.getElementById('useGpt4');
+const deepModeCb=document.getElementById('deepMode');
 const statusEl=document.getElementById('status');
 const resultsEl=document.getElementById('results');
-let lastData=null;
+
 function pct(v){return Math.round((v||0)*100)+'%';}
 function clamp(v,a,b){return Math.max(a,Math.min(b,v));}
 function esc(s){return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
@@ -167,74 +187,125 @@ function scoreColor(n){return n>=70?'green':n>=40?'yellow':'red';}
 function scoreFillClass(n){return n>=70?'score-fill-green':n>=40?'score-fill-yellow':'score-fill-red';}
 function probClass(p){return p>=0.65?'prob-high':p>=0.35?'prob-mid':'prob-low';}
 function velClass(v){return 'vel-'+(v||'steady').toLowerCase().replace(/[^a-z]/g,'');}
-function renderMiniBar(label,val,cls){return '<div style="flex:1;min-width:100px"><div style="display:flex;justify-content:space-between;font-size:11px;color:#9aa3ad;margin-bottom:3px"><span>'+label+'</span><span>'+val+'</span></div><div class="score-bar" style="height:5px"><div class="score-bar-fill '+cls+'" style="width:'+clamp(val,0,100)+'%"></div></div></div>';}
+
+function renderMiniBar(label,val,cls){
+  return '<div style="flex:1;min-width:100px"><div style="display:flex;justify-content:space-between;font-size:11px;color:#9aa3ad;margin-bottom:3px"><span>'+label+'</span><span>'+clamp(val,0,100)+'</span></div><div class="score-bar" style="height:5px"><div class="score-bar-fill '+cls+'" style="width:'+clamp(val,0,100)+'%"></div></div></div>';
+}
+
 function renderScoreHero(d){
   var score=d.trust_weighted_score||d.reliability_score||0;
   var tm=d.trend_meta||{};
   var col=scoreColor(score);
-  return '<div class="score-circle '+col+'"><span>'+score+'</span><span class="score-sub">TWS</span></div><div class="score-hero-right"><div class="score-hero-topic">'+esc(tm.topic||'Analysis')+'<span class="vel-badge '+velClass(tm.velocity)+'">'+esc(tm.velocity||'unknown')+'</span></div><div class="score-hero-meta">Category: '+esc(tm.category||'—')+' | Signal: '+esc(tm.signal_strength||'—')+' | Entropy: '+(d.source_entropy||0)+'</div><div style="margin-top:8px;display:flex;gap:12px;flex-wrap:wrap">'+renderMiniBar('Momentum',tm.momentum_score||0,'score-fill-blue')+renderMiniBar('Novelty',tm.novelty_score||0,'score-fill-blue')+renderMiniBar('Reliability',score,scoreFillClass(score))+'</div></div>';
+  var providerBadge = d.provider ? '<span class="provider-badge">'+esc(d.provider)+(d.model?' · '+esc(d.model.split('-').slice(0,2).join('-')):'')+'</span>' : '';
+  return '<div class="score-circle '+col+'"><span>'+score+'</span><span class="score-sub">TWS</span></div><div class="score-hero-right"><div class="score-hero-topic">'+esc(tm.topic||'Analysis')+'<span class="vel-badge '+velClass(tm.velocity)+'">'+esc(tm.velocity||'unknown')+'</span>'+providerBadge+'</div><div class="score-hero-meta">Category: '+esc(tm.category||'—')+' | Signal: '+esc(tm.signal_strength||'—')+' | Entropy: '+(d.source_entropy||0)+'</div><div style="margin-top:8px;display:flex;gap:12px;flex-wrap:wrap">'+renderMiniBar('Momentum',tm.momentum_score||0,'score-fill-blue')+renderMiniBar('Novelty',tm.novelty_score||0,'score-fill-purple')+renderMiniBar('Reliability',score,scoreFillClass(score))+'</div>'+(tm.time_to_mainstream?'<div style="font-size:11px;color:#9aa3ad;margin-top:6px">Mainstream in: '+esc(tm.time_to_mainstream)+'</div>':'')+'</div>';
 }
+
+function renderOverview(d){
+  var out = '';
+  if(d.summary) out += '<div class="section-title">Summary</div><div class="summary-box">'+esc(d.summary)+'</div>';
+  if(d.real_story) out += '<div class="section-title">The Real Story</div><div class="real-story-box"><div class="real-story-label">&#128270; Below the surface</div>'+esc(d.real_story)+'</div>';
+  var tm = d.trend_meta || {};
+  if(tm.contrarian_angle) out += '<div class="contrarian-box"><div class="contrarian-label">&#9889; Contrarian Angle</div><div class="contrarian-text">'+esc(tm.contrarian_angle)+'</div></div>';
+  if((d.beneficiaries?.length || d.harmed_parties?.length)) {
+    out += '<div class="section-title">Impact Mapping</div><div class="party-grid">';
+    if(d.beneficiaries?.length) out += '<div class="party-card gains party-gains"><div class="party-label">&#9650; Gains</div>'+d.beneficiaries.map(x=>'<div class="party-item">'+esc(x)+'</div>').join('')+'</div>';
+    if(d.harmed_parties?.length) out += '<div class="party-card loses party-loses"><div class="party-label">&#9660; Loses</div>'+d.harmed_parties.map(x=>'<div class="party-item">'+esc(x)+'</div>').join('')+'</div>';
+    out += '</div>';
+  }
+  return out || '<p style="color:#9aa3ad;font-size:13px">No overview data.</p>';
+}
+
 function renderTimeline(d){
   var tl=d.prediction_timeline||[];
-  if(!tl.length)return '<p style="color:#9aa3ad;font-size:13px">No timeline data.</p>';
+  if(!tl.length) return '<p style="color:#9aa3ad;font-size:13px">No timeline data.</p>';
   return tl.map(function(row){
     var evs=(row.events||[]).map(function(e){
       var p=e.probability||0,pc=Math.round(p*100);
-      return '<div class="t-event"><div class="t-event-top"><span class="t-prob '+probClass(p)+'">'+pc+'%</span><span class="t-name">'+esc(e.event)+'</span></div><div class="prob-bar"><div class="prob-bar-fill" style="width:'+pc+'%"></div></div>'+(e.rationale?'<div class="t-rationale">'+esc(e.rationale)+'</div>':'')+'</div>';
+      var indicators = (e.leading_indicators||[]).length ? '<div style="margin-top:4px;margin-left:48px;display:flex;flex-wrap:wrap;gap:4px">'+e.leading_indicators.map(i=>'<span style="font-size:10px;padding:1px 6px;background:#0d1117;color:#59f;border-radius:99px;border:1px solid #1c2742">'+esc(i)+'</span>').join('')+'</div>' : '';
+      return '<div class="t-event"><div class="t-event-top"><span class="t-prob '+probClass(p)+'">'+pc+'%</span><span class="t-name">'+esc(e.event)+'</span></div><div class="prob-bar"><div class="prob-bar-fill" style="width:'+pc+'%"></div></div>'+(e.rationale?'<div class="t-rationale">'+esc(e.rationale)+'</div>':'')+indicators+'</div>';
     }).join('');
     return '<div class="timeline-row"><div class="t-window">'+esc(row.window)+'</div><div class="t-events">'+(evs||'<span style="color:#9aa3ad;font-size:12px">No events</span>')+'</div></div>';
   }).join('');
 }
+
 function renderNarratives(d){
   var ns=d.narratives||[];
-  if(!ns.length)return '<p style="color:#9aa3ad;font-size:13px">No narratives.</p>';
+  if(!ns.length) return '<p style="color:#9aa3ad;font-size:13px">No narratives.</p>';
   return ns.map(function(n){
-    return '<div class="narrative-card"><div class="narrative-header"><span class="narrative-label">'+esc(n.label)+'</span><span class="trust-badge trust-'+esc(n.status||'inferred')+'">'+esc(n.status||'inferred')+(n.source_count?' ('+n.source_count+' src)':'')+'</span></div>'+(n.drivers&&n.drivers.length?'<div style="font-size:11px;color:#9aa3ad;margin-bottom:3px">DRIVERS</div><div class="driver-list">'+n.drivers.map(function(x){return '<span class="driver-chip">'+esc(x)+'</span>';}).join('')+'</div>':'')+(n.counterpoints&&n.counterpoints.length?'<div style="font-size:11px;color:#9aa3ad;margin:8px 0 3px">COUNTERPOINTS</div><div class="counter-list">'+n.counterpoints.map(function(x){return '<span class="counter-chip">'+esc(x)+'</span>';}).join('')+'</div>':'')+'</div>';
+    var framings = (n.dominant_framing || n.alternative_framing) ? '<div style="margin-top:8px;display:grid;grid-template-columns:1fr 1fr;gap:8px">'+(n.dominant_framing?'<div style="background:#0d1117;border-radius:8px;padding:8px;font-size:11px"><div style="color:#9aa3ad;margin-bottom:3px">DOMINANT FRAMING</div><div style="color:#c8d1db">'+esc(n.dominant_framing)+'</div></div>':'')+(n.alternative_framing?'<div style="background:#0d1117;border-radius:8px;padding:8px;font-size:11px"><div style="color:#a78bfa;margin-bottom:3px">ALTERNATIVE FRAMING</div><div style="color:#c8d1db">'+esc(n.alternative_framing)+'</div></div>':'')+'</div>' : '';
+    return '<div class="narrative-card"><div class="narrative-header"><span class="narrative-label">'+esc(n.label)+'</span><span class="trust-badge trust-'+esc(n.status||'inferred')+'">'+esc(n.status||'inferred')+(n.source_count?' ('+n.source_count+' src)':'')+'</span></div>'+(n.drivers&&n.drivers.length?'<div style="font-size:11px;color:#9aa3ad;margin-bottom:3px">DRIVERS</div><div class="driver-list">'+n.drivers.map(x=>'<span class="driver-chip">'+esc(x)+'</span>').join('')+'</div>':'')+(n.counterpoints&&n.counterpoints.length?'<div style="font-size:11px;color:#9aa3ad;margin:8px 0 3px">COUNTERPOINTS</div><div class="counter-list">'+n.counterpoints.map(x=>'<span class="counter-chip">'+esc(x)+'</span>').join('')+'</div>':'')+framings+'</div>';
   }).join('');
 }
+
 function renderConnections(d){
   var cs=d.signal_connections||[];
-  if(!cs.length)return '<p style="color:#9aa3ad;font-size:13px">No signal connections detected.</p>';
+  if(!cs.length) return '<p style="color:#9aa3ad;font-size:13px">No signal connections detected.</p>';
   return cs.map(function(c){
-    return '<div class="connection-card"><div class="conn-node">'+esc(c.signal_a)+'</div><div class="conn-middle"><div class="conn-type">'+esc(c.connection_type)+'</div><div class="conn-strength">'+Math.round((c.strength||0)*100)+'% strength</div></div><div class="conn-node">'+esc(c.signal_b)+'</div>'+(c.insight?'<div class="conn-insight">'+esc(c.insight)+'</div>':'')+'</div>';
+    return '<div class="connection-card"><div class="conn-node">'+esc(c.signal_a)+'</div><div class="conn-middle"><div class="conn-type">'+esc(c.connection_type)+'</div><div class="conn-strength">'+Math.round((c.strength||0)*100)+'% strength</div></div><div class="conn-node">'+esc(c.signal_b)+'</div>'+(c.insight?'<div class="conn-insight">'+esc(c.insight)+'</div>':'')+(c.why_overlooked?'<div class="conn-overlooked">&#128064; Why overlooked: '+esc(c.why_overlooked)+'</div>':'')+'</div>';
   }).join('');
 }
+
+function renderWeakSignals(d){
+  var ws=d.weak_signals||[];
+  if(!ws.length) return '<p style="color:#9aa3ad;font-size:13px">No weak signals detected.</p>';
+  return ws.map(function(s){
+    return '<div class="weak-signal-card"><div class="ws-strength ws-'+(s.strength||'weak')+'"></div><div class="ws-content"><div class="ws-signal">'+esc(s.signal)+'</div><div class="ws-domain">'+esc(s.domain)+'</div><div class="ws-why">'+esc(s.why_matters)+'</div>'+(s.estimated_lag_months?'<div class="ws-lag">~'+s.estimated_lag_months+' months to signal</div>':'')+'</div></div>';
+  }).join('');
+}
+
 function renderOpportunities(d){
   var ops=d.opportunities||[];
-  if(!ops.length)return '<p style="color:#9aa3ad;font-size:13px">No opportunities identified.</p>';
+  if(!ops.length) return '<p style="color:#9aa3ad;font-size:13px">No opportunities identified.</p>';
   return ops.map(function(o){
-    return '<div class="opp-card"><div class="opp-header"><span class="opp-action">'+esc(o.action)+'</span><span class="urgency-badge urg-'+(o.urgency||'near_term').replace(' ','_')+'">'+esc((o.urgency||'near term').replace('_',' '))+'</span></div>'+(o.why_now?'<div class="opp-why">'+esc(o.why_now)+'</div>':'')+(o.expected_value_note?'<div class="opp-ev">'+esc(o.expected_value_note)+'</div>':'')+(o.risks&&o.risks.length?'<div style="font-size:11px;color:#9aa3ad;margin-top:8px">Risks: '+o.risks.map(function(r){return '<span style="color:#ef476f">'+esc(r)+'</span>';}).join(', ')+'</div>':'')+'</div>';
+    return '<div class="opp-card"><div class="opp-header"><span class="opp-action">'+esc(o.action)+'</span><span class="urgency-badge urg-'+(o.urgency||'near_term').replace(' ','_')+'">'+esc((o.urgency||'near term').replace('_',' '))+'</span></div>'+(o.why_now?'<div class="opp-why">'+esc(o.why_now)+'</div>':'')+(o.asymmetric_edge?'<div class="opp-edge">&#9889; Edge: '+esc(o.asymmetric_edge)+'</div>':'')+(o.expected_value_note?'<div class="opp-ev">'+esc(o.expected_value_note)+'</div>':'')+(o.risks&&o.risks.length?'<div style="font-size:11px;color:#9aa3ad;margin-top:8px">Risks: '+o.risks.map(r=>'<span style="color:#ef476f">'+esc(r)+'</span>').join(', ')+'</div>':'')+'</div>';
   }).join('');
 }
+
 function renderRisks(d){
   var rs=d.risks||[];
-  if(!rs.length)return '<p style="color:#9aa3ad;font-size:13px">No risks identified.</p>';
+  if(!rs.length) return '<p style="color:#9aa3ad;font-size:13px">No risks identified.</p>';
   return rs.map(function(r){
-    return '<div class="risk-card risk-'+(r.severity||'medium')+'"><div class="risk-header"><span class="risk-name">'+esc(r.risk)+'</span><span class="severity-badge sev-'+(r.severity||'medium')+'">'+esc(r.severity||'medium')+' &bull; '+pct(r.probability)+'</span></div>'+(r.mitigation?'<div class="risk-mitigation">Mitigation: '+esc(r.mitigation)+'</div>':'')+(r.early_warning_signals&&r.early_warning_signals.length?'<div class="warning-chips">'+r.early_warning_signals.map(function(s){return '<span class="warning-chip">'+esc(s)+'</span>';}).join('')+'</div>':'')+'</div>';
+    var systemic = r.systemic_risk ? '<span style="font-size:10px;padding:2px 6px;background:#2a1018;color:#ef476f;border-radius:99px;border:1px solid #ef476f;margin-left:6px">SYSTEMIC</span>' : '';
+    return '<div class="risk-card risk-'+(r.severity||'medium')+'"><div class="risk-header"><span class="risk-name">'+esc(r.risk)+systemic+'</span><span class="severity-badge sev-'+(r.severity||'medium')+'">'+esc(r.severity||'medium')+' &bull; '+pct(r.probability)+'</span></div>'+(r.mitigation?'<div class="risk-mitigation">Mitigation: '+esc(r.mitigation)+'</div>':'')+(r.early_warning_signals&&r.early_warning_signals.length?'<div class="warning-chips">'+r.early_warning_signals.map(s=>'<span class="warning-chip">'+esc(s)+'</span>').join('')+'</div>':'')+'</div>';
   }).join('');
 }
+
 function renderSources(d){
   var ss=d.sources||[];
-  if(!ss.length)return '<p style="color:#9aa3ad;font-size:13px">No sources listed.</p>';
+  if(!ss.length) return '<p style="color:#9aa3ad;font-size:13px">No sources listed.</p>';
   return ss.map(function(s){
-    return '<div class="source-card"><div class="source-header"><span class="source-title">'+esc(s.title||s.url)+'</span><div class="source-badges"><span class="trust-badge trust-'+(s.trust||'inferred')+'">'+esc(s.trust)+'</span><span class="trust-badge" style="background:#0e1a2a;color:#59f;border:1px solid #267fff">'+Math.round(s.credibility_score||0)+'%</span></div></div><div class="source-meta"><span>Stance: '+esc(s.stance||'—')+'</span><span>Domain: '+esc(s.domain_type||'—')+'</span><span>Salience: '+Math.round((s.salience||0)*100)+'%</span>'+(s.published?'<span>Published: '+esc(s.published)+'</span>':'')+'</div>'+(s.url?'<div style="margin-top:6px"><a class="source-link" href="'+esc(s.url)+'" target="_blank" rel="noreferrer">'+esc(s.url)+'</a></div>':'')+'</div>';
+    return '<div class="source-card"><div class="source-header"><span class="source-title">'+esc(s.title||s.url)+'</span><div class="source-badges"><span class="trust-badge trust-'+(s.trust||'inferred')+'">'+esc(s.trust)+'</span><span class="trust-badge" style="background:#0e1a2a;color:#59f;border:1px solid #267fff">'+Math.round(s.credibility_score||0)+'%</span></div></div><div class="source-meta"><span>Stance: '+esc(s.stance||'—')+'</span><span>Domain: '+esc(s.domain_type||'—')+'</span><span>Salience: '+Math.round((s.salience||0)*100)+'%</span>'+(s.published?'<span>Published: '+esc(s.published)+'</span>':'')+'</div>'+(s.bias_indicators?'<div style="font-size:11px;color:#f4b942;margin-top:4px">Bias: '+esc(s.bias_indicators)+'</div>':'')+(s.url?'<div style="margin-top:6px"><a class="source-link" href="'+esc(s.url)+'" target="_blank" rel="noreferrer">'+esc(s.url)+'</a></div>':'')+'</div>';
   }).join('');
 }
+
 function renderValidation(d){
   var vm=d.validation_matrix||{};
   var total=Math.max((d.trust_confirmed||0)+(d.trust_inferred||0)+(d.trust_corrupted||0),1);
   function miniBarFull(label,val,cls){var p=Math.round(val/total*100);return '<div style="margin-bottom:10px"><div class="score-bar-label"><span>'+label+'</span><span>'+val+' src ('+p+'%)</span></div><div class="score-bar"><div class="score-bar-fill '+cls+'" style="width:'+p+'%"></div></div></div>';}
-  return '<div class="validation-grid"><div class="val-cell"><div class="val-num">'+Math.round((vm.source_agreement||0)*100)+'%</div><div class="val-lbl">Source Agreement</div></div><div class="val-cell"><div class="val-num">'+(vm.cross_validation_count||0)+'</div><div class="val-lbl">Cross-Validated</div></div><div class="val-cell"><div class="val-num">'+(vm.contradictions_found||0)+'</div><div class="val-lbl">Contradictions</div></div><div class="val-cell"><div class="val-num">'+(vm.data_freshness_score||0)+'</div><div class="val-lbl">Freshness Score</div></div></div><div style="margin-top:16px"><div class="section-title">Trust Breakdown</div>'+miniBarFull('Confirmed',d.trust_confirmed||0,'score-fill-green')+miniBarFull('Inferred',d.trust_inferred||0,'score-fill-yellow')+miniBarFull('Corrupted',d.trust_corrupted||0,'score-fill-red')+'</div>'+(d.notes?'<div style="margin-top:16px"><div class="section-title">Analyst Notes</div><div class="notes-box">'+esc(d.notes)+'</div></div>':'');
+  return '<div class="validation-grid"><div class="val-cell"><div class="val-num">'+Math.round((vm.source_agreement||0)*100)+'%</div><div class="val-lbl">Source Agreement</div></div><div class="val-cell"><div class="val-num">'+(vm.cross_validation_count||0)+'</div><div class="val-lbl">Cross-Validated</div></div><div class="val-cell"><div class="val-num">'+(vm.contradictions_found||0)+'</div><div class="val-lbl">Contradictions</div></div><div class="val-cell"><div class="val-num">'+(vm.data_freshness_score||0)+'</div><div class="val-lbl">Freshness Score</div></div>'+(vm.narrative_diversity_score!==undefined?'<div class="val-cell"><div class="val-num">'+Math.round((vm.narrative_diversity_score||0)*100)+'%</div><div class="val-lbl">Narrative Diversity</div></div>':'')+'</div><div style="margin-top:16px"><div class="section-title">Trust Breakdown</div>'+miniBarFull('Confirmed',d.trust_confirmed||0,'score-fill-green')+miniBarFull('Inferred',d.trust_inferred||0,'score-fill-yellow')+miniBarFull('Corrupted',d.trust_corrupted||0,'score-fill-red')+'</div>'+(d.notes?'<div style="margin-top:16px"><div class="section-title">Analyst Notes</div><div class="notes-box">'+esc(d.notes)+'</div></div>':'');
 }
+
+function renderAutonomousQueries(d){
+  var qs=d.autonomous_queries||[];
+  if(!qs.length) return '<p style="color:#9aa3ad;font-size:13px">No follow-up queries generated.</p>';
+  var out = '<p style="color:#9aa3ad;font-size:12px;margin-bottom:12px">SubMind would autonomously run these queries to deepen this analysis:</p>';
+  out += qs.map(q => '<div class="query-card"><span class="query-icon">&#128269;</span><span class="query-text">'+esc(q)+'</span></div>').join('');
+  return out;
+}
+
 var TABS=[
+  {id:'overview',label:'Overview',render:renderOverview},
   {id:'timeline',label:'Timeline',render:renderTimeline},
   {id:'signals',label:'Signal Map',render:renderConnections},
+  {id:'weaksignals',label:'Weak Signals',render:renderWeakSignals},
   {id:'narratives',label:'Narratives',render:renderNarratives},
   {id:'opportunities',label:'Opportunities',render:renderOpportunities},
   {id:'risks',label:'Risks',render:renderRisks},
   {id:'sources',label:'Sources',render:renderSources},
-  {id:'validation',label:'Validation',render:renderValidation}
+  {id:'validation',label:'Validation',render:renderValidation},
+  {id:'pipeline',label:'&#128270; Pipeline',render:renderAutonomousQueries}
 ];
+
 function renderResults(data){
   lastData=data;
   document.getElementById('scoreHero').innerHTML=renderScoreHero(data);
@@ -244,10 +315,10 @@ function renderResults(data){
   TABS.forEach(function(t,i){
     var btn=document.createElement('button');
     btn.className='tab-btn'+(i===0?' active':'');
-    btn.textContent=t.label;
+    btn.innerHTML=t.label;
     btn.onclick=function(){
-      tabBar.querySelectorAll('.tab-btn').forEach(function(b){b.classList.remove('active');});
-      tabContent.querySelectorAll('.tab-pane').forEach(function(p){p.classList.remove('active');});
+      tabBar.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+      tabContent.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('active'));
       btn.classList.add('active');
       document.getElementById('tab-'+t.id).classList.add('active');
     };
@@ -261,38 +332,39 @@ function renderResults(data){
   resultsEl.classList.add('visible');
   resultsEl.scrollIntoView({behavior:'smooth',block:'start'});
 }
+
 runBtn.addEventListener('click',async function(){
   var q=inputEl.value.trim();
-  if(!q){statusEl.textContent='Please enter some content to analyse.';return;}
+  if(!q){statusEl.textContent='Please enter content to analyse.';return;}
   runBtn.disabled=true;
-  statusEl.innerHTML='<span class="spinner"></span>Running analysis...';
+  statusEl.innerHTML='<span class="spinner"></span>Running autonomous analysis...';
   resultsEl.classList.remove('visible');
   try{
-    var body={query:q,fetchUrls:fetchUrlsCb.checked};
-    if(useGpt4Cb.checked)body.model='gpt-4o';
+    var body={query:q,fetchUrls:fetchUrlsCb.checked,deepMode:deepModeCb.checked,provider:selectedProvider};
     var res=await fetch('/api/predict',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
     if(!res.ok){var tx=await res.text();throw new Error(tx||'HTTP '+res.status);}
     var data=await res.json();
-    statusEl.textContent='';
+    statusEl.innerHTML='<span style="color:#3ddc97">&#10003; Analysis complete</span> <span style="color:#9aa3ad;font-size:11px">via '+esc(data.provider||'unknown')+(data.model?' ('+esc(data.model.split('-').slice(0,3).join('-'))+')':'')+'</span>';
     renderResults(data);
   }catch(e){
-    statusEl.innerHTML='<span style="color:#ef476f">Error: '+e.message+'</span>';
+    statusEl.innerHTML='<span style="color:#ef476f">Error: '+esc(e.message)+'</span>';
   }finally{
     runBtn.disabled=false;
   }
 });
+
 document.getElementById('copyJson').addEventListener('click',function(){
   if(!lastData)return;
   navigator.clipboard.writeText(JSON.stringify(lastData,null,2)).then(function(){
     var btn=document.getElementById('copyJson');
-    btn.textContent='Copied!';setTimeout(function(){btn.textContent='Copy JSON';},2000);
+    btn.textContent='Copied!';setTimeout(()=>btn.textContent='Copy JSON',2000);
   });
 });
 document.getElementById('downloadJson').addEventListener('click',function(){
   if(!lastData)return;
   var blob=new Blob([JSON.stringify(lastData,null,2)],{type:'application/json'});
   var a=document.createElement('a');a.href=URL.createObjectURL(blob);
-  a.download='submind-forecast-'+Date.now()+'.json';a.click();
+  a.download='submind-analysis-'+Date.now()+'.json';a.click();
 });
 </script>
 </body>
