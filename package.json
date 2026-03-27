@@ -1,5 +1,5 @@
 {
-  "name": "submind-v2",
+  "name": "submind-v3",
   "private": true,
   "type": "module",
   "engines": { "node": ">=18" },
