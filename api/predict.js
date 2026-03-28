@@ -1,6 +1,6 @@
 import nodeFetch from "node-fetch";
 
-// SUBMIND v9.1 - DEEP INTELLIGENCE RESEARCH ENGINE
+// SUBMIND v9.2 - DEEP INTELLIGENCE RESEARCH ENGINE
 // URL-verified sources + Reasoning chain + Pattern engine + Glass Fang + Nemesis
 // Every source link verified + SubMind reasoning chain + competitive features
 
@@ -280,7 +280,26 @@ FORMAT: Return valid JSON with this structure:
       "credibility": "HIGH|MEDIUM"
     }
   ],
-  "methodology_note": "How SubMind reached these conclusions"
+  "related_queries": [
+      "Follow-up investigation topic 1",
+      "Deeper dive sub-topic 2",
+      "Adjacent macro trend 3"
+    ],
+    "executive_actions": [
+      {
+        "action": "What to do based on this intelligence",
+        "urgency": "HIGH|MEDIUM|LOW",
+        "rationale": "Why this matters now"
+      }
+    ],
+    "risk_matrix": {
+      "primary_risk": "The biggest risk identified",
+      "risk_probability": 60,
+      "mitigation": "How to mitigate this risk",
+      "upside_scenario": "Best case outcome",
+      "downside_scenario": "Worst case outcome"
+    },
+    "methodology_note": "How SubMind reached these conclusions"
 }`
                 }, {
                     role: "user",
@@ -298,7 +317,10 @@ Requirements:
 7. Pattern analysis showing historical precedents and current signals
 8. Make predictions with probability percentages, basis, and confidence intervals
 9. Include a REASONING CHAIN showing SubMind step-by-step analytical process
-10. Each reasoning step must have: step number, thought process, supporting evidence, and conclusion`
+10. Each reasoning step must have: step number, thought process, supporting evidence, and conclusion
+11. Include 3-5 RELATED QUERIES for deeper investigation
+12. Include EXECUTIVE ACTIONS - what someone should DO based on this intelligence
+13. Include a RISK MATRIX with primary risk, probability, mitigation, and best/worst scenarios`
                 }],
                 temperature: 0.3,
                 max_tokens: 8000
@@ -508,7 +530,7 @@ export default async function handler(req, res) {
     if (!query) return res.status(400).json({ error: 'Query required' });
     
     const startTime = Date.now();
-    console.log('[SubMind v9.1] Query:', query);
+    console.log('[SubMind v9.2] Query:', query);
     
     try {
         // ===== PHASE 1: PARALLEL SOURCE GATHERING =====
@@ -559,7 +581,7 @@ export default async function handler(req, res) {
         console.log('[Phase 6] Nemesis issues:', nemesis.count, '| Severity:', nemesis.severity);
         
         const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
-        console.log('[SubMind v9.1] Complete in', elapsed + 's');
+        console.log('[SubMind v9.2] Complete in', elapsed + 's');
         
         // ===== RESPONSE =====
         return res.status(200).json({
@@ -574,7 +596,7 @@ export default async function handler(req, res) {
                 nemesis: nemesis
             },
             meta: {
-                version: '9.1',
+                version: '9.2',
                 elapsed_seconds: parseFloat(elapsed),
                 providers: {
                     search: gemini.sources.length > 0 ? 'gemini' : 'openai',
@@ -588,7 +610,7 @@ export default async function handler(req, res) {
             }
         });
     } catch(e) {
-        console.error('[SubMind v9.1] Fatal:', e.message);
+        console.error('[SubMind v9.2] Fatal:', e.message);
         return res.status(500).json({ error: 'Pipeline failed', detail: e.message });
     }
 }
