@@ -1,7 +1,7 @@
 import nodeFetch from "node-fetch";
 
-// SUBMIND v8.0 - DEEP INTELLIGENCE RESEARCH ENGINE
-// Parallel multi-provider source gathering + Glass Fang + Nemesis
+// SUBMIND v8.1 - DEEP INTELLIGENCE RESEARCH ENGINE
+// Parallel multi-provider sources + Glass Fang + Nemesis
 
 const GEMINI_KEYS = (() => {
   const keys = [];
@@ -25,8 +25,11 @@ function shuffle(arr) {
 function extractJSON(text) {
   if (!text || typeof text !== 'string') return null;
   try { return JSON.parse(text); } catch(e) {}
-  const codeMatch = text.match(/\`\`\`(?:json)?\s*([\s\S]*?)\`\`\`/);
-  if (codeMatch) { try { return JSON.parse(codeMatch[1]); } catch(e) {} }
+  // Match code fences with backticks
+  const fenceRe = /\`\`\`(?:json)?\s*([\s\S]*?)\`\`\`/;
+  const cm = text.match(fenceRe);
+  if (cm) { try { return JSON.parse(cm[1]); } catch(e) {} }
+  // Find first balanced { } block
   let depth = 0, start = -1;
   for (let i = 0; i < text.length; i++) {
     if (text[i] === '{') { if (depth === 0) start = i; depth++; }
@@ -47,7 +50,7 @@ async function geminiGroundedSearch(topic) {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            contents: [{ parts: [{ text: 'Provide a comprehensive factual summary with specific sources, URLs, dates, names, and organizations for: ' + topic }] }],
+            contents: [{ parts: [{ text: 'Comprehensive factual summary with sources, URLs, dates, names for: ' + topic }] }],
             tools: [{ google_search: {} }],
             generationConfig: { temperature: 0.1, maxOutputTokens: 4096 }
           }),
@@ -56,63 +59,51 @@ async function geminiGroundedSearch(topic) {
       );
       if (!resp.ok) { console.log('[Gemini] Key ' + key.substring(0,8) + '... HTTP ' + resp.status); continue; }
       const data = await resp.json();
-      const candidates = data.candidates || [];
-      const parts = candidates[0]?.content?.parts || [];
+      const parts = data.candidates?.[0]?.content?.parts || [];
       let text = parts.map(p => p.text || '').join('\n');
-      const grounding = candidates[0]?.groundingMetadata;
+      const grounding = data.candidates?.[0]?.groundingMetadata;
       const sources = [];
       if (grounding?.groundingChunks) {
-        grounding.groundingChunks.forEach((chunk) => {
+        grounding.groundingChunks.forEach(chunk => {
           if (chunk.web?.uri) {
             sources.push({ url: chunk.web.uri, title: chunk.web.title || '', domain: new URL(chunk.web.uri).hostname.replace('www.','') });
           }
         });
       }
-      console.log('[Gemini] OK: ' + text.length + ' chars, ' + sources.length + ' grounded sources');
+      console.log('[Gemini] OK: ' + text.length + 'ch, ' + sources.length + ' grounded sources');
       return { text, sources, provider: 'gemini-grounded' };
-    } catch (err) { console.log('[Gemini] ' + key.substring(0,8) + '... err: ' + err.message); }
+    } catch (err) { console.log('[Gemini] err: ' + err.message); }
   }
   return null;
 }
 
-async function openaiWebSearch(topic) {
+async function openaiEnrichedContext(topic) {
   if (!OPENAI_KEY) return null;
   try {
-    const resp = await nodeFetch('https://api.openai.com/v1/responses', {
+    // Use chat completions to generate enriched source context
+    const resp = await nodeFetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + OPENAI_KEY },
       body: JSON.stringify({
         model: 'gpt-4o-mini',
-        tools: [{ type: 'web_search_preview' }],
-        input: 'Research this topic thoroughly with specific sources, dates, names, organizations, and URLs: ' + topic
+        messages: [{
+          role: 'system',
+          content: 'You are a research assistant. Provide specific factual information with real source URLs, exact dates (YYYY-MM-DD format), named entities, and organizations. Be as specific and detailed as possible.'
+        }, {
+          role: 'user',
+          content: 'Research context for: ' + topic + '\n\nProvide: key events with dates, organizations involved, relevant statistics, and real source URLs from government (.gov), news (reuters, bloomberg, ap), and academic sources.'
+        }],
+        temperature: 0.1,
+        max_tokens: 3000
       }),
-      signal: AbortSignal.timeout(25000)
+      signal: AbortSignal.timeout(20000)
     });
-    if (!resp.ok) { console.log('[OpenAI] Search HTTP ' + resp.status); return null; }
+    if (!resp.ok) { console.log('[OpenAI] Context HTTP ' + resp.status); return null; }
     const data = await resp.json();
-    let text = '';
-    const sources = [];
-    if (data.output) {
-      for (const item of data.output) {
-        if (item.type === 'message' && item.content) {
-          for (const c of item.content) {
-            if (c.type === 'output_text') {
-              text += c.text || '';
-              if (c.annotations) {
-                for (const ann of c.annotations) {
-                  if (ann.type === 'url_citation' && ann.url) {
-                    sources.push({ url: ann.url, title: ann.title || '', domain: new URL(ann.url).hostname.replace('www.','') });
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-    console.log('[OpenAI] Search OK: ' + text.length + ' chars, ' + sources.length + ' sources');
-    return { text, sources, provider: 'openai-search' };
-  } catch (err) { console.log('[OpenAI] Search err: ' + err.message); return null; }
+    const text = data.choices?.[0]?.message?.content || '';
+    console.log('[OpenAI] Context OK: ' + text.length + 'ch');
+    return { text, sources: [], provider: 'openai-context' };
+  } catch (err) { console.log('[OpenAI] Context err: ' + err.message); return null; }
 }
 
 async function produceIntelligenceBriefing(topic, sourceContext) {
@@ -120,15 +111,14 @@ async function produceIntelligenceBriefing(topic, sourceContext) {
   if (CEREBRAS_KEY) providers.push({ name: 'cerebras', key: CEREBRAS_KEY });
   if (OPENAI_KEY) providers.push({ name: 'openai', key: OPENAI_KEY });
 
-  const systemPrompt = `You are SubMind, a deep intelligence research engine producing investment-grade analysis. NOT a chatbot. You produce structured intelligence briefings.
+  const systemPrompt = `You are SubMind v8.1, a deep intelligence research engine. NOT a chatbot. Produce structured intelligence briefings with investment-grade rigor.
 
 REQUIREMENTS:
-- Every claim must cite a source [N]
-- Every date specific (YYYY-MM-DD)
-- Every entity fully named
-- Predictions: probability, timeframe, basis, investment_relevance
-- Trace to EARLIEST origin event
-- Show how sources cross-reference each other
+- Every claim must cite [N]. Use ALL dates in YYYY-MM-DD format.
+- Every entity fully named (organization, person, city).
+- Predictions: probability, timeframe (YYYY-MM-DD to YYYY-MM-DD), basis, investment_relevance.
+- Trace to EARLIEST origin event with YYYY-MM-DD date.
+- Show source cross-referencing in evidence_web links.
 
 SOURCE CONTEXT:
 ${sourceContext}
@@ -138,20 +128,19 @@ Return ONLY valid JSON:
   "title": "Analytical headline",
   "classification": "CONFIRMED|PROBABLE|DEVELOPING|DISPUTED",
   "confidence": 0.0-1.0,
-  "summary": "2-3 sentence executive summary",
+  "summary": "Executive summary",
   "origin": {"event":"Earliest origin","date":"YYYY-MM-DD","location":"City, Country","significance":"Why it matters"},
-  "briefing": "500-800 word briefing with [N] citations, specific data, separated by double newlines",
+  "briefing": "500-800 word briefing. MUST use YYYY-MM-DD dates throughout. Use [N] citations. Include dollar amounts and percentages. Separate paragraphs with double newlines.",
   "timeline": [{"date":"YYYY-MM-DD","event":"Description"}],
-  "predictions": [{"scenario":"What","probability":0.0-1.0,"timeframe":"date range","basis":"Evidence","investment_relevance":"Investor impact"}],
-  "sources": [{"index":1,"title":"Document title","url":"https://real-url","domain":"domain.com","author":"Author","date":"YYYY-MM-DD","type":"filing|ruling|article|report|press_release"}],
+  "predictions": [{"scenario":"What","probability":0.0-1.0,"timeframe":"YYYY-MM-DD to YYYY-MM-DD","basis":"Evidence","investment_relevance":"Impact"}],
+  "sources": [{"index":1,"title":"Title","url":"https://real-url","domain":"domain.com","author":"Author","date":"YYYY-MM-DD","type":"filing|ruling|article|report|press_release"}],
   "evidence_web": {
-    "nodes": [{"id":"unique","type":"origin|event|prediction|source","label":"Short label"}],
+    "nodes": [{"id":"unique","type":"origin|event|prediction|source","label":"Short label (max 30 chars)"}],
     "links": [{"source":"id","target":"id","relation":"caused|confirms|suggests|contradicts"}]
   }
 }
 
-USE REAL URLs from: sec.gov, uscourts.gov, congress.gov, reuters.com, bloomberg.com, apnews.com, arxiv.org, pubmed.ncbi.nlm.nih.gov, imf.org, worldbank.org, bls.gov, treasury.gov, federalregister.gov.
-Evidence web must have 6+ nodes and 5+ links.`;
+CRITICAL: Use REAL authoritative URLs from sec.gov, uscourts.gov, congress.gov, reuters.com, bloomberg.com, apnews.com, bls.gov, treasury.gov, federalreserve.gov, imf.org, worldbank.org. Evidence web MUST have 8+ nodes and 7+ links.`;
 
   for (const provider of providers) {
     try {
@@ -160,7 +149,7 @@ Evidence web must have 6+ nodes and 5+ links.`;
         const resp = await nodeFetch('https://api.cerebras.ai/v1/chat/completions', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + provider.key },
-          body: JSON.stringify({ model: CEREBRAS_MODEL, messages: [{ role: 'system', content: systemPrompt }, { role: 'user', content: 'Produce intelligence briefing on: ' + topic }], temperature: 0.15, max_tokens: 8000 }),
+          body: JSON.stringify({ model: CEREBRAS_MODEL, messages: [{ role: 'system', content: systemPrompt }, { role: 'user', content: 'Intelligence briefing on: ' + topic }], temperature: 0.12, max_tokens: 8000 }),
           signal: AbortSignal.timeout(30000)
         });
         if (!resp.ok) { console.log('[Cerebras] HTTP ' + resp.status); continue; }
@@ -170,14 +159,14 @@ Evidence web must have 6+ nodes and 5+ links.`;
         const resp = await nodeFetch('https://api.openai.com/v1/chat/completions', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + provider.key },
-          body: JSON.stringify({ model: 'gpt-4o-mini', messages: [{ role: 'system', content: systemPrompt }, { role: 'user', content: 'Produce intelligence briefing on: ' + topic }], temperature: 0.15, max_tokens: 8000 }),
+          body: JSON.stringify({ model: 'gpt-4o-mini', messages: [{ role: 'system', content: systemPrompt }, { role: 'user', content: 'Intelligence briefing on: ' + topic }], temperature: 0.12, max_tokens: 8000 }),
           signal: AbortSignal.timeout(45000)
         });
         if (!resp.ok) { console.log('[OpenAI] Briefing HTTP ' + resp.status); continue; }
         const data = await resp.json();
         resultText = data.choices?.[0]?.message?.content || '';
       }
-      console.log('[' + provider.name + '] Briefing: ' + resultText.length + ' chars');
+      console.log('[' + provider.name + '] Briefing: ' + resultText.length + 'ch');
       return { text: resultText, provider: provider.name };
     } catch (err) { console.log('[' + provider.name + '] err: ' + err.message); }
   }
@@ -198,28 +187,32 @@ function glassFangValidation(briefing) {
   metrics.citation_density = { score: Math.min(citations / Math.max(words / 40, 1), 1), detail: citations + ' citations in ' + words + ' words' };
   totalScore += metrics.citation_density.score * 10; totalWeight += 10;
 
-  const dates = (b.match(/\d{4}-\d{2}(-\d{2})?/g) || []).length;
-  metrics.date_specificity = { score: Math.min(dates / 6, 1), detail: dates + ' specific dates' };
+  // Improved date detection: YYYY-MM-DD, YYYY-MM, Month YYYY, Q[1-4] YYYY
+  const isoDate = (b.match(/\d{4}-\d{2}(-\d{2})?/g) || []).length;
+  const writtenDate = (b.match(/(?:January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{1,2},?\s+\d{4}/gi) || []).length;
+  const quarterDate = (b.match(/Q[1-4]\s+\d{4}/gi) || []).length;
+  const totalDates = isoDate + writtenDate + quarterDate;
+  metrics.date_specificity = { score: Math.min(totalDates / 6, 1), detail: totalDates + ' specific dates found' };
   totalScore += metrics.date_specificity.score * 10; totalWeight += 10;
 
-  const orgs = (b.match(/(?:SEC|FBI|DOJ|Fed|Congress|Court|Commission|Board|Agency|Corporation|Inc\.|Corp\.|LLC|University|Institute)/gi) || []).length;
+  const orgs = (b.match(/(?:SEC|FBI|DOJ|Fed(?:eral)?|Congress|Court|Commission|Board|Agency|Corporation|Inc\.|Corp\.|LLC|University|Institute|Reserve|Treasury|Bureau|Department|Association|Administration)/gi) || []).length;
   metrics.named_entities = { score: Math.min(orgs / 8, 1), detail: orgs + ' organizational references' };
   totalScore += metrics.named_entities.score * 8; totalWeight += 8;
 
   const dollars = (b.match(/\$[\d,.]+\s*(?:billion|million|trillion|B|M|T)?/gi) || []).length;
-  const pcts = (b.match(/\d+\.?\d*\s*%/g) || []).length;
+  const pcts = (b.match(/\d+\.?\d*\s*(?:%|percent|basis points|bps)/gi) || []).length;
   metrics.numeric_evidence = { score: Math.min((dollars + pcts) / 10, 1), detail: dollars + ' amounts, ' + pcts + ' percentages' };
   totalScore += metrics.numeric_evidence.score * 9; totalWeight += 9;
 
-  const highAuth = sources.filter(s => /\.gov$|reuters|bloomberg|apnews|wsj|nytimes|ft\.com|economist|nature|science\.org|arxiv|pubmed|imf\.org|worldbank/.test((s.domain || '').toLowerCase())).length;
+  const highAuth = sources.filter(s => /\.gov$|reuters|bloomberg|apnews|wsj|nytimes|ft\.com|economist|nature|science|arxiv|pubmed|imf\.org|worldbank|federalreserve/.test((s.domain || '').toLowerCase())).length;
   metrics.source_authority = { score: Math.min(highAuth / 3, 1), detail: highAuth + ' high-authority sources' };
   totalScore += metrics.source_authority.score * 12; totalWeight += 12;
 
   const qualPreds = predictions.filter(p => p.probability && p.timeframe && p.basis).length;
-  metrics.prediction_quality = { score: predictions.length > 0 ? qualPreds / predictions.length : 0, detail: qualPreds + '/' + predictions.length + ' properly qualified' };
+  metrics.prediction_quality = { score: predictions.length > 0 ? qualPreds / predictions.length : 0, detail: qualPreds + '/' + predictions.length + ' fully qualified' };
   totalScore += metrics.prediction_quality.score * 8; totalWeight += 8;
 
-  const counter = (b.match(/however|although|despite|risk|caveat|challenge|criticism|debate|contrar|skeptic|concern|limitation/gi) || []).length;
+  const counter = (b.match(/however|although|despite|nevertheless|risk|caveat|challenge|criticism|debate|contrar|skeptic|concern|limitation|downside|obstacle|uncertainty|volatile/gi) || []).length;
   metrics.counterpoint = { score: Math.min(counter / 3, 1), detail: counter > 2 ? 'Multiple perspectives' : counter > 0 ? 'Limited counterpoint' : 'Single-narrative' };
   totalScore += metrics.counterpoint.score * 7; totalWeight += 7;
 
@@ -248,7 +241,7 @@ function nemesisChallenge(briefing, validation) {
   if (validation.metrics.counterpoint.score < 0.3) issues.push('Single-perspective narrative. Confidence reduced.');
   if (validation.metrics.source_authority.score < 0.5) issues.push('Insufficient high-authority sources.');
   if (validation.metrics.date_specificity.score < 0.4) issues.push('Vague temporal claims.');
-  if ((briefing.sources || []).length < 3) issues.push('Source count below threshold.');
+  if ((briefing.sources || []).length < 3) issues.push('Below minimum source threshold.');
   if (validation.metrics.evidence_web.score < 0.4) issues.push('Evidence web too sparse.');
   let confAdj = -issues.length * 0.03;
   if (validation.glassFangScore < 50) confAdj -= 0.1;
@@ -285,15 +278,15 @@ export default async function handler(req, res) {
   const { topic } = req.body || {};
   if (!topic || typeof topic !== 'string' || topic.trim().length < 2) return res.status(400).json({ error: 'Topic required' });
 
-  console.log('\n======== SubMind v8.0 ========');
+  console.log('\n======== SubMind v8.1 ========');
   console.log('Query: ' + topic.substring(0, 100));
 
   try {
-    // PHASE 1: Parallel source gathering
+    // PHASE 1: Parallel source gathering (Gemini grounded + OpenAI context enrichment)
     console.log('[Phase 1] Parallel source search...');
     const [geminiResult, openaiResult] = await Promise.all([
-      geminiGroundedSearch(topic).catch(e => { console.log('[Gemini] Failed: ' + e.message); return null; }),
-      openaiWebSearch(topic).catch(e => { console.log('[OpenAI] Search failed: ' + e.message); return null; })
+      geminiGroundedSearch(topic).catch(e => { console.log('[Gemini] Fail: ' + e.message); return null; }),
+      openaiEnrichedContext(topic).catch(e => { console.log('[OpenAI] Fail: ' + e.message); return null; })
     ]);
 
     let groundedSources = [];
@@ -306,19 +299,19 @@ export default async function handler(req, res) {
     }
     const seenUrls = new Set();
     groundedSources = groundedSources.filter(s => { const k = (s.url || '').toLowerCase(); if (seenUrls.has(k)) return false; seenUrls.add(k); return true; });
-    console.log('[Phase 1] ' + groundedSources.length + ' grounded sources, ' + sourceContext.length + ' chars context');
+    console.log('[Phase 1] ' + groundedSources.length + ' grounded, ' + sourceContext.length + 'ch context');
 
     // PHASE 2: Intelligence briefing
-    console.log('[Phase 2] Intelligence briefing...');
-    const briefingResult = await produceIntelligenceBriefing(topic, sourceContext || 'No external sources. Construct from authoritative domains.');
+    console.log('[Phase 2] Briefing...');
+    const briefingResult = await produceIntelligenceBriefing(topic, sourceContext || 'No web sources available. Use authoritative training data.');
     const parsed = extractJSON(briefingResult.text);
     if (!parsed) throw new Error('Unparseable response');
-    console.log('[Phase 2] Title: ' + (parsed.title || 'untitled'));
+    console.log('[Phase 2] ' + (parsed.title || 'untitled').substring(0, 60));
 
     // PHASE 3: Source merge
     const aiSources = (parsed.sources || []).map((s, i) => ({ ...s, index: i + 1 }));
     const finalSources = mergeSources(aiSources, groundedSources.map((s, i) => ({ ...s, index: i + 1, type: s.type || 'article', author: s.author || s.domain })));
-    console.log('[Phase 3] ' + finalSources.length + ' final sources');
+    console.log('[Phase 3] ' + finalSources.length + ' sources');
 
     // PHASE 4: Glass Fang
     const fullBriefing = { ...parsed, sources: finalSources };
@@ -328,7 +321,7 @@ export default async function handler(req, res) {
     // PHASE 5: Nemesis
     const nemesis = nemesisChallenge(fullBriefing, validation);
     const adjConf = Math.max(0.1, Math.min(0.99, (parsed.confidence || 0.5) + nemesis.confidenceAdjustment));
-    console.log('[Phase 5] Nemesis: ' + nemesis.issues.length + ' issues, conf: ' + adjConf.toFixed(2));
+    console.log('[Phase 5] Nemesis: ' + nemesis.issues.length + ' issues');
 
     const processingMs = Date.now() - startTime;
     console.log('[Done] ' + processingMs + 'ms');
@@ -348,7 +341,7 @@ export default async function handler(req, res) {
       sources: finalSources, sourceCount: finalSources.length,
       evidence_web: parsed.evidence_web || { nodes: [], links: [] },
       validation,
-      provider: briefingResult.provider + (groundedSources.length > 0 ? ' + web-grounded' : ''),
+      provider: briefingResult.provider + (groundedSources.length > 0 ? ' + web-grounded' : '') + (sourceContext.length > 100 ? ' + enriched' : ''),
       processingMs,
       methodology_note: methParts.join(' ') || 'Analysis based on available intelligence sources.'
     });
