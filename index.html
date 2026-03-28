@@ -6,500 +6,773 @@
 <title>SubMind — Deep Intelligence Research</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%234318FF'/><text x='50' y='68' font-size='55' font-weight='700' text-anchor='middle' fill='white'>S</text></svg>">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%23f97316'/><text x='50' y='68' font-size='55' text-anchor='middle' fill='white' font-family='system-ui' font-weight='700'>S</text></svg>">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 :root{
- --bg:#0a0a0f;--bg2:#0f0f18;--bg3:#161624;--bg4:#1e1e30;
- --text:#eaeaf2;--text2:#a8a8c0;--text3:#6a6a85;
- --accent:#4318FF;--accent2:#6C4DFF;--accent3:#8B6FFF;--accent-glow:rgba(67,24,255,0.12);
- --green:#00C48C;--green-glow:rgba(0,196,140,0.12);
- --orange:#FF9F43;--orange-glow:rgba(255,159,67,0.12);
- --red:#FF4757;--red-glow:rgba(255,71,87,0.12);
- --border:rgba(255,255,255,0.06);--border2:rgba(255,255,255,0.1);
- --radius:14px;--radius-sm:10px;--radius-xs:6px;
+--bg:#09090b;--bg2:#18181b;--bg3:#1e1e23;--surface:#27272a;
+--border:#2e2e33;--border2:#3f3f46;
+--text:#fafafa;--text2:#a1a1aa;--text3:#71717a;
+--accent:#f97316;--accent2:#fb923c;--accent-glow:rgba(249,115,22,0.15);
+--green:#22c55e;--green2:#16a34a;--green-glow:rgba(34,197,94,0.12);
+--red:#ef4444;--yellow:#eab308;--blue:#3b82f6;--purple:#a855f7;
+--verified:#22c55e;--search-link:#eab308;--failed:#ef4444;
 }
-html{font-size:15px;scroll-behavior:smooth}
-body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;line-height:1.65;-webkit-font-smoothing:antialiased}
-.header{padding:20px 0;border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100;background:rgba(10,10,15,0.85);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px)}
-.container{max-width:900px;margin:0 auto;padding:0 28px}
-.header-inner{display:flex;align-items:center;justify-content:space-between}
-.logo{display:flex;align-items:center;gap:12px}
-.logo-mark{width:34px;height:34px;background:linear-gradient(135deg,var(--accent),var(--accent3));border-radius:9px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px;color:#fff;box-shadow:0 4px 20px rgba(67,24,255,0.25)}
-.logo-text{font-size:19px;font-weight:600;letter-spacing:-0.02em}
-.logo-sub{font-size:10.5px;color:var(--text3);letter-spacing:0.1em;text-transform:uppercase;margin-top:1px}
-.header-badge{font-size:10px;padding:3px 8px;border-radius:4px;background:var(--accent-glow);color:var(--accent2);font-weight:500;letter-spacing:0.04em}
-.search-section{padding:52px 0 36px}
-.search-box{display:flex;background:var(--bg2);border:1px solid var(--border2);border-radius:var(--radius);overflow:hidden;transition:all 0.25s ease}
-.search-box:focus-within{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-glow),0 8px 32px rgba(0,0,0,0.3)}
-.search-input{flex:1;background:none;border:none;color:var(--text);padding:16px 22px;font-size:15px;font-family:inherit;outline:none}
-.search-input::placeholder{color:var(--text3)}
-.search-btn{background:var(--accent);color:#fff;border:none;padding:0 30px;font-size:13.5px;font-weight:600;font-family:inherit;cursor:pointer;transition:all 0.2s;white-space:nowrap;letter-spacing:0.02em}
-.search-btn:hover{background:var(--accent2);box-shadow:0 0 20px rgba(67,24,255,0.3)}
+body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+a{color:var(--accent);text-decoration:none;transition:color 0.2s}
+a:hover{color:var(--accent2)}
+
+/* Scrollbar */
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+
+/* Header */
+.header{position:sticky;top:0;z-index:100;background:rgba(9,9,11,0.85);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:14px 0}
+.header-inner{max-width:1200px;margin:0 auto;padding:0 24px;display:flex;align-items:center;justify-content:space-between}
+.logo{display:flex;align-items:center;gap:10px;font-weight:700;font-size:20px;letter-spacing:-0.5px}
+.logo-icon{width:32px;height:32px;background:var(--accent);border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:16px;color:white}
+.version-badge{font-size:10px;padding:3px 8px;background:var(--accent-glow);color:var(--accent);border-radius:6px;font-weight:600;letter-spacing:0.5px}
+
+/* Hero */
+.hero{text-align:center;padding:80px 24px 40px;max-width:800px;margin:0 auto}
+.hero h1{font-size:clamp(32px,5vw,52px);font-weight:700;letter-spacing:-1.5px;line-height:1.1;margin-bottom:16px;background:linear-gradient(135deg,#fff 0%,#a1a1aa 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hero p{font-size:18px;color:var(--text2);max-width:550px;margin:0 auto 40px;line-height:1.6}
+
+/* Search */
+.search-container{max-width:680px;margin:0 auto;position:relative}
+.search-box{width:100%;padding:18px 60px 18px 24px;background:var(--bg2);border:1px solid var(--border);border-radius:16px;color:var(--text);font-size:16px;font-family:inherit;outline:none;transition:all 0.3s}
+.search-box:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-glow)}
+.search-box::placeholder{color:var(--text3)}
+.search-btn{position:absolute;right:8px;top:50%;transform:translateY(-50%);width:44px;height:44px;background:var(--accent);border:none;border-radius:12px;color:white;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.2s}
+.search-btn:hover{background:var(--accent2);transform:translateY(-50%) scale(1.05)}
 .search-btn:disabled{opacity:0.5;cursor:not-allowed}
-.hero{text-align:center;padding:60px 0 20px;display:block}
-.hero.hidden{display:none}
-.hero-title{font-size:32px;font-weight:700;letter-spacing:-0.04em;margin-bottom:10px;background:linear-gradient(135deg,var(--text) 0%,var(--text2) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.hero-desc{font-size:14px;color:var(--text3);max-width:520px;margin:0 auto;line-height:1.7}
-.hero-features{display:flex;justify-content:center;gap:28px;margin-top:28px;flex-wrap:wrap}
-.hero-feat{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text3)}
-.hero-feat-dot{width:6px;height:6px;border-radius:50%}
-.loading{display:none;text-align:center;padding:80px 0}
+
+/* Loading */
+.loading{display:none;text-align:center;padding:60px 24px}
 .loading.active{display:block}
-.loading-ring{width:48px;height:48px;margin:0 auto 20px;position:relative}
-.loading-ring svg{width:48px;height:48px;animation:spin 1.2s linear infinite}
+.loading-phases{max-width:500px;margin:20px auto}
+.phase{display:flex;align-items:center;gap:12px;padding:10px 0;color:var(--text3);font-size:14px;transition:all 0.3s}
+.phase.active{color:var(--accent)}
+.phase.done{color:var(--green)}
+.phase-icon{width:24px;text-align:center}
+.spinner{width:20px;height:20px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 0.8s linear infinite;margin:20px auto}
 @keyframes spin{to{transform:rotate(360deg)}}
-.loading-phases{color:var(--text3);font-size:13px}
-.loading-phase{margin:8px 0;opacity:0.3;transition:all 0.4s ease;transform:translateY(4px)}
-.loading-phase.active{opacity:1;color:var(--text2);transform:translateY(0)}
-.loading-phase.done{opacity:0.6;color:var(--green);transform:translateY(0)}
-.results{display:none;padding:0 0 80px}
-.results.active{display:block}
-.fade-up{opacity:0;transform:translateY(16px);transition:opacity 0.5s ease,transform 0.5s ease}
-.fade-up.visible{opacity:1;transform:translateY(0)}
-.brief-header{padding:36px 0 28px;border-bottom:1px solid var(--border)}
-.brief-title{font-size:27px;font-weight:700;letter-spacing:-0.03em;line-height:1.3;margin-bottom:14px}
-.brief-meta{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
-.brief-badge{font-size:10.5px;font-weight:600;letter-spacing:0.08em;padding:5px 12px;border-radius:5px;text-transform:uppercase}
-.badge-confirmed{background:var(--green-glow);color:var(--green);border:1px solid rgba(0,196,140,0.2)}
-.badge-probable{background:var(--accent-glow);color:var(--accent2);border:1px solid rgba(108,77,255,0.2)}
-.badge-developing{background:var(--orange-glow);color:var(--orange);border:1px solid rgba(255,159,67,0.2)}
-.badge-disputed{background:var(--red-glow);color:var(--red);border:1px solid rgba(255,71,87,0.2)}
-.meta-item{font-size:12.5px;color:var(--text3)}
-.meta-item strong{color:var(--text2);font-weight:500}
-.score-ring{display:inline-flex;align-items:center;gap:8px}
-.score-ring canvas{width:36px;height:36px}
-.score-label{font-size:11px;color:var(--text3);line-height:1.3}
-.score-label strong{color:var(--text);font-weight:600;font-size:13px}
-.origin-card{margin:28px 0;padding:22px 26px;background:var(--bg2);border:1px solid var(--border2);border-radius:var(--radius);border-left:3px solid var(--accent);position:relative;overflow:hidden}
-.origin-card::before{content:'';position:absolute;top:0;left:0;right:0;bottom:0;background:linear-gradient(135deg,rgba(67,24,255,0.03),transparent);pointer-events:none}
-.origin-label{font-size:10px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:var(--accent2);margin-bottom:8px}
-.origin-event{font-size:16px;font-weight:600;margin-bottom:6px}
-.origin-detail{font-size:13px;color:var(--text2);line-height:1.6}
-.exec-summary{padding:22px 0;font-size:15px;color:var(--text2);line-height:1.75;border-bottom:1px solid var(--border)}
-.section-header{font-size:10.5px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:var(--text3);padding:28px 0 16px;border-top:1px solid var(--border);margin-top:8px}
-.evidence-web-wrap{margin:0 -28px;position:relative}
-.evidence-web{background:var(--bg2);border:1px solid var(--border2);border-radius:var(--radius);overflow:hidden;position:relative}
-.evidence-web canvas{width:100%;display:block;cursor:crosshair}
-.web-tooltip{position:absolute;pointer-events:none;background:rgba(10,10,15,0.92);border:1px solid var(--border2);border-radius:var(--radius-xs);padding:8px 12px;font-size:11px;color:var(--text);max-width:220px;opacity:0;transition:opacity 0.15s;backdrop-filter:blur(8px);z-index:10;box-shadow:0 8px 24px rgba(0,0,0,0.4)}
-.web-tooltip.visible{opacity:1}
-.web-tooltip-type{font-size:9px;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:3px;font-weight:600}
-.web-legend{display:flex;gap:18px;padding:12px 18px;font-size:10.5px;color:var(--text3);border-top:1px solid var(--border);flex-wrap:wrap}
-.web-legend span{display:flex;align-items:center;gap:5px}
-.web-legend span::before{content:'';width:7px;height:7px;border-radius:50%;display:inline-block}
-.legend-origin::before{background:var(--accent)}
-.legend-event::before{background:var(--green)}
-.legend-pred::before{background:var(--orange)}
-.legend-source::before{background:var(--text3)}
-.briefing-section{padding:28px 0}
-.briefing-content{font-size:15px;line-height:1.85;color:var(--text)}
-.briefing-content p{margin-bottom:18px}
-.briefing-content p:last-child{margin-bottom:0}
-.citation{color:var(--accent2);font-size:11.5px;font-weight:600;text-decoration:none;cursor:pointer;padding:1px 3px;border-radius:3px;transition:all 0.15s;position:relative}
-.citation:hover{background:var(--accent-glow);text-decoration:underline}
-.tl-container{position:relative;padding-left:20px}
-.tl-line{position:absolute;left:4px;top:12px;bottom:12px;width:1px;background:linear-gradient(180deg,var(--accent),var(--green),var(--orange))}
-.tl-item{display:grid;grid-template-columns:120px 1fr;gap:18px;padding:14px 0;align-items:baseline;position:relative}
-.tl-item::before{content:'';position:absolute;left:-20px;top:18px;width:9px;height:9px;border-radius:50%;background:var(--bg);border:2px solid var(--accent2);z-index:1}
-.tl-item:first-child::before{border-color:var(--accent);background:var(--accent)}
-.tl-item:last-child::before{border-color:var(--orange)}
-.tl-date{font-family:'JetBrains Mono',monospace;font-size:12.5px;color:var(--text3);font-weight:400}
-.tl-event{font-size:13.5px;color:var(--text2);line-height:1.5}
-.pred-card{padding:18px 0;border-bottom:1px solid var(--border)}
-.pred-card:last-child{border-bottom:none}
-.pred-scenario{font-size:14px;font-weight:500;margin-bottom:8px;line-height:1.4}
-.pred-meta{display:flex;gap:14px;align-items:center;font-size:13px}
-.pred-prob{font-family:'JetBrains Mono',monospace;font-weight:600;font-size:14px}
-.pred-timeframe{color:var(--text3);font-size:12px}
-.pred-basis{font-size:12px;color:var(--text3);margin-top:6px;line-height:1.55}
-.pred-invest{font-size:12px;color:var(--accent2);margin-top:5px;padding:6px 10px;background:var(--accent-glow);border-radius:var(--radius-xs);display:inline-block;line-height:1.4}
-.pred-bar{height:4px;background:var(--bg3);border-radius:2px;margin-top:8px;overflow:hidden}
-.pred-bar-fill{height:100%;border-radius:2px;transition:width 0.8s ease}
-.source-item{display:grid;grid-template-columns:32px 1fr;gap:14px;padding:12px 0;border-bottom:1px solid var(--border);align-items:start}
+
+/* Dashboard */
+.dashboard{display:none;max-width:1200px;margin:0 auto;padding:0 24px 80px}
+.dashboard.active{display:block}
+
+/* Meta Bar */
+.meta-bar{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:24px;align-items:center}
+.meta-chip{display:flex;align-items:center;gap:6px;padding:6px 14px;background:var(--bg2);border:1px solid var(--border);border-radius:10px;font-size:13px;color:var(--text2)}
+.meta-chip .val{color:var(--text);font-weight:600}
+.status-badge{padding:6px 16px;border-radius:10px;font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase}
+.status-CONFIRMED{background:var(--green-glow);color:var(--green);border:1px solid rgba(34,197,94,0.3)}
+.status-DEVELOPING{background:rgba(59,130,246,0.12);color:var(--blue);border:1px solid rgba(59,130,246,0.3)}
+.status-PROJECTED{background:rgba(168,85,247,0.12);color:var(--purple);border:1px solid rgba(168,85,247,0.3)}
+.status-DISPUTED{background:rgba(239,68,68,0.12);color:var(--red);border:1px solid rgba(239,68,68,0.3)}
+
+/* Section Cards */
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:24px;margin-bottom:20px;transition:border-color 0.3s}
+.card:hover{border-color:var(--border2)}
+.card-header{display:flex;align-items:center;gap:10px;margin-bottom:16px;font-size:15px;font-weight:600;color:var(--text2)}
+.card-header .icon{font-size:18px}
+
+/* Glass Fang Score Ring */
+.gf-ring-container{display:flex;align-items:center;gap:24px;padding:12px 0}
+.gf-ring{width:100px;height:100px;position:relative}
+.gf-ring svg{transform:rotate(-90deg)}
+.gf-ring-bg{fill:none;stroke:var(--border);stroke-width:6}
+.gf-ring-fill{fill:none;stroke:var(--accent);stroke-width:6;stroke-linecap:round;transition:stroke-dashoffset 1.5s ease}
+.gf-score-text{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:28px;font-weight:700;color:var(--text)}
+.gf-label{font-size:11px;color:var(--text3);text-align:center;margin-top:4px}
+.gf-metrics{flex:1;display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.gf-metric{display:flex;justify-content:space-between;align-items:center;padding:6px 10px;background:var(--bg3);border-radius:8px;font-size:12px}
+.gf-metric-name{color:var(--text3)}
+.gf-metric-val{font-weight:600;font-family:'JetBrains Mono',monospace;font-size:11px}
+
+/* Source Verification Badge Styles */
+.src-verified{color:var(--verified);font-size:11px;font-weight:600;display:inline-flex;align-items:center;gap:4px}
+.src-verified::before{content:'✓';font-weight:800}
+.src-search{color:var(--search-link);font-size:11px;font-weight:600;display:inline-flex;align-items:center;gap:4px}
+.src-search::before{content:'🔍'}
+.verification-bar{display:flex;gap:8px;align-items:center;margin-top:8px}
+.verification-stat{font-size:12px;display:flex;align-items:center;gap:4px}
+.vstat-verified{color:var(--verified)}
+.vstat-fallback{color:var(--search-link)}
+.vstat-total{color:var(--text3)}
+
+/* Timeline */
+.timeline{position:relative;padding-left:28px}
+.timeline::before{content:'';position:absolute;left:8px;top:0;bottom:0;width:2px;background:linear-gradient(to bottom,var(--accent),var(--purple),var(--blue))}
+.tl-item{position:relative;padding:12px 0 20px;opacity:0;animation:fadeUp 0.4s ease forwards}
+.tl-item::before{content:'';position:absolute;left:-24px;top:16px;width:12px;height:12px;background:var(--bg);border:2px solid var(--accent);border-radius:50%}
+.tl-date{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--accent);margin-bottom:4px}
+.tl-event{font-size:14px;color:var(--text);line-height:1.5}
+.tl-sig{font-size:13px;color:var(--text3);margin-top:4px;font-style:italic}
+
+/* Evidence Web */
+.evidence-web{background:var(--bg3);border:1px solid var(--border);border-radius:16px;overflow:hidden;position:relative;height:380px}
+.evidence-web canvas{display:block;width:100%;height:100%}
+
+/* Source Items */
+.source-item{display:grid;grid-template-columns:32px 1fr auto;gap:14px;padding:12px 0;border-bottom:1px solid var(--border);align-items:start}
 .source-item:last-child{border-bottom:none}
 .source-num{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text3);padding-top:3px;text-align:center}
-.source-title{font-size:13.5px;color:var(--accent2);text-decoration:none;display:block;line-height:1.45;transition:color 0.15s}
-.source-title:hover{color:var(--accent3);text-decoration:underline}
-.source-domain{font-size:11.5px;color:var(--text3);margin-top:3px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-.source-type{font-size:9.5px;padding:2px 7px;border-radius:3px;font-weight:600;letter-spacing:0.04em;text-transform:uppercase}
-.type-filing{background:rgba(67,24,255,0.1);color:var(--accent2)}
-.type-ruling{background:rgba(255,71,87,0.1);color:var(--red)}
-.type-article{background:rgba(0,196,140,0.1);color:var(--green)}
-.type-report{background:rgba(255,159,67,0.1);color:var(--orange)}
-.type-default{background:rgba(255,255,255,0.05);color:var(--text3)}
-.gf-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:10px}
-.gf-metric{padding:12px 14px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-sm);transition:border-color 0.2s}
-.gf-metric:hover{border-color:var(--border2)}
-.gf-metric-name{font-size:11px;color:var(--text3);margin-bottom:6px;text-transform:capitalize}
-.gf-metric-bar{height:3px;background:rgba(255,255,255,0.04);border-radius:2px;overflow:hidden;margin-bottom:5px}
-.gf-metric-fill{height:100%;border-radius:2px;transition:width 0.8s ease}
-.gf-metric-detail{color:var(--text2);font-size:11px;line-height:1.4}
-.methodology{margin-top:28px;padding:18px 22px;background:var(--bg2);border-radius:var(--radius-sm);font-size:11.5px;color:var(--text3);line-height:1.65;border:1px solid var(--border)}
-.footer{padding:28px 0;border-top:1px solid var(--border);text-align:center;font-size:11px;color:var(--text3);margin-top:48px;letter-spacing:0.02em}
-@media(max-width:680px){.container{padding:0 18px}.search-section{padding:36px 0 24px}.brief-title{font-size:22px}.tl-item{grid-template-columns:95px 1fr;gap:12px}.gf-grid{grid-template-columns:1fr 1fr}.search-btn{padding:0 20px;font-size:13px}.hero-title{font-size:24px}.hero-features{gap:16px}.evidence-web-wrap{margin:0 -18px}.pred-invest{display:block}}
+.source-title{font-size:14px;color:var(--text);margin-bottom:4px;font-weight:500}
+.source-title a{color:var(--text);border-bottom:1px solid var(--border)}
+.source-title a:hover{color:var(--accent);border-bottom-color:var(--accent)}
+.source-meta{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.source-type{font-size:10px;padding:2px 8px;border-radius:6px;font-weight:600;letter-spacing:0.5px;text-transform:uppercase}
+.type-primary{background:rgba(249,115,22,0.12);color:var(--accent)}
+.type-supporting{background:rgba(59,130,246,0.12);color:var(--blue)}
+.type-official{background:rgba(34,197,94,0.12);color:var(--green)}
+.type-data{background:rgba(168,85,247,0.12);color:var(--purple)}
+.type-grounded{background:rgba(34,197,94,0.12);color:var(--green)}
+.source-date{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text3)}
+.source-badge{padding:4px 8px;border-radius:6px;font-size:10px;font-weight:700;white-space:nowrap}
+.badge-verified{background:rgba(34,197,94,0.12);color:var(--green);border:1px solid rgba(34,197,94,0.2)}
+.badge-search{background:rgba(234,179,8,0.12);color:var(--yellow);border:1px solid rgba(234,179,8,0.2)}
+
+/* Predictions */
+.prediction-item{padding:16px 0;border-bottom:1px solid var(--border)}
+.prediction-item:last-child{border-bottom:none}
+.pred-header{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:8px}
+.pred-text{font-size:14px;color:var(--text);line-height:1.5;flex:1}
+.pred-prob{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;white-space:nowrap;padding:4px 10px;border-radius:8px}
+.pred-bar{height:4px;background:var(--border);border-radius:2px;margin:8px 0;overflow:hidden}
+.pred-bar-fill{height:100%;border-radius:2px;transition:width 1.2s ease}
+.pred-basis{font-size:12px;color:var(--text3);margin-top:6px}
+.pred-indicators{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.pred-indicator{font-size:11px;padding:3px 8px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--text2)}
+
+/* Pattern Analysis */
+.pattern-group{margin-bottom:16px}
+.pattern-label{font-size:12px;font-weight:600;color:var(--accent);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px}
+.pattern-items{display:flex;flex-direction:column;gap:6px}
+.pattern-item{font-size:13px;color:var(--text2);padding:8px 12px;background:var(--bg3);border-radius:8px;border-left:3px solid var(--accent)}
+
+/* Findings */
+.finding-item{padding:14px 0;border-bottom:1px solid var(--border)}
+.finding-item:last-child{border-bottom:none}
+.finding-text{font-size:14px;color:var(--text);line-height:1.5;margin-bottom:6px}
+.finding-evidence{font-size:13px;color:var(--text2);margin-bottom:4px;padding-left:12px;border-left:2px solid var(--border2)}
+.finding-impact{font-size:11px;font-weight:700;padding:2px 8px;border-radius:6px;display:inline-block}
+.impact-HIGH{background:rgba(239,68,68,0.12);color:var(--red)}
+.impact-MEDIUM{background:rgba(234,179,8,0.12);color:var(--yellow)}
+.impact-LOW{background:rgba(59,130,246,0.12);color:var(--blue)}
+
+/* Animations */
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.fade-up{opacity:0;animation:fadeUp 0.5s ease forwards}
+.fade-up-1{animation-delay:0.1s}
+.fade-up-2{animation-delay:0.2s}
+.fade-up-3{animation-delay:0.3s}
+.fade-up-4{animation-delay:0.4s}
+.fade-up-5{animation-delay:0.5s}
+
+/* Responsive */
+@media(max-width:768px){
+.hero{padding:50px 16px 30px}
+.hero h1{font-size:28px}
+.gf-ring-container{flex-direction:column;align-items:flex-start}
+.gf-metrics{grid-template-columns:1fr}
+.meta-bar{gap:8px}
+.source-item{grid-template-columns:24px 1fr}
+.source-badge{display:none}
+}
 </style>
 </head>
 <body>
+
+<!-- Header -->
 <header class="header">
- <div class="container">
   <div class="header-inner">
-   <div class="logo">
-    <div class="logo-mark">S</div>
-    <div><div class="logo-text">SubMind</div><div class="logo-sub">Deep Intelligence Research</div></div>
-   </div>
-   <div class="header-badge">v8.0</div>
+    <div class="logo">
+      <div class="logo-icon">S</div>
+      SubMind
+      <span class="version-badge">v9.0</span>
+    </div>
+    <div style="font-size:12px;color:var(--text3)">Deep Intelligence Research Engine</div>
   </div>
- </div>
 </header>
-<section class="search-section">
- <div class="container">
-  <div class="search-box">
-   <input type="text" class="search-input" id="searchInput" placeholder="Research any topic, event, or claim...">
-   <button class="search-btn" id="searchBtn">Research</button>
+
+<!-- Hero -->
+<section class="hero" id="hero">
+  <h1>Intelligence That Traces Truth to Its Source</h1>
+  <p>Every claim verified. Every link validated. SubMind traces information from origin to prediction with source-level precision.</p>
+  <div class="search-container">
+    <input type="text" class="search-box" id="searchInput" placeholder="What do you want investigated?" autocomplete="off">
+    <button class="search-btn" id="searchBtn" onclick="runSearch()">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg>
+    </button>
   </div>
- </div>
 </section>
-<div class="container">
- <div class="hero" id="hero">
-  <div class="hero-title">Intelligence-grade research at your fingertips</div>
-  <div class="hero-desc">SubMind traces claims back to their origin, maps evidence connections, and validates every source through adversarial analysis — delivering briefings no LLM can replicate.</div>
-  <div class="hero-features">
-   <div class="hero-feat"><div class="hero-feat-dot" style="background:var(--accent)"></div>Origin Tracing</div>
-   <div class="hero-feat"><div class="hero-feat-dot" style="background:var(--green)"></div>Source Validation</div>
-   <div class="hero-feat"><div class="hero-feat-dot" style="background:var(--orange)"></div>Predictive Analysis</div>
-   <div class="hero-feat"><div class="hero-feat-dot" style="background:var(--red)"></div>Adversarial Testing</div>
-  </div>
- </div>
- <div class="loading" id="loading">
-  <div class="loading-ring"><svg viewBox="0 0 48 48"><circle cx="24" cy="24" r="20" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="3"/><circle cx="24" cy="24" r="20" fill="none" stroke="#4318FF" stroke-width="3" stroke-linecap="round" stroke-dasharray="40 86"/></svg></div>
-  <div class="loading-phases">
-   <div class="loading-phase active" id="lp1">Gathering sources across the web</div>
-   <div class="loading-phase" id="lp2">Constructing intelligence briefing</div>
-   <div class="loading-phase" id="lp3">Glass Fang validation (12 metrics)</div>
-   <div class="loading-phase" id="lp4">Nemesis adversarial challenge</div>
-  </div>
- </div>
- <div class="results" id="results">
-  <div class="brief-header fade-up" id="sec-header">
-   <h1 class="brief-title" id="briefTitle"></h1>
-   <div class="brief-meta">
-    <span class="brief-badge" id="briefBadge"></span>
-    <span class="meta-item" id="briefConf"></span>
-    <span class="meta-item" id="briefSources"></span>
-    <span class="meta-item" id="briefTime"></span>
-    <span class="score-ring"><canvas id="scoreCanvas" width="72" height="72"></canvas><span class="score-label">Glass Fang<br><strong id="gfScoreText">--</strong>/100</span></span>
-   </div>
-  </div>
-  <div class="origin-card fade-up" id="originBox" style="display:none"><div class="origin-label">Origin Event</div><div class="origin-event" id="originEvent"></div><div class="origin-detail" id="originDetail"></div></div>
-  <div class="exec-summary fade-up" id="execSummary"></div>
-  <div id="webSection" class="fade-up" style="display:none"><div class="section-header">Evidence Web</div><div class="evidence-web-wrap"><div class="evidence-web"><canvas id="webCanvas" width="1760" height="900"></canvas><div class="web-tooltip" id="webTooltip"><div class="web-tooltip-type" id="ttType"></div><div id="ttLabel"></div></div><div class="web-legend"><span class="legend-origin">Origin</span><span class="legend-event">Events</span><span class="legend-pred">Predictions</span><span class="legend-source">Sources</span></div></div></div></div>
-  <div class="briefing-section fade-up" id="sec-briefing"><div class="briefing-content" id="briefingContent"></div></div>
-  <div id="timelineSection" class="fade-up" style="display:none"><div class="section-header">Timeline</div><div class="tl-container"><div class="tl-line"></div><div id="timelineItems"></div></div></div>
-  <div id="predictionsSection" class="fade-up" style="display:none"><div class="section-header">Forward Assessment</div><div id="predictionItems"></div></div>
-  <div id="sourcesSection" class="fade-up" style="display:none"><div class="section-header">Sources</div><div id="sourceItems"></div></div>
-  <div id="gfSection" class="fade-up" style="display:none"><div class="section-header">Validation Metrics</div><div class="gf-grid" id="gfMetrics"></div></div>
-  <div class="methodology" id="methodology"></div>
-  <div class="footer">SubMind v8.0 — Deep Intelligence Research Engine</div>
- </div>
+
+<!-- Loading -->
+<div class="loading" id="loading">
+  <div class="spinner"></div>
+  <div class="loading-phases" id="loadingPhases"></div>
 </div>
+
+<!-- Dashboard -->
+<div class="dashboard" id="dashboard">
+  <div id="briefingContent"></div>
+</div>
+
 <script>
-var searchBtn=document.getElementById('searchBtn'),searchInput=document.getElementById('searchInput'),loadingTimer,webAnimFrame;
-searchBtn.addEventListener('click',runSearch);
-searchInput.addEventListener('keydown',function(e){if(e.key==='Enter')runSearch()});
 
-async function runSearch(){
- var topic=searchInput.value.trim();
- if(!topic){searchInput.focus();return}
- searchBtn.disabled=true;searchBtn.textContent='Researching...';
- document.getElementById('hero').classList.add('hidden');
- document.getElementById('results').classList.remove('active');
- document.getElementById('loading').classList.add('active');
- if(webAnimFrame){cancelAnimationFrame(webAnimFrame);webAnimFrame=null}
- document.querySelectorAll('.fade-up').forEach(function(el){el.classList.remove('visible')});
- var phases=['lp1','lp2','lp3','lp4'],pi=0;
- document.getElementById(phases[0]).classList.add('active');
- loadingTimer=setInterval(function(){
-  if(pi<phases.length-1){
-   var c=document.getElementById(phases[pi]);
-   c.classList.remove('active');c.classList.add('done');
-   c.innerHTML='<span class="check">\u2713</span> '+c.textContent;
-   pi++;document.getElementById(phases[pi]).classList.add('active');
+const API = '/api/predict';
+const phases = [
+  {id:'search', label:'Gathering sources from multiple providers...', icon:'🔍'},
+  {id:'briefing', label:'Generating intelligence briefing...', icon:'🧠'},
+  {id:'merge', label:'Merging & deduplicating sources...', icon:'🔗'},
+  {id:'verify', label:'Verifying every source URL...', icon:'✅'},
+  {id:'glassfang', label:'Glass Fang validation scan...', icon:'🛡️'},
+  {id:'nemesis', label:'Nemesis adversarial check...', icon:'⚔️'}
+];
+
+function runSearch() {
+  const q = document.getElementById('searchInput').value.trim();
+  if (!q) return;
+  
+  const hero = document.getElementById('hero');
+  const loading = document.getElementById('loading');
+  const dashboard = document.getElementById('dashboard');
+  const btn = document.getElementById('searchBtn');
+  
+  hero.style.padding = '30px 24px 20px';
+  hero.querySelector('h1').style.display = 'none';
+  hero.querySelector('p').style.display = 'none';
+  loading.classList.add('active');
+  dashboard.classList.remove('active');
+  btn.disabled = true;
+  
+  // Show loading phases
+  const phasesEl = document.getElementById('loadingPhases');
+  phasesEl.innerHTML = phases.map((p,i) => 
+    '<div class="phase" id="phase-' + p.id + '"><span class="phase-icon">' + p.icon + '</span>' + p.label + '</div>'
+  ).join('');
+  
+  // Animate phases
+  let phaseIdx = 0;
+  const phaseInterval = setInterval(() => {
+    if (phaseIdx < phases.length) {
+      const el = document.getElementById('phase-' + phases[phaseIdx].id);
+      if (el) {
+        if (phaseIdx > 0) {
+          const prev = document.getElementById('phase-' + phases[phaseIdx-1].id);
+          if (prev) { prev.classList.remove('active'); prev.classList.add('done'); }
+        }
+        el.classList.add('active');
+      }
+      phaseIdx++;
+    }
+  }, 1200);
+  
+  fetch(API, {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({query: q})
+  })
+  .then(r => r.json())
+  .then(data => {
+    clearInterval(phaseInterval);
+    loading.classList.remove('active');
+    btn.disabled = false;
+    
+    if (data.error) {
+      dashboard.classList.add('active');
+      document.getElementById('briefingContent').innerHTML = '<div class="card"><p style="color:var(--red)">Error: ' + data.error + '</p></div>';
+      return;
+    }
+    
+    renderBriefing(data);
+    dashboard.classList.add('active');
+  })
+  .catch(err => {
+    clearInterval(phaseInterval);
+    loading.classList.remove('active');
+    btn.disabled = false;
+    dashboard.classList.add('active');
+    document.getElementById('briefingContent').innerHTML = '<div class="card"><p style="color:var(--red)">Connection error: ' + err.message + '</p></div>';
+  });
+}
+
+// Enter key search
+document.getElementById('searchInput').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') runSearch();
+});
+
+function renderBriefing(data) {
+  const b = data.briefing || {};
+  const gf = data.validation?.glass_fang || {};
+  const nem = data.validation?.nemesis || {};
+  const meta = data.meta || {};
+  const vStats = meta.source_verification || {};
+  const sources = b.sources || [];
+  const el = document.getElementById('briefingContent');
+  
+  // Count verified/search links
+  const verifiedCount = sources.filter(s => s.verified).length;
+  const searchCount = sources.filter(s => s.link_type === 'search').length;
+  
+  let html = '';
+  
+  // Title
+  html += '<h2 class="fade-up" style="font-size:24px;font-weight:700;letter-spacing:-0.5px;margin-bottom:6px">' + (b.title || data.query) + '</h2>';
+  html += '<p class="fade-up fade-up-1" style="font-size:15px;color:var(--text2);margin-bottom:20px;line-height:1.6">' + (b.summary || '') + '</p>';
+  
+  // Meta Bar
+  html += '<div class="meta-bar fade-up fade-up-2">';
+  if (b.status) html += '<span class="status-badge status-' + b.status + '">' + b.status + '</span>';
+  if (b.confidence) html += '<div class="meta-chip"><span class="val">' + b.confidence + '%</span> confidence</div>';
+  html += '<div class="meta-chip"><span class="val">' + sources.length + '</span> sources</div>';
+  if (meta.elapsed_seconds) html += '<div class="meta-chip"><span class="val">' + meta.elapsed_seconds + 's</span> pipeline</div>';
+  html += '<div class="meta-chip">GF <span class="val">' + (gf.score || 0) + '/100</span></div>';
+  if (nem.count !== undefined) html += '<div class="meta-chip">Nemesis <span class="val">' + nem.count + '</span> issues</div>';
+  html += '</div>';
+  
+  // Source Verification Stats Bar
+  html += '<div class="verification-bar fade-up fade-up-2" style="margin-bottom:20px">';
+  html += '<div class="verification-stat vstat-verified">✓ ' + verifiedCount + ' verified links</div>';
+  if (searchCount > 0) html += '<div class="verification-stat vstat-fallback">🔍 ' + searchCount + ' search fallbacks</div>';
+  html += '<div class="verification-stat vstat-total">' + sources.length + ' total sources</div>';
+  html += '</div>';
+  
+  // Glass Fang Score Ring
+  const circumference = 2 * Math.PI * 42;
+  const offset = circumference - (circumference * (gf.score || 0) / 100);
+  const scoreColor = (gf.score || 0) >= 80 ? 'var(--green)' : (gf.score || 0) >= 60 ? 'var(--yellow)' : 'var(--red)';
+  
+  html += '<div class="card fade-up fade-up-3">';
+  html += '<div class="card-header"><span class="icon">🛡️</span>Glass Fang Validation</div>';
+  html += '<div class="gf-ring-container">';
+  html += '<div class="gf-ring"><svg width="100" height="100" viewBox="0 0 100 100"><circle class="gf-ring-bg" cx="50" cy="50" r="42"/><circle class="gf-ring-fill" cx="50" cy="50" r="42" style="stroke:' + scoreColor + ';stroke-dasharray:' + circumference + ';stroke-dashoffset:' + offset + '"/></svg><div class="gf-score-text">' + (gf.score || 0) + '</div><div class="gf-label">Glass Fang</div></div>';
+  
+  // Metric grid
+  html += '<div class="gf-metrics">';
+  const metricLabels = {
+    source_depth:'Source Depth', source_diversity:'Diversity', temporal_coverage:'Temporal',
+    specificity:'Specificity', prediction_quality:'Predictions', evidence_chain:'Evidence Chain',
+    cross_reference:'Cross-Ref', pattern_depth:'Patterns', investment_relevance:'Investment',
+    timeline_depth:'Timeline', confidence_calibration:'Calibration', source_verification:'URL Verified'
+  };
+  if (gf.metrics) {
+    for (const [k,v] of Object.entries(gf.metrics)) {
+      const label = metricLabels[k] || k;
+      const color = v >= 80 ? 'var(--green)' : v >= 50 ? 'var(--yellow)' : 'var(--red)';
+      html += '<div class="gf-metric"><span class="gf-metric-name">' + label + '</span><span class="gf-metric-val" style="color:' + color + '">' + v + '</span></div>';
+    }
   }
- },2200);
- try{
-  var resp=await fetch('/api/predict',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({topic:topic})});
-  clearInterval(loadingTimer);
-  if(!resp.ok){var err=await resp.json().catch(function(){return{}});throw new Error(err.detail||err.error||'Research failed')}
-  var data=await resp.json();
-  renderBriefing(data);
-  document.getElementById('loading').classList.remove('active');
-  document.getElementById('results').classList.add('active');
-  staggerReveal();
-  document.querySelector('.brief-header').scrollIntoView({behavior:'smooth',block:'start'});
- }catch(err){clearInterval(loadingTimer);document.getElementById('loading').classList.remove('active');alert('SubMind: '+err.message)}
- finally{searchBtn.disabled=false;searchBtn.textContent='Research';['lp1','lp2','lp3','lp4'].forEach(function(id,i){var el=document.getElementById(id);el.classList.remove('active','done');el.textContent=['Gathering sources across the web','Constructing intelligence briefing','Glass Fang validation (12 metrics)','Nemesis adversarial challenge'][i]})}
+  html += '</div></div></div>';
+
+  // Key Findings
+  if (b.key_findings && b.key_findings.length) {
+    html += '<div class="card fade-up fade-up-3">';
+    html += '<div class="card-header"><span class="icon">📋</span>Key Findings</div>';
+    for (const f of b.key_findings) {
+      html += '<div class="finding-item">';
+      html += '<div class="finding-text">' + (f.finding || '') + '</div>';
+      if (f.evidence) html += '<div class="finding-evidence">' + f.evidence + '</div>';
+      if (f.impact) html += '<span class="finding-impact impact-' + f.impact + '">' + f.impact + '</span>';
+      html += '</div>';
+    }
+    html += '</div>';
+  }
+  
+  // Timeline
+  if (b.timeline && b.timeline.length) {
+    html += '<div class="card fade-up fade-up-4">';
+    html += '<div class="card-header"><span class="icon">📅</span>Intelligence Timeline</div>';
+    html += '<div class="timeline">';
+    b.timeline.forEach((t, i) => {
+      html += '<div class="tl-item" style="animation-delay:' + (i * 0.1) + 's">';
+      html += '<div class="tl-date">' + (t.date || '') + '</div>';
+      html += '<div class="tl-event">' + (t.event || '') + '</div>';
+      if (t.significance) html += '<div class="tl-sig">' + t.significance + '</div>';
+      html += '</div>';
+    });
+    html += '</div></div>';
+  }
+  
+  // Predictions
+  if (b.predictions && b.predictions.length) {
+    html += '<div class="card fade-up fade-up-4">';
+    html += '<div class="card-header"><span class="icon">🔮</span>SubMind Predictions</div>';
+    for (const p of b.predictions) {
+      const prob = p.probability || 50;
+      const pColor = prob >= 75 ? 'var(--green)' : prob >= 50 ? 'var(--yellow)' : 'var(--red)';
+      html += '<div class="prediction-item">';
+      html += '<div class="pred-header"><div class="pred-text">' + (p.prediction || '') + '</div>';
+      html += '<span class="pred-prob" style="background:' + pColor + '22;color:' + pColor + '">' + prob + '%</span></div>';
+      html += '<div class="pred-bar"><div class="pred-bar-fill" style="width:' + prob + '%;background:' + pColor + '"></div></div>';
+      if (p.timeframe) html += '<div class="pred-basis" style="color:var(--text2)">⏳ ' + p.timeframe + '</div>';
+      if (p.basis) html += '<div class="pred-basis">' + p.basis + '</div>';
+      if (p.indicators && p.indicators.length) {
+        html += '<div class="pred-indicators">';
+        for (const ind of p.indicators) {
+          html += '<span class="pred-indicator">👁 ' + ind + '</span>';
+        }
+        html += '</div>';
+      }
+      html += '</div>';
+    }
+    html += '</div>';
+  }
+  
+  // Pattern Analysis
+  if (b.pattern_analysis) {
+    const pa = b.pattern_analysis;
+    html += '<div class="card fade-up fade-up-5">';
+    html += '<div class="card-header"><span class="icon">🧩</span>Pattern Analysis</div>';
+    
+    const groups = [
+      {key:'historical_patterns', label:'Historical Patterns', color:'var(--purple)'},
+      {key:'current_signals', label:'Current Signals', color:'var(--accent)'},
+      {key:'convergence_points', label:'Convergence Points', color:'var(--green)'}
+    ];
+    
+    for (const g of groups) {
+      if (pa[g.key] && pa[g.key].length) {
+        html += '<div class="pattern-group">';
+        html += '<div class="pattern-label" style="color:' + g.color + '">' + g.label + '</div>';
+        html += '<div class="pattern-items">';
+        for (const item of pa[g.key]) {
+          html += '<div class="pattern-item" style="border-left-color:' + g.color + '">' + item + '</div>';
+        }
+        html += '</div></div>';
+      }
+    }
+    html += '</div>';
+  }
+
+  // Evidence Web
+  html += '<div class="card fade-up fade-up-5">';
+  html += '<div class="card-header"><span class="icon">🌐</span>Evidence Web</div>';
+  html += '<div class="evidence-web"><canvas id="evidenceCanvas"></canvas></div>';
+  html += '</div>';
+  
+  // Investment Relevance
+  if (b.investment_relevance) {
+    const ir = b.investment_relevance;
+    html += '<div class="card fade-up fade-up-5">';
+    html += '<div class="card-header"><span class="icon">📈</span>Investment Relevance</div>';
+    html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">';
+    if (ir.risk_level) html += '<div style="padding:12px;background:var(--bg3);border-radius:8px"><div style="font-size:11px;color:var(--text3);margin-bottom:4px">Risk Level</div><div style="font-weight:600;color:' + (ir.risk_level==='HIGH'?'var(--red)':ir.risk_level==='MEDIUM'?'var(--yellow)':'var(--green)') + '">' + ir.risk_level + '</div></div>';
+    if (ir.opportunity_window) html += '<div style="padding:12px;background:var(--bg3);border-radius:8px"><div style="font-size:11px;color:var(--text3);margin-bottom:4px">Opportunity Window</div><div style="font-weight:600">' + ir.opportunity_window + '</div></div>';
+    html += '</div>';
+    if (ir.sectors_affected && ir.sectors_affected.length) {
+      html += '<div style="margin-top:12px;display:flex;flex-wrap:wrap;gap:6px">';
+      for (const s of ir.sectors_affected) {
+        html += '<span style="font-size:12px;padding:4px 10px;background:var(--accent-glow);color:var(--accent);border-radius:6px">' + s + '</span>';
+      }
+      html += '</div>';
+    }
+    if (ir.key_metrics && ir.key_metrics.length) {
+      html += '<div style="margin-top:12px">';
+      for (const m of ir.key_metrics) {
+        html += '<div style="font-size:13px;color:var(--text2);padding:6px 0;border-bottom:1px solid var(--border)">• ' + m + '</div>';
+      }
+      html += '</div>';
+    }
+    html += '</div>';
+  }
+  
+  // Sources with Verification Badges
+  html += '<div class="card fade-up fade-up-5">';
+  html += '<div class="card-header"><span class="icon">📚</span>Verified Sources (' + sources.length + ')</div>';
+  
+  for (let i = 0; i < sources.length; i++) {
+    const s = sources[i];
+    const isVerified = s.verified === true;
+    const isSearch = s.link_type === 'search';
+    
+    html += '<div class="source-item">';
+    html += '<div class="source-num">' + (i + 1) + '</div>';
+    html += '<div>';
+    html += '<div class="source-title"><a href="' + (s.url || '#') + '" target="_blank" rel="noopener">' + (s.title || 'Source') + '</a></div>';
+    html += '<div class="source-meta">';
+    
+    // Type badge
+    const sType = s.type || s.merge_priority || 'supporting';
+    html += '<span class="source-type type-' + sType.split('_')[0] + '">' + sType.replace(/_/g, ' ') + '</span>';
+    
+    // Date
+    if (s.date) html += '<span class="source-date">' + s.date + '</span>';
+    
+    // Verification indicator in meta
+    if (isVerified) {
+      html += '<span class="src-verified">Verified</span>';
+    } else if (isSearch) {
+      html += '<span class="src-search">Search Link</span>';
+    }
+    
+    html += '</div>';
+    
+    // Show fallback reason if URL was replaced
+    if (s.fallback_reason) {
+      html += '<div style="font-size:11px;color:var(--text3);margin-top:4px;font-style:italic">⚠ ' + s.fallback_reason + ' — redirected to search</div>';
+    }
+    
+    html += '</div>';
+    
+    // Right badge
+    html += '<div>';
+    if (isVerified) {
+      html += '<span class="source-badge badge-verified">✓ DIRECT</span>';
+    } else {
+      html += '<span class="source-badge badge-search">🔍 SEARCH</span>';
+    }
+    html += '</div>';
+    
+    html += '</div>';
+  }
+  html += '</div>';
+  
+  // Methodology Note
+  if (b.methodology_note) {
+    html += '<div class="card fade-up fade-up-5" style="border-color:var(--border2)">';
+    html += '<div class="card-header"><span class="icon">⚙️</span>Methodology</div>';
+    html += '<p style="font-size:13px;color:var(--text3);line-height:1.6">' + b.methodology_note + '</p>';
+    html += '</div>';
+  }
+  
+  // Pipeline info
+  html += '<div style="text-align:center;padding:24px;font-size:11px;color:var(--text3)">';
+  html += 'SubMind v' + (meta.version || '9.0') + ' | Pipeline: ' + (meta.pipeline || []).join(' → ') + ' | Briefing by ' + (meta.providers?.briefing || 'unknown');
+  html += '</div>';
+  
+  el.innerHTML = html;
+  
+  // Init evidence web after render
+  setTimeout(() => initEvidenceWeb(sources), 300);
 }
 
-function staggerReveal(){
- var els=document.querySelectorAll('.fade-up');
- els.forEach(function(el,i){setTimeout(function(){el.classList.add('visible')},120*i)});
-}
-
-function animateScoreRing(score){
- var c=document.getElementById('scoreCanvas'),ctx=c.getContext('2d');
- var target=score/100,current=0,startTime=null;
- var color=target>=0.7?'#00C48C':target>=0.4?'#FF9F43':'#FF4757';
- function frame(ts){
-  if(!startTime)startTime=ts;
-  var progress=Math.min((ts-startTime)/800,1);
-  current=progress*target;
-  var eased=1-Math.pow(1-progress,3);
-  current=eased*target;
-  ctx.clearRect(0,0,72,72);
-  ctx.beginPath();ctx.arc(36,36,30,0,Math.PI*2);ctx.strokeStyle='rgba(255,255,255,0.04)';ctx.lineWidth=4;ctx.stroke();
-  ctx.beginPath();ctx.arc(36,36,30,-Math.PI/2,-Math.PI/2+Math.PI*2*current);ctx.strokeStyle=color;ctx.lineWidth=4;ctx.lineCap='round';ctx.stroke();
-  var displayScore=Math.round(eased*score);
-  ctx.fillStyle='#eaeaf2';ctx.font='bold 16px Inter,sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(displayScore,36,36);
-  if(progress<1)requestAnimationFrame(frame);
- }
- requestAnimationFrame(frame);
-}
-
-var webNodes=[],webLinks=[],webPositions={},webVelocities={},webHover=null;
-
-function initForceLayout(web){
- if(!web||!web.nodes||web.nodes.length<2)return false;
- webNodes=web.nodes;webLinks=web.links||[];
- webPositions={};webVelocities={};
- var c=document.getElementById('webCanvas'),W=c.width,H=c.height;
- var cx=W/2,cy=H/2;
- webNodes.forEach(function(n,i){
-  var angle=(i/webNodes.length)*Math.PI*2;
-  var r=Math.min(W,H)*0.3;
-  if(n.type==='origin'){webPositions[n.id]={x:cx-r*0.6,y:cy}}
-  else if(n.type==='prediction'){webPositions[n.id]={x:cx+r*0.7+Math.random()*60,y:cy-r*0.4+i*60}}
-  else if(n.type==='source'){webPositions[n.id]={x:cx+Math.cos(angle+1)*r*0.5,y:cy+r*0.5+Math.random()*40}}
-  else{webPositions[n.id]={x:cx+Math.cos(angle)*r*(0.3+Math.random()*0.3),y:cy+Math.sin(angle)*r*(0.3+Math.random()*0.3)}}
-  webVelocities[n.id]={vx:0,vy:0};
- });
- return true;
-}
-
-function simulateForces(){
- var W=1760,H=900,damping=0.88,repulsion=28000,attraction=0.008,centerPull=0.002;
- webNodes.forEach(function(a){
-  var pa=webPositions[a.id],va=webVelocities[a.id];
-  if(!pa||!va)return;
-  va.vx+=(W/2-pa.x)*centerPull;
-  va.vy+=(H/2-pa.y)*centerPull;
-  webNodes.forEach(function(b){
-   if(a.id===b.id)return;
-   var pb=webPositions[b.id];if(!pb)return;
-   var dx=pa.x-pb.x,dy=pa.y-pb.y;
-   var dist=Math.sqrt(dx*dx+dy*dy)+1;
-   var force=repulsion/(dist*dist);
-   va.vx+=dx/dist*force;va.vy+=dy/dist*force;
+// ===== EVIDENCE WEB: Force-directed source graph =====
+function initEvidenceWeb(sources) {
+  const canvas = document.getElementById('evidenceCanvas');
+  if (!canvas || !sources || !sources.length) return;
+  
+  const container = canvas.parentElement;
+  const W = container.clientWidth;
+  const H = container.clientHeight;
+  canvas.width = W * 2;
+  canvas.height = H * 2;
+  const ctx = canvas.getContext('2d');
+  ctx.scale(2, 2);
+  
+  // Create nodes
+  const nodes = sources.slice(0, 15).map((s, i) => {
+    const angle = (i / Math.min(sources.length, 15)) * Math.PI * 2;
+    const radius = Math.min(W, H) * 0.3;
+    return {
+      x: W/2 + Math.cos(angle) * radius + (Math.random()-0.5) * 40,
+      y: H/2 + Math.sin(angle) * radius + (Math.random()-0.5) * 40,
+      vx: 0, vy: 0,
+      title: (s.title || 'Source').substring(0, 28),
+      verified: s.verified,
+      type: s.type || 'supporting',
+      url: s.url || '',
+      radius: s.verified ? 22 : 18
+    };
   });
- });
- webLinks.forEach(function(l){
-  var pa=webPositions[l.source],pb=webPositions[l.target];
-  if(!pa||!pb)return;
-  var dx=pb.x-pa.x,dy=pb.y-pa.y;
-  var dist=Math.sqrt(dx*dx+dy*dy)+1;
-  var idealDist=180;
-  var force=(dist-idealDist)*attraction;
-  var fx=dx/dist*force,fy=dy/dist*force;
-  var va=webVelocities[l.source],vb=webVelocities[l.target];
-  if(va){va.vx+=fx;va.vy+=fy}
-  if(vb){vb.vx-=fx;vb.vy-=fy}
- });
- var totalV=0;
- webNodes.forEach(function(n){
-  var p=webPositions[n.id],v=webVelocities[n.id];
-  if(!p||!v)return;
-  v.vx*=damping;v.vy*=damping;
-  p.x+=v.vx;p.y+=v.vy;
-  p.x=Math.max(60,Math.min(1700,p.x));
-  p.y=Math.max(60,Math.min(840,p.y));
-  totalV+=Math.abs(v.vx)+Math.abs(v.vy);
- });
- return totalV;
-}
-
-var animTime=0;
-function drawWebFrame(){
- var c=document.getElementById('webCanvas'),ctx=c.getContext('2d');
- var W=c.width,H=c.height;
- ctx.clearRect(0,0,W,H);
- var colors={origin:'#4318FF',event:'#00C48C',prediction:'#FF9F43',source:'#6a6a85'};
- animTime+=0.015;
- webLinks.forEach(function(l){
-  var from=webPositions[l.source],to=webPositions[l.target];
-  if(!from||!to)return;
-  var dx=to.x-from.x,dy=to.y-from.y;
-  var dist=Math.sqrt(dx*dx+dy*dy);
-  var grad=ctx.createLinearGradient(from.x,from.y,to.x,to.y);
-  var fromNode=webNodes.find(function(n){return n.id===l.source});
-  var toNode=webNodes.find(function(n){return n.id===l.target});
-  var c1=colors[fromNode?fromNode.type:'event']||'#6C4DFF';
-  var c2=colors[toNode?toNode.type:'event']||'#6C4DFF';
-  grad.addColorStop(0,c1+'30');grad.addColorStop(1,c2+'30');
-  ctx.beginPath();ctx.moveTo(from.x,from.y);ctx.lineTo(to.x,to.y);
-  ctx.strokeStyle=grad;ctx.lineWidth=1.5;ctx.stroke();
-  var angle=Math.atan2(dy,dx);
-  var arrowX=from.x+dx*0.7,arrowY=from.y+dy*0.7;
-  ctx.beginPath();ctx.moveTo(arrowX,arrowY);
-  ctx.lineTo(arrowX-10*Math.cos(angle-0.35),arrowY-10*Math.sin(angle-0.35));
-  ctx.moveTo(arrowX,arrowY);
-  ctx.lineTo(arrowX-10*Math.cos(angle+0.35),arrowY-10*Math.sin(angle+0.35));
-  ctx.strokeStyle=c2+'50';ctx.lineWidth=1.5;ctx.stroke();
-  var particlePos=((animTime*0.5)%1);
-  var px=from.x+dx*particlePos,py=from.y+dy*particlePos;
-  ctx.beginPath();ctx.arc(px,py,2.5,0,Math.PI*2);ctx.fillStyle=c2+'80';ctx.fill();
- });
- webNodes.forEach(function(n){
-  var p=webPositions[n.id];if(!p)return;
-  var r=n.type==='origin'?20:n.type==='prediction'?16:n.type==='source'?10:14;
-  var col=colors[n.type]||colors.event;
-  var isHover=webHover===n.id;
-  if(isHover)r+=4;
-  var pulse=1+Math.sin(animTime*2+n.id.length)*0.06;
-  var drawR=r*pulse;
-  ctx.beginPath();ctx.arc(p.x,p.y,drawR+10,0,Math.PI*2);
-  var grd=ctx.createRadialGradient(p.x,p.y,drawR,p.x,p.y,drawR+10);
-  grd.addColorStop(0,col+(isHover?'40':'20'));grd.addColorStop(1,'transparent');
-  ctx.fillStyle=grd;ctx.fill();
-  ctx.beginPath();ctx.arc(p.x,p.y,drawR,0,Math.PI*2);
-  ctx.fillStyle=col+(isHover?'50':'20');ctx.fill();
-  ctx.strokeStyle=col+(isHover?'FF':'99');ctx.lineWidth=isHover?2.5:1.5;ctx.stroke();
-  ctx.fillStyle=isHover?'#fff':'#e0e0f0';
-  ctx.font=(isHover?'bold ':'')+(n.type==='source'?'11':'12')+'px Inter,sans-serif';
-  ctx.textAlign='center';
-  var label=(n.label||'').substring(0,28)+(n.label&&n.label.length>28?'...':'');
-  ctx.fillText(label,p.x,p.y+drawR+16);
- });
-}
-
-function startWebAnimation(web){
- if(!initForceLayout(web)){document.getElementById('webSection').style.display='none';return}
- document.getElementById('webSection').style.display='';
- var iterations=0,maxIter=300;
- function tick(){
-  var energy=simulateForces();
-  drawWebFrame();
-  iterations++;
-  if(iterations<maxIter&&energy>0.5){webAnimFrame=requestAnimationFrame(tick)}
-  else{slowDraw()}
- }
- function slowDraw(){
-  drawWebFrame();
-  webAnimFrame=requestAnimationFrame(slowDraw);
- }
- tick();
-}
-
-var webCanvasEl=document.getElementById('webCanvas');
-webCanvasEl.addEventListener('mousemove',function(e){
- var rect=webCanvasEl.getBoundingClientRect();
- var scaleX=webCanvasEl.width/rect.width,scaleY=webCanvasEl.height/rect.height;
- var mx=(e.clientX-rect.left)*scaleX,my=(e.clientY-rect.top)*scaleY;
- var found=null,minD=40;
- webNodes.forEach(function(n){
-  var p=webPositions[n.id];if(!p)return;
-  var d=Math.sqrt(Math.pow(p.x-mx,2)+Math.pow(p.y-my,2));
-  if(d<minD){minD=d;found=n}
- });
- webHover=found?found.id:null;
- var tt=document.getElementById('webTooltip');
- if(found){
-  tt.classList.add('visible');
-  document.getElementById('ttType').textContent=found.type;
-  document.getElementById('ttType').style.color=({origin:'#4318FF',event:'#00C48C',prediction:'#FF9F43',source:'#6a6a85'})[found.type]||'#6C4DFF';
-  document.getElementById('ttLabel').textContent=found.label||'';
-  var px=e.clientX-rect.left+12,py=e.clientY-rect.top-10;
-  if(px+220>rect.width)px=e.clientX-rect.left-230;
-  tt.style.left=px+'px';tt.style.top=py+'px';
- }else{tt.classList.remove('visible')}
-});
-webCanvasEl.addEventListener('mouseleave',function(){
- webHover=null;
- document.getElementById('webTooltip').classList.remove('visible');
-});
-
-function renderBriefing(d){
- document.getElementById('briefTitle').textContent=d.title||d.topic;
- var badge=document.getElementById('briefBadge');
- var cls=(d.classification||'DEVELOPING').toUpperCase();
- badge.textContent=cls;badge.className='brief-badge badge-'+cls.toLowerCase();
- var conf=d.confidence||0.5;
- document.getElementById('briefConf').innerHTML='<strong>'+(conf*100).toFixed(0)+'%</strong> confidence';
- document.getElementById('briefSources').innerHTML='<strong>'+(d.sourceCount||0)+'</strong> sources';
- document.getElementById('briefTime').innerHTML='<strong>'+((d.processingMs||0)/1000).toFixed(1)+'s</strong>';
- var gfScore=d.validation?d.validation.glassFangScore:50;
- animateScoreRing(gfScore);
- document.getElementById('gfScoreText').textContent=gfScore;
- var origin=d.origin;
- if(origin&&origin.event){
-  document.getElementById('originBox').style.display='';
-  document.getElementById('originEvent').textContent=origin.event;
-  document.getElementById('originDetail').textContent=[origin.date,origin.location].filter(Boolean).join(' \u2014 ')+(origin.significance?'. '+origin.significance:'');
- }else{document.getElementById('originBox').style.display='none'}
- document.getElementById('execSummary').textContent=d.summary||'';
- startWebAnimation(d.evidence_web);
- var bt=d.briefing||'';
- bt=bt.replace(/\[(\d+)\]/g,function(m,num){
-  var src=(d.sources||[])[parseInt(num)-1];
-  if(src&&src.url)return '<a class="citation" href="'+src.url+'" target="_blank" rel="noopener" title="'+(src.title||'').replace(/"/g,'&quot;')+'">['+num+']</a>';
-  return '<span class="citation">['+num+']</span>';
- });
- bt=bt.split(/\n\n+/).map(function(p){return '<p>'+p.trim()+'</p>'}).join('');
- document.getElementById('briefingContent').innerHTML=bt;
- var tl=d.timeline||[];
- if(tl.length>0){
-  document.getElementById('timelineSection').style.display='';
-  document.getElementById('timelineItems').innerHTML=tl.map(function(t){
-   return '<div class="tl-item"><div class="tl-date">'+(t.date||'')+'</div><div class="tl-event">'+(t.event||'')+'</div></div>';
-  }).join('');
- }else{document.getElementById('timelineSection').style.display='none'}
- var preds=d.predictions||[];
- if(preds.length>0){
-  document.getElementById('predictionsSection').style.display='';
-  document.getElementById('predictionItems').innerHTML=preds.map(function(p){
-   var prob=p.probability||0.5;
-   var color=prob>=0.7?'var(--green)':prob>=0.4?'var(--orange)':'var(--red)';
-   var barColor=prob>=0.7?'#00C48C':prob>=0.4?'#FF9F43':'#FF4757';
-   return '<div class="pred-card"><div class="pred-scenario">'+(p.scenario||'')+'</div><div class="pred-meta"><span class="pred-prob" style="color:'+color+'">'+(prob*100).toFixed(0)+'%</span>'+(p.timeframe?'<span class="pred-timeframe">'+p.timeframe+'</span>':'')+'</div><div class="pred-bar"><div class="pred-bar-fill" style="width:'+(prob*100)+'%;background:'+barColor+'"></div></div>'+(p.basis?'<div class="pred-basis">'+p.basis+'</div>':'')+(p.investment_relevance?'<div class="pred-invest">'+p.investment_relevance+'</div>':'')+'</div>';
-  }).join('');
- }else{document.getElementById('predictionsSection').style.display='none'}
- var sources=d.sources||[];
- if(sources.length>0){
-  document.getElementById('sourcesSection').style.display='';
-  document.getElementById('sourceItems').innerHTML=sources.map(function(s){
-   var typeClass='type-default';
-   var t=(s.type||'').toLowerCase();
-   if(t==='filing')typeClass='type-filing';
-   else if(t==='ruling')typeClass='type-ruling';
-   else if(t==='article')typeClass='type-article';
-   else if(t==='report')typeClass='type-report';
-   return '<div class="source-item"><div class="source-num">['+s.index+']</div><div><a class="source-title" href="'+(s.url||'#')+'" target="_blank" rel="noopener">'+(s.title||'Source')+'</a><div class="source-domain">'+(s.domain||'')+(s.type?'<span class="source-type '+typeClass+'">'+s.type+'</span>':'')+(s.author?' \u2014 '+s.author:'')+'</div></div></div>';
-  }).join('');
- }else{document.getElementById('sourcesSection').style.display='none'}
- if(d.validation&&d.validation.metrics){
-  document.getElementById('gfSection').style.display='';
-  var mhtml='',metrics=d.validation.metrics;
-  Object.keys(metrics).forEach(function(key){
-   var m=metrics[key];var pct=Math.round((m.score||0)*100);
-   var color=pct>=70?'#00C48C':pct>=40?'#FF9F43':'#FF4757';
-   mhtml+='<div class="gf-metric"><div class="gf-metric-name">'+key.replace(/_/g,' ')+'</div><div class="gf-metric-bar"><div class="gf-metric-fill" style="width:'+pct+'%;background:'+color+'"></div></div><div class="gf-metric-detail">'+(m.detail||'')+'</div></div>';
+  
+  // Add center node
+  nodes.unshift({
+    x: W/2, y: H/2, vx: 0, vy: 0,
+    title: 'QUERY', verified: true, type: 'center',
+    radius: 28, isCenter: true
   });
-  document.getElementById('gfMetrics').innerHTML=mhtml;
- }else{document.getElementById('gfSection').style.display='none'}
- var parts=[];
- if(d.methodology_note)parts.push(d.methodology_note);
- if(d.validation&&d.validation.passedChecks)parts.push(d.validation.passedChecks+'/'+d.validation.totalChecks+' validation checks passed.');
- parts.push('SubMind v8.0 \u2014 '+d.provider);
- document.getElementById('methodology').textContent=parts.join(' ');
+  
+  // Create edges
+  const edges = [];
+  for (let i = 1; i < nodes.length; i++) {
+    edges.push({from: 0, to: i, strength: 0.3});
+    // Connect nearby sources
+    if (i > 1 && Math.random() > 0.5) {
+      edges.push({from: i, to: Math.max(1, i - 1 - Math.floor(Math.random() * 2)), strength: 0.15});
+    }
+  }
+  
+  let mouseX = 0, mouseY = 0, hoveredNode = null;
+  canvas.addEventListener('mousemove', (e) => {
+    const rect = canvas.getBoundingClientRect();
+    mouseX = e.clientX - rect.left;
+    mouseY = e.clientY - rect.top;
+    
+    hoveredNode = null;
+    for (const n of nodes) {
+      const d = Math.sqrt((n.x - mouseX)**2 + (n.y - mouseY)**2);
+      if (d < n.radius + 5) { hoveredNode = n; break; }
+    }
+    canvas.style.cursor = hoveredNode ? 'pointer' : 'default';
+  });
+  
+  canvas.addEventListener('click', () => {
+    if (hoveredNode && hoveredNode.url && !hoveredNode.isCenter) {
+      window.open(hoveredNode.url, '_blank');
+    }
+  });
+  
+  // Physics simulation
+  let frame = 0;
+  function simulate() {
+    frame++;
+    const damping = 0.92;
+    const repulsion = 800;
+    const attraction = 0.008;
+    const centerPull = 0.001;
+    
+    // Forces
+    for (let i = 0; i < nodes.length; i++) {
+      const n = nodes[i];
+      if (n.isCenter) { n.x = W/2; n.y = H/2; continue; }
+      
+      // Repulsion between all nodes
+      for (let j = 0; j < nodes.length; j++) {
+        if (i === j) continue;
+        const dx = n.x - nodes[j].x;
+        const dy = n.y - nodes[j].y;
+        const dist = Math.sqrt(dx*dx + dy*dy) || 1;
+        const force = repulsion / (dist * dist);
+        n.vx += (dx / dist) * force;
+        n.vy += (dy / dist) * force;
+      }
+      
+      // Center gravity
+      n.vx += (W/2 - n.x) * centerPull;
+      n.vy += (H/2 - n.y) * centerPull;
+    }
+    
+    // Edge attraction
+    for (const e of edges) {
+      const a = nodes[e.from], b = nodes[e.to];
+      const dx = b.x - a.x, dy = b.y - a.y;
+      const dist = Math.sqrt(dx*dx + dy*dy) || 1;
+      const targetDist = 100;
+      const force = (dist - targetDist) * attraction * e.strength;
+      if (!a.isCenter) { a.vx += (dx / dist) * force; a.vy += (dy / dist) * force; }
+      if (!b.isCenter) { b.vx -= (dx / dist) * force; b.vy -= (dy / dist) * force; }
+    }
+    
+    // Update positions
+    for (const n of nodes) {
+      if (n.isCenter) continue;
+      n.vx *= damping; n.vy *= damping;
+      n.x += n.vx; n.y += n.vy;
+      n.x = Math.max(n.radius, Math.min(W - n.radius, n.x));
+      n.y = Math.max(n.radius, Math.min(H - n.radius, n.y));
+    }
+    
+    // Draw
+    ctx.clearRect(0, 0, W, H);
+    
+    // Draw edges
+    for (const e of edges) {
+      const a = nodes[e.from], b = nodes[e.to];
+      ctx.beginPath();
+      ctx.moveTo(a.x, a.y);
+      ctx.lineTo(b.x, b.y);
+      ctx.strokeStyle = 'rgba(249,115,22,' + (0.15 + Math.sin(frame * 0.02 + e.from) * 0.05) + ')';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+      
+      // Animated particle on edge
+      const t = (frame * 0.005 + e.from * 0.3) % 1;
+      const px = a.x + (b.x - a.x) * t;
+      const py = a.y + (b.y - a.y) * t;
+      ctx.beginPath();
+      ctx.arc(px, py, 2, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(249,115,22,0.6)';
+      ctx.fill();
+    }
+    
+    // Draw nodes
+    for (const n of nodes) {
+      const isHovered = n === hoveredNode;
+      
+      // Glow
+      if (n.isCenter || isHovered) {
+        ctx.beginPath();
+        ctx.arc(n.x, n.y, n.radius + 8, 0, Math.PI * 2);
+        ctx.fillStyle = n.isCenter ? 'rgba(249,115,22,0.15)' : 'rgba(249,115,22,0.1)';
+        ctx.fill();
+      }
+      
+      // Node circle
+      ctx.beginPath();
+      ctx.arc(n.x, n.y, n.radius, 0, Math.PI * 2);
+      
+      if (n.isCenter) {
+        ctx.fillStyle = '#f97316';
+      } else if (n.verified) {
+        ctx.fillStyle = 'rgba(34,197,94,0.2)';
+        ctx.strokeStyle = '#22c55e';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+      } else {
+        ctx.fillStyle = 'rgba(234,179,8,0.15)';
+        ctx.strokeStyle = '#eab308';
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+      }
+      ctx.fill();
+      
+      // Label
+      ctx.fillStyle = n.isCenter ? '#fff' : (isHovered ? '#fafafa' : '#a1a1aa');
+      ctx.font = (n.isCenter ? 'bold 11px' : '10px') + ' Inter, system-ui';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      
+      if (n.isCenter) {
+        ctx.fillText('SUBMIND', n.x, n.y);
+      } else {
+        const maxChars = isHovered ? 28 : 14;
+        const label = n.title.length > maxChars ? n.title.substring(0, maxChars) + '...' : n.title;
+        ctx.fillText(label, n.x, n.y);
+      }
+      
+      // Verified badge on node
+      if (!n.isCenter && n.verified) {
+        ctx.fillStyle = '#22c55e';
+        ctx.font = 'bold 10px system-ui';
+        ctx.fillText('✓', n.x + n.radius - 4, n.y - n.radius + 4);
+      }
+    }
+    
+    // Tooltip
+    if (hoveredNode && !hoveredNode.isCenter) {
+      const n = hoveredNode;
+      const tipW = 240, tipH = 50;
+      const tipX = Math.min(n.x + 15, W - tipW - 10);
+      const tipY = Math.max(n.y - tipH - 10, 10);
+      
+      ctx.fillStyle = 'rgba(24,24,27,0.95)';
+      ctx.strokeStyle = 'rgba(249,115,22,0.4)';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.roundRect(tipX, tipY, tipW, tipH, 8);
+      ctx.fill();
+      ctx.stroke();
+      
+      ctx.fillStyle = '#fafafa';
+      ctx.font = '12px Inter, system-ui';
+      ctx.textAlign = 'left';
+      ctx.fillText(n.title, tipX + 10, tipY + 18);
+      
+      ctx.fillStyle = n.verified ? '#22c55e' : '#eab308';
+      ctx.font = '10px Inter, system-ui';
+      ctx.fillText(n.verified ? '✓ Verified Direct Link' : '🔍 Search Fallback', tipX + 10, tipY + 36);
+    }
+    
+    requestAnimationFrame(simulate);
+  }
+  
+  simulate();
 }
+
 </script>
 </body>
-  </html>
+ </html>
