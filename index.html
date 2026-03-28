@@ -9,66 +9,26 @@
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%234318FF'/><text x='50' y='68' font-size='55' font-weight='700' text-anchor='middle' fill='white'>S</text></svg>">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-:root{
-  --bg:#0a0a0f;--bg2:#12121a;--bg3:#1a1a28;--bg4:#222236;
-  --text:#e8e8f0;--text2:#a0a0b8;--text3:#6a6a82;
-  --accent:#4318FF;--accent2:#6C4DFF;--accent-glow:rgba(67,24,255,0.15);
-  --green:#00C48C;--orange:#FF9F43;--red:#FF4757;
-  --border:#2a2a3e;--border2:#353550;
-  --radius:12px;--radius-sm:8px;
-}
+:root{--bg:#0a0a0f;--bg2:#12121a;--bg3:#1a1a28;--text:#e8e8f0;--text2:#a0a0b8;--text3:#6a6a82;--accent:#4318FF;--accent2:#6C4DFF;--accent-glow:rgba(67,24,255,0.15);--green:#00C48C;--orange:#FF9F43;--red:#FF4757;--border:#2a2a3e;--radius:12px;--radius-sm:8px}
 html{font-size:15px}
-body{
-  font-family:'Inter',system-ui,-apple-system,sans-serif;
-  background:var(--bg);color:var(--text);
-  min-height:100vh;line-height:1.65;
-  -webkit-font-smoothing:antialiased;
-}
-.header{
-  padding:24px 0;border-bottom:1px solid var(--border);
-  background:linear-gradient(180deg,rgba(67,24,255,0.03) 0%,transparent 100%);
-}
-.container{max-width:860px;margin:0 auto;padding:0 24px}
+body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;line-height:1.65;-webkit-font-smoothing:antialiased}
+.header{padding:24px 0;border-bottom:1px solid var(--border);background:linear-gradient(180deg,rgba(67,24,255,0.03),transparent)}
+.container{max-width:880px;margin:0 auto;padding:0 24px}
 .logo{display:flex;align-items:center;gap:12px}
-.logo-mark{
-  width:36px;height:36px;background:var(--accent);border-radius:10px;
-  display:flex;align-items:center;justify-content:center;
-  font-weight:700;font-size:16px;color:#fff;
-  box-shadow:0 0 20px rgba(67,24,255,0.3);
-}
+.logo-mark{width:36px;height:36px;background:var(--accent);border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:16px;color:#fff;box-shadow:0 0 20px rgba(67,24,255,0.3)}
 .logo-text{font-size:20px;font-weight:600;letter-spacing:-0.02em}
 .logo-sub{font-size:12px;color:var(--text3);letter-spacing:0.08em;text-transform:uppercase;margin-top:2px}
 .search-section{padding:48px 0 32px}
-.search-box{
-  display:flex;gap:0;
-  background:var(--bg2);border:1px solid var(--border);
-  border-radius:var(--radius);overflow:hidden;
-  transition:border-color 0.2s,box-shadow 0.2s;
-}
-.search-box:focus-within{
-  border-color:var(--accent);
-  box-shadow:0 0 0 3px var(--accent-glow);
-}
-.search-input{
-  flex:1;background:none;border:none;color:var(--text);
-  padding:16px 20px;font-size:15px;font-family:inherit;outline:none;
-}
+.search-box{display:flex;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;transition:border-color 0.2s,box-shadow 0.2s}
+.search-box:focus-within{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-glow)}
+.search-input{flex:1;background:none;border:none;color:var(--text);padding:16px 20px;font-size:15px;font-family:inherit;outline:none}
 .search-input::placeholder{color:var(--text3)}
-.search-btn{
-  background:var(--accent);color:#fff;border:none;
-  padding:0 28px;font-size:14px;font-weight:600;font-family:inherit;
-  cursor:pointer;letter-spacing:0.02em;
-  transition:background 0.15s,opacity 0.15s;white-space:nowrap;
-}
+.search-btn{background:var(--accent);color:#fff;border:none;padding:0 28px;font-size:14px;font-weight:600;font-family:inherit;cursor:pointer;transition:background 0.15s;white-space:nowrap}
 .search-btn:hover{background:var(--accent2)}
 .search-btn:disabled{opacity:0.6;cursor:not-allowed}
 .loading{display:none;text-align:center;padding:64px 0}
 .loading.active{display:block}
-.loading-spinner{
-  width:36px;height:36px;border:3px solid var(--border);
-  border-top-color:var(--accent);border-radius:50%;
-  margin:0 auto 16px;animation:spin 0.8s linear infinite;
-}
+.loading-spinner{width:36px;height:36px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;margin:0 auto 16px;animation:spin 0.8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 .loading-phases{color:var(--text3);font-size:13px}
 .loading-phase{margin:6px 0;opacity:0.4;transition:opacity 0.3s}
@@ -86,245 +46,225 @@ body{
 .badge-disputed{background:rgba(255,71,87,0.12);color:var(--red);border:1px solid rgba(255,71,87,0.2)}
 .meta-item{font-size:13px;color:var(--text3)}
 .meta-item strong{color:var(--text2);font-weight:500}
+/* Score Ring */
+.score-ring{display:inline-flex;align-items:center;gap:6px}
+.score-ring canvas{width:32px;height:32px}
+.score-label{font-size:12px;color:var(--text3)}
+.score-label strong{color:var(--text);font-weight:600}
+/* Origin */
 .origin-card{margin:24px 0;padding:20px 24px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);border-left:3px solid var(--accent)}
 .origin-label{font-size:10px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:var(--accent2);margin-bottom:8px}
 .origin-event{font-size:16px;font-weight:600;margin-bottom:6px}
 .origin-detail{font-size:13px;color:var(--text2);line-height:1.6}
 .exec-summary{padding:20px 0;font-size:15px;color:var(--text2);line-height:1.7;border-bottom:1px solid var(--border)}
 .briefing-section{padding:28px 0}
-.briefing-content{font-size:15px;line-height:1.8;color:var(--text)}
+.briefing-content{font-size:15px;line-height:1.8}
 .briefing-content p{margin-bottom:16px}
-.briefing-content p:last-child{margin-bottom:0}
 .citation{color:var(--accent2);font-size:12px;font-weight:600;text-decoration:none;cursor:pointer;padding:0 1px;border-radius:2px;transition:background 0.15s}
 .citation:hover{background:var(--accent-glow);text-decoration:underline}
 .section-header{font-size:11px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:var(--text3);padding:24px 0 16px;border-top:1px solid var(--border);margin-top:8px}
+/* Evidence Web Canvas */
+.evidence-web{margin:0 -24px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;position:relative}
+.evidence-web canvas{width:100%;display:block}
+.web-legend{display:flex;gap:16px;padding:12px 16px;font-size:11px;color:var(--text3);border-top:1px solid var(--border);flex-wrap:wrap}
+.web-legend span{display:flex;align-items:center;gap:4px}
+.web-legend span::before{content:'';width:8px;height:8px;border-radius:50%;display:inline-block}
+.legend-origin::before{background:var(--accent)}
+.legend-event::before{background:var(--green)}
+.legend-pred::before{background:var(--orange)}
+.legend-source::before{background:var(--text3)}
+/* Glass Fang Metrics */
+.gf-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px}
+.gf-metric{padding:10px 12px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-sm);font-size:12px}
+.gf-metric-name{color:var(--text3);margin-bottom:4px}
+.gf-metric-bar{height:4px;background:var(--bg);border-radius:2px;overflow:hidden;margin-bottom:4px}
+.gf-metric-fill{height:100%;border-radius:2px;transition:width 0.6s ease}
+.gf-metric-detail{color:var(--text3);font-size:11px}
+/* Timeline, Predictions, Sources */
 .tl-item{display:grid;grid-template-columns:130px 1fr;gap:16px;padding:12px 0;border-bottom:1px solid rgba(42,42,62,0.5);align-items:baseline}
-.tl-date{font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--text3);font-weight:400}
+.tl-date{font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--text3)}
 .tl-event{font-size:14px;color:var(--text2)}
 .tl-item:last-child{border-bottom:none}
 .pred-card{padding:16px 0;border-bottom:1px solid rgba(42,42,62,0.5)}
 .pred-card:last-child{border-bottom:none}
-.pred-scenario{font-size:14px;font-weight:500;color:var(--text);margin-bottom:6px}
-.pred-meta{display:flex;gap:12px;align-items:center;font-size:13px}
+.pred-scenario{font-size:14px;font-weight:500;margin-bottom:6px}
+.pred-meta{display:flex;gap:12px;font-size:13px}
 .pred-prob{font-family:'JetBrains Mono',monospace;font-weight:600}
-.pred-timeframe{color:var(--text3)}
 .pred-basis{font-size:12px;color:var(--text3);margin-top:4px;line-height:1.5}
-.sources-grid{display:flex;flex-direction:column;gap:0}
+.pred-invest{font-size:12px;color:var(--accent2);margin-top:4px;font-style:italic}
 .source-item{display:grid;grid-template-columns:28px 1fr;gap:12px;padding:10px 0;border-bottom:1px solid rgba(42,42,62,0.3);align-items:start}
 .source-item:last-child{border-bottom:none}
 .source-num{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--text3);padding-top:2px}
 .source-title{font-size:14px;color:var(--accent2);text-decoration:none;display:block;line-height:1.4}
 .source-title:hover{text-decoration:underline}
 .source-domain{font-size:12px;color:var(--text3);margin-top:2px}
+.source-type{font-size:10px;padding:2px 6px;border-radius:3px;background:rgba(67,24,255,0.1);color:var(--accent2);display:inline-block;margin-left:8px}
 .methodology{margin-top:24px;padding:16px 20px;background:var(--bg2);border-radius:var(--radius-sm);font-size:12px;color:var(--text3);line-height:1.6;border:1px solid var(--border)}
 .footer{padding:24px 0;border-top:1px solid var(--border);text-align:center;font-size:12px;color:var(--text3);margin-top:40px}
-@media(max-width:640px){
-  .container{padding:0 16px}
-  .search-section{padding:32px 0 24px}
-  .brief-title{font-size:22px}
-  .tl-item{grid-template-columns:100px 1fr;gap:10px}
-  .search-btn{padding:0 18px;font-size:13px}
-}
+@media(max-width:640px){.container{padding:0 16px}.brief-title{font-size:22px}.tl-item{grid-template-columns:100px 1fr}.gf-grid{grid-template-columns:1fr 1fr}}
 </style>
 </head>
 <body>
-<header class="header">
-  <div class="container">
-    <div class="logo">
-      <div class="logo-mark">S</div>
-      <div>
-        <div class="logo-text">SubMind</div>
-        <div class="logo-sub">Deep Intelligence Research</div>
-      </div>
-    </div>
-  </div>
-</header>
-<section class="search-section">
-  <div class="container">
-    <div class="search-box">
-      <input type="text" class="search-input" id="searchInput" placeholder="Enter any topic, event, or claim to research...">
-      <button class="search-btn" id="searchBtn">Research</button>
-    </div>
-  </div>
-</section>
+<header class="header"><div class="container"><div class="logo"><div class="logo-mark">S</div><div><div class="logo-text">SubMind</div><div class="logo-sub">Deep Intelligence Research</div></div></div></div></header>
+<section class="search-section"><div class="container"><div class="search-box"><input type="text" class="search-input" id="searchInput" placeholder="Enter any topic, event, or claim to research..."><button class="search-btn" id="searchBtn">Research</button></div></div></section>
 <div class="container">
-  <div class="loading" id="loading">
-    <div class="loading-spinner"></div>
-    <div class="loading-phases">
-      <div class="loading-phase active" id="lp1">○ Gathering sources across the web...</div>
-      <div class="loading-phase" id="lp2">○ Analyzing with intelligence engine...</div>
-      <div class="loading-phase" id="lp3">○ Running validation protocols...</div>
-      <div class="loading-phase" id="lp4">○ Assembling briefing...</div>
-    </div>
-  </div>
-  <div class="results" id="results">
-    <div class="brief-header">
-      <h1 class="brief-title" id="briefTitle"></h1>
-      <div class="brief-meta">
-        <span class="brief-badge" id="briefBadge"></span>
-        <span class="meta-item" id="briefConf"></span>
-        <span class="meta-item" id="briefSources"></span>
-        <span class="meta-item" id="briefTime"></span>
-      </div>
-    </div>
-    <div class="origin-card" id="originBox" style="display:none">
-      <div class="origin-label">Origin Event</div>
-      <div class="origin-event" id="originEvent"></div>
-      <div class="origin-detail" id="originDetail"></div>
-    </div>
-    <div class="exec-summary" id="execSummary"></div>
-    <div class="briefing-section">
-      <div class="briefing-content" id="briefingContent"></div>
-    </div>
-    <div id="timelineSection" style="display:none">
-      <div class="section-header">Timeline</div>
-      <div id="timelineItems"></div>
-    </div>
-    <div id="predictionsSection" style="display:none">
-      <div class="section-header">Forward Assessment</div>
-      <div id="predictionItems"></div>
-    </div>
-    <div id="sourcesSection" style="display:none">
-      <div class="section-header">Sources</div>
-      <div class="sources-grid" id="sourceItems"></div>
-    </div>
-    <div class="methodology" id="methodology"></div>
-    <div class="footer">SubMind v6.2 — Deep Intelligence Research Engine</div>
+<div class="loading" id="loading"><div class="loading-spinner"></div><div class="loading-phases"><div class="loading-phase active" id="lp1">○ Gathering sources across the web...</div><div class="loading-phase" id="lp2">○ Building intelligence briefing...</div><div class="loading-phase" id="lp3">○ Running Glass Fang validation (12 metrics)...</div><div class="loading-phase" id="lp4">○ Nemesis adversarial challenge...</div></div></div>
+<div class="results" id="results">
+<div class="brief-header">
+  <h1 class="brief-title" id="briefTitle"></h1>
+  <div class="brief-meta">
+    <span class="brief-badge" id="briefBadge"></span>
+    <span class="meta-item" id="briefConf"></span>
+    <span class="meta-item" id="briefSources"></span>
+    <span class="meta-item" id="briefTime"></span>
+    <span class="score-ring"><canvas id="scoreCanvas" width="64" height="64"></canvas><span class="score-label">Glass Fang<br><strong id="gfScoreText">--</strong>/100</span></span>
   </div>
 </div>
+<div class="origin-card" id="originBox" style="display:none"><div class="origin-label">Origin Event</div><div class="origin-event" id="originEvent"></div><div class="origin-detail" id="originDetail"></div></div>
+<div class="exec-summary" id="execSummary"></div>
+<div id="webSection" style="display:none"><div class="section-header">Evidence Web</div><div class="evidence-web"><canvas id="webCanvas" width="832" height="400"></canvas><div class="web-legend"><span class="legend-origin">Origin</span><span class="legend-event">Events</span><span class="legend-pred">Predictions</span><span class="legend-source">Sources</span></div></div></div>
+<div class="briefing-section"><div class="briefing-content" id="briefingContent"></div></div>
+<div id="timelineSection" style="display:none"><div class="section-header">Timeline</div><div id="timelineItems"></div></div>
+<div id="predictionsSection" style="display:none"><div class="section-header">Forward Assessment</div><div id="predictionItems"></div></div>
+<div id="sourcesSection" style="display:none"><div class="section-header">Sources</div><div id="sourceItems"></div></div>
+<div id="gfSection" style="display:none"><div class="section-header">Validation Metrics</div><div class="gf-grid" id="gfMetrics"></div></div>
+<div class="methodology" id="methodology"></div>
+<div class="footer">SubMind v7.0 — Deep Intelligence Research Engine</div>
+</div>
+</div>
 <script>
-var searchBtn = document.getElementById('searchBtn');
-var searchInput = document.getElementById('searchInput');
-var loadingTimer;
+var searchBtn=document.getElementById('searchBtn'),searchInput=document.getElementById('searchInput'),loadingTimer;
+searchBtn.addEventListener('click',runSearch);
+searchInput.addEventListener('keydown',function(e){if(e.key==='Enter')runSearch()});
 
-searchBtn.addEventListener('click', runSearch);
-searchInput.addEventListener('keydown', function(e) {
-  if (e.key === 'Enter') runSearch();
-});
-
-async function runSearch() {
-  var topic = searchInput.value.trim();
-  if (!topic) { searchInput.focus(); return; }
-  searchBtn.disabled = true;
-  searchBtn.textContent = 'Researching...';
+async function runSearch(){
+  var topic=searchInput.value.trim();
+  if(!topic){searchInput.focus();return}
+  searchBtn.disabled=true;searchBtn.textContent='Researching...';
   document.getElementById('results').classList.remove('active');
   document.getElementById('loading').classList.add('active');
-  var phases = ['lp1','lp2','lp3','lp4'];
-  var phaseIdx = 0;
+  var phases=['lp1','lp2','lp3','lp4'],pi=0;
   document.getElementById(phases[0]).classList.add('active');
-  loadingTimer = setInterval(function() {
-    if (phaseIdx < phases.length - 1) {
-      var curr = document.getElementById(phases[phaseIdx]);
-      curr.classList.remove('active');
-      curr.classList.add('done');
-      curr.textContent = '\u2713 ' + curr.textContent.substring(2);
-      phaseIdx++;
-      document.getElementById(phases[phaseIdx]).classList.add('active');
-    }
-  }, 1500);
-  try {
-    var resp = await fetch('/api/predict', {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({ topic: topic })
-    });
+  loadingTimer=setInterval(function(){if(pi<phases.length-1){var c=document.getElementById(phases[pi]);c.classList.remove('active');c.classList.add('done');c.textContent='\u2713 '+c.textContent.substring(2);pi++;document.getElementById(phases[pi]).classList.add('active')}},2000);
+  try{
+    var resp=await fetch('/api/predict',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({topic:topic})});
     clearInterval(loadingTimer);
-    if (!resp.ok) {
-      var err = await resp.json().catch(function() { return {}; });
-      throw new Error(err.error || err.detail || 'Research failed');
-    }
-    var data = await resp.json();
+    if(!resp.ok){var err=await resp.json().catch(function(){return{}});throw new Error(err.detail||'Failed')}
+    var data=await resp.json();
     renderBriefing(data);
     document.getElementById('loading').classList.remove('active');
     document.getElementById('results').classList.add('active');
-    document.querySelector('.brief-header').scrollIntoView({ behavior: 'smooth', block: 'start' });
-  } catch (err) {
-    clearInterval(loadingTimer);
-    document.getElementById('loading').classList.remove('active');
-    alert('SubMind Error: ' + err.message);
-  } finally {
-    searchBtn.disabled = false;
-    searchBtn.textContent = 'Research';
-    ['lp1','lp2','lp3','lp4'].forEach(function(id, i) {
-      var el = document.getElementById(id);
-      el.classList.remove('active', 'done');
-      var labels = [
-        '\u25CB Gathering sources across the web...',
-        '\u25CB Analyzing with intelligence engine...',
-        '\u25CB Running validation protocols...',
-        '\u25CB Assembling briefing...'
-      ];
-      el.textContent = labels[i];
-    });
-  }
+    document.querySelector('.brief-header').scrollIntoView({behavior:'smooth',block:'start'});
+  }catch(err){clearInterval(loadingTimer);document.getElementById('loading').classList.remove('active');alert('SubMind: '+err.message)}
+  finally{searchBtn.disabled=false;searchBtn.textContent='Research';['lp1','lp2','lp3','lp4'].forEach(function(id,i){var el=document.getElementById(id);el.classList.remove('active','done');el.textContent=['\u25CB Gathering sources across the web...','\u25CB Building intelligence briefing...','\u25CB Running Glass Fang validation (12 metrics)...','\u25CB Nemesis adversarial challenge...'][i]})}
 }
 
-function renderBriefing(d) {
-  document.getElementById('briefTitle').textContent = d.title || d.topic;
-  var badge = document.getElementById('briefBadge');
-  var cls = (d.classification || 'DEVELOPING').toUpperCase();
-  badge.textContent = cls;
-  badge.className = 'brief-badge badge-' + cls.toLowerCase();
-  var conf = d.confidence || 0.5;
-  document.getElementById('briefConf').innerHTML = '<strong>' + (conf * 100).toFixed(0) + '%</strong> confidence';
-  document.getElementById('briefSources').innerHTML = '<strong>' + (d.sourceCount || 0) + '</strong> sources';
-  document.getElementById('briefTime').innerHTML = '<strong>' + ((d.processingMs || 0) / 1000).toFixed(1) + 's</strong> analysis';
-  var origin = d.origin;
-  if (origin && origin.event) {
-    document.getElementById('originBox').style.display = '';
-    document.getElementById('originEvent').textContent = origin.event;
-    var details = [origin.date, origin.location].filter(Boolean).join(' \u2014 ');
-    document.getElementById('originDetail').textContent = details + (origin.significance ? '. ' + origin.significance : '');
-  } else {
-    document.getElementById('originBox').style.display = 'none';
-  }
-  document.getElementById('execSummary').textContent = d.summary || '';
-  var briefText = d.briefing || '';
-  briefText = briefText.replace(/\[(\d+)\]/g, function(m, num) {
-    var src = (d.sources || [])[parseInt(num) - 1];
-    if (src && src.url) {
-      return '<a class="citation" href="' + src.url + '" target="_blank" rel="noopener" title="' + (src.title || '').replace(/"/g, '&quot;') + '">[' + num + ']</a>';
-    }
-    return '<span class="citation">[' + num + ']</span>';
+function drawScoreRing(score){
+  var c=document.getElementById('scoreCanvas'),ctx=c.getContext('2d'),s=score/100;
+  ctx.clearRect(0,0,64,64);
+  ctx.beginPath();ctx.arc(32,32,26,0,Math.PI*2);ctx.strokeStyle='#2a2a3e';ctx.lineWidth=4;ctx.stroke();
+  var color=s>=0.7?'#00C48C':s>=0.4?'#FF9F43':'#FF4757';
+  ctx.beginPath();ctx.arc(32,32,26,-Math.PI/2,-Math.PI/2+Math.PI*2*s);ctx.strokeStyle=color;ctx.lineWidth=4;ctx.lineCap='round';ctx.stroke();
+  ctx.fillStyle='#e8e8f0';ctx.font='bold 14px Inter';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(score,32,32);
+}
+
+function drawEvidenceWeb(web){
+  if(!web||!web.nodes||web.nodes.length<2){document.getElementById('webSection').style.display='none';return}
+  document.getElementById('webSection').style.display='';
+  var c=document.getElementById('webCanvas'),ctx=c.getContext('2d');
+  var W=c.width,H=c.height;
+  ctx.clearRect(0,0,W,H);
+  var nodes=web.nodes,links=web.links||[];
+  var colors={origin:'#4318FF',event:'#00C48C',prediction:'#FF9F43',source:'#6a6a82'};
+  var positions={};
+  // Layout: origins left, events center, predictions right, sources bottom
+  var byType={origin:[],event:[],prediction:[],source:[]};
+  nodes.forEach(function(n){(byType[n.type]||byType.event).push(n)});
+  var cx=W/2,cy=H/2;
+  byType.origin.forEach(function(n,i){positions[n.id]={x:100,y:cy-40+i*80}});
+  byType.event.forEach(function(n,i){var cols=Math.ceil(byType.event.length/3);var col=i%cols;var row=Math.floor(i/cols);positions[n.id]={x:250+col*140,y:80+row*100}});
+  byType.prediction.forEach(function(n,i){positions[n.id]={x:W-140,y:80+i*90}});
+  byType.source.forEach(function(n,i){var spread=Math.min(120,W/(byType.source.length+1));positions[n.id]={x:150+i*spread,y:H-60}});
+  // Draw links
+  links.forEach(function(l){
+    var from=positions[l.source],to=positions[l.target];
+    if(!from||!to)return;
+    ctx.beginPath();ctx.moveTo(from.x,from.y);ctx.lineTo(to.x,to.y);
+    ctx.strokeStyle='rgba(108,77,255,0.2)';ctx.lineWidth=1.5;ctx.stroke();
+    // Arrow
+    var angle=Math.atan2(to.y-from.y,to.x-from.x);
+    var mx=(from.x+to.x)/2,my=(from.y+to.y)/2;
+    ctx.beginPath();ctx.moveTo(mx,my);ctx.lineTo(mx-8*Math.cos(angle-0.4),my-8*Math.sin(angle-0.4));ctx.moveTo(mx,my);ctx.lineTo(mx-8*Math.cos(angle+0.4),my-8*Math.sin(angle+0.4));ctx.strokeStyle='rgba(108,77,255,0.4)';ctx.stroke();
   });
-  briefText = briefText.split(/\n\n+/).map(function(p) { return '<p>' + p.trim() + '</p>'; }).join('');
-  document.getElementById('briefingContent').innerHTML = briefText;
-  var tl = d.timeline || [];
-  if (tl.length > 0) {
-    document.getElementById('timelineSection').style.display = '';
-    document.getElementById('timelineItems').innerHTML = tl.map(function(t) {
-      return '<div class="tl-item"><div class="tl-date">' + (t.date || '') + '</div><div class="tl-event">' + (t.event || '') + '</div></div>';
-    }).join('');
-  } else {
-    document.getElementById('timelineSection').style.display = 'none';
-  }
-  var preds = d.predictions || [];
-  if (preds.length > 0) {
-    document.getElementById('predictionsSection').style.display = '';
-    document.getElementById('predictionItems').innerHTML = preds.map(function(p) {
-      var prob = p.probability || 0.5;
-      var color = prob >= 0.7 ? 'var(--green)' : prob >= 0.4 ? 'var(--orange)' : 'var(--red)';
-      return '<div class="pred-card"><div class="pred-scenario">' + (p.scenario || '') + '</div><div class="pred-meta"><span class="pred-prob" style="color:' + color + '">' + (prob * 100).toFixed(0) + '%</span>' + (p.timeframe ? '<span class="pred-timeframe">' + p.timeframe + '</span>' : '') + '</div>' + (p.basis ? '<div class="pred-basis">' + p.basis + '</div>' : '') + '</div>';
-    }).join('');
-  } else {
-    document.getElementById('predictionsSection').style.display = 'none';
-  }
-  var sources = d.sources || [];
-  if (sources.length > 0) {
-    document.getElementById('sourcesSection').style.display = '';
-    document.getElementById('sourceItems').innerHTML = sources.map(function(s) {
-      return '<div class="source-item"><div class="source-num">[' + s.index + ']</div><div><a class="source-title" href="' + (s.url || '#') + '" target="_blank" rel="noopener">' + (s.title || 'Source') + '</a><div class="source-domain">' + (s.domain || '') + '</div></div></div>';
-    }).join('');
-  } else {
-    document.getElementById('sourcesSection').style.display = 'none';
-  }
-  var parts = [];
-  if (d.methodology_note) parts.push(d.methodology_note);
-  if (d.validation && d.validation.highAuthoritySources > 0) parts.push(d.validation.highAuthoritySources + ' high-authority sources verified.');
-  if (d.validation && d.validation.glassFangIssues > 0) parts.push('Internal validation flagged ' + d.validation.glassFangIssues + ' items; confidence adjusted.');
-  parts.push('SubMind v6.2 \u2014 Provider: ' + (d.provider || 'auto'));
-  document.getElementById('methodology').textContent = parts.join(' ');
+  // Draw nodes
+  nodes.forEach(function(n){
+    var p=positions[n.id];if(!p)return;
+    var r=n.type==='origin'?16:n.type==='prediction'?14:n.type==='source'?8:12;
+    var col=colors[n.type]||colors.event;
+    // Glow
+    ctx.beginPath();ctx.arc(p.x,p.y,r+6,0,Math.PI*2);
+    var grd=ctx.createRadialGradient(p.x,p.y,r,p.x,p.y,r+6);
+    grd.addColorStop(0,col+'40');grd.addColorStop(1,'transparent');ctx.fillStyle=grd;ctx.fill();
+    // Node
+    ctx.beginPath();ctx.arc(p.x,p.y,r,0,Math.PI*2);ctx.fillStyle=col+'30';ctx.fill();ctx.strokeStyle=col;ctx.lineWidth=2;ctx.stroke();
+    // Label
+    ctx.fillStyle='#e8e8f0';ctx.font=(n.type==='source'?'10':'11')+'px Inter';ctx.textAlign='center';
+    var label=(n.label||'').substring(0,24)+(n.label&&n.label.length>24?'...':'');
+    ctx.fillText(label,p.x,p.y+r+14);
+  });
+}
+
+function renderBriefing(d){
+  document.getElementById('briefTitle').textContent=d.title||d.topic;
+  var badge=document.getElementById('briefBadge');
+  var cls=(d.classification||'DEVELOPING').toUpperCase();
+  badge.textContent=cls;badge.className='brief-badge badge-'+cls.toLowerCase();
+  var conf=d.confidence||0.5;
+  document.getElementById('briefConf').innerHTML='<strong>'+(conf*100).toFixed(0)+'%</strong> confidence';
+  document.getElementById('briefSources').innerHTML='<strong>'+(d.sourceCount||0)+'</strong> sources';
+  document.getElementById('briefTime').innerHTML='<strong>'+((d.processingMs||0)/1000).toFixed(1)+'s</strong>';
+  // Glass Fang score ring
+  var gfScore=d.validation?d.validation.glassFangScore:50;
+  drawScoreRing(gfScore);
+  document.getElementById('gfScoreText').textContent=gfScore;
+  // Origin
+  var origin=d.origin;
+  if(origin&&origin.event){document.getElementById('originBox').style.display='';document.getElementById('originEvent').textContent=origin.event;document.getElementById('originDetail').textContent=[origin.date,origin.location].filter(Boolean).join(' \u2014 ')+(origin.significance?'. '+origin.significance:'')}
+  else{document.getElementById('originBox').style.display='none'}
+  document.getElementById('execSummary').textContent=d.summary||'';
+  // Evidence Web
+  drawEvidenceWeb(d.evidence_web);
+  // Briefing
+  var bt=d.briefing||'';
+  bt=bt.replace(/\[(\d+)\]/g,function(m,num){var src=(d.sources||[])[parseInt(num)-1];if(src&&src.url)return '<a class="citation" href="'+src.url+'" target="_blank" rel="noopener" title="'+(src.title||'').replace(/"/g,'&quot;')+'">['+num+']</a>';return '<span class="citation">['+num+']</span>'});
+  bt=bt.split(/\n\n+/).map(function(p){return '<p>'+p.trim()+'</p>'}).join('');
+  document.getElementById('briefingContent').innerHTML=bt;
+  // Timeline
+  var tl=d.timeline||[];
+  if(tl.length>0){document.getElementById('timelineSection').style.display='';document.getElementById('timelineItems').innerHTML=tl.map(function(t){return '<div class="tl-item"><div class="tl-date">'+(t.date||'')+'</div><div class="tl-event">'+(t.event||'')+'</div></div>'}).join('')}
+  else{document.getElementById('timelineSection').style.display='none'}
+  // Predictions
+  var preds=d.predictions||[];
+  if(preds.length>0){document.getElementById('predictionsSection').style.display='';document.getElementById('predictionItems').innerHTML=preds.map(function(p){var prob=p.probability||0.5;var color=prob>=0.7?'var(--green)':prob>=0.4?'var(--orange)':'var(--red)';return '<div class="pred-card"><div class="pred-scenario">'+(p.scenario||'')+'</div><div class="pred-meta"><span class="pred-prob" style="color:'+color+'">'+(prob*100).toFixed(0)+'%</span>'+(p.timeframe?'<span style="color:var(--text3)">'+p.timeframe+'</span>':'')+'</div>'+(p.basis?'<div class="pred-basis">'+p.basis+'</div>':'')+(p.investment_relevance?'<div class="pred-invest">'+p.investment_relevance+'</div>':'')+'</div>'}).join('')}
+  else{document.getElementById('predictionsSection').style.display='none'}
+  // Sources
+  var sources=d.sources||[];
+  if(sources.length>0){document.getElementById('sourcesSection').style.display='';document.getElementById('sourceItems').innerHTML=sources.map(function(s){return '<div class="source-item"><div class="source-num">['+s.index+']</div><div><a class="source-title" href="'+(s.url||'#')+'" target="_blank" rel="noopener">'+(s.title||'Source')+'</a><div class="source-domain">'+(s.domain||'')+(s.type?'<span class="source-type">'+s.type+'</span>':'')+(s.author?' \u2014 '+s.author:'')+'</div></div></div>'}).join('')}
+  else{document.getElementById('sourcesSection').style.display='none'}
+  // Glass Fang metrics
+  if(d.validation&&d.validation.metrics){
+    document.getElementById('gfSection').style.display='';
+    var mhtml='';var metrics=d.validation.metrics;
+    Object.keys(metrics).forEach(function(key){var m=metrics[key];var pct=Math.round((m.score||0)*100);var color=pct>=70?'var(--green)':pct>=40?'var(--orange)':'var(--red)';mhtml+='<div class="gf-metric"><div class="gf-metric-name">'+key.replace(/_/g,' ')+'</div><div class="gf-metric-bar"><div class="gf-metric-fill" style="width:'+pct+'%;background:'+color+'"></div></div><div class="gf-metric-detail">'+((m.detail||'')+'')+'</div></div>'});
+    document.getElementById('gfMetrics').innerHTML=mhtml;
+  }else{document.getElementById('gfSection').style.display='none'}
+  // Methodology
+  var parts=[];
+  if(d.methodology_note)parts.push(d.methodology_note);
+  if(d.validation){if(d.validation.passedChecks)parts.push(d.validation.passedChecks+'/'+d.validation.totalChecks+' validation checks passed.')}
+  parts.push('SubMind v7.0 \u2014 '+d.provider);
+  document.getElementById('methodology').textContent=parts.join(' ');
 }
 </script>
 </body>
-      </html>
+                                                                                                  </html>
