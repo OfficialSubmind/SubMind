@@ -1,473 +1,859 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>SubMind — Intelligence Engine</title>
-<link rel="stylesheet" href="/styles.css"/>
+<title>SubMind — Autonomous Intelligence Engine</title>
+<meta name="description" content="SubMind v5.0: Glass Fang validated, Nemesis Engine hardened intelligence. OMNI Protocol resolution."/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet"/>
+<script src="https://d3js.org/d3.v7.min.js"></script>
 <style>
-:root{--blue:#4f8ef7;--green:#3ddc97;--yellow:#f4b942;--red:#ef476f;--purple:#a78bfa;--bg:#090d14;--panel:#0e1219;--border:#1c2742;--text:#c8d1db;--muted:#7a8490;--bright:#e6e8ea}
-*{box-sizing:border-box}
-.results{display:none;margin-top:24px}.results.visible{display:block}
-.tabs{display:flex;gap:4px;margin-bottom:16px;flex-wrap:wrap}
-.tab-btn{padding:7px 14px;border-radius:8px;border:1px solid var(--border);background:transparent;color:#9aa3ad;cursor:pointer;font-size:13px;font-weight:500;transition:all .15s}
-.tab-btn.active{background:#162033;color:var(--blue);border-color:#267fff}.tab-btn:hover:not(.active){border-color:#267fff;color:#ccd}
-.tab-pane{display:none}.tab-pane.active{display:block}
-.spinner{display:inline-block;width:16px;height:16px;border:2px solid rgba(79,142,247,.3);border-top-color:var(--blue);border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:8px}
+:root{
+--bg:#06080d;--surface:#0a0e18;--panel:#0d1220;--border:rgba(110,63,255,.12);
+--glow:rgba(110,63,255,.25);--text:#e8eaf0;--text2:#8892a8;--text3:#4a5568;
+--accent:#6e3fff;--accent2:#00f0ff;--green:#00ff88;--red:#ff4466;--orange:#ffaa00;
+--yellow:#f4b942;--purple:#a78bfa;--glass:rgba(13,18,32,.85);
+--grad:linear-gradient(135deg,#6e3fff 0%,#00f0ff 100%);
+--node-event:#00aaff;--node-actor:#ff6600;--node-trend:#ff00aa;--node-risk:#ff4444;--node-opp:#00ff88;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{font-size:15px;scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:'Inter',system-ui,-apple-system,sans-serif;
+min-height:100vh;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+
+/* ── ANIMATED BACKGROUND ──────────────────────────── */
+.bg-mesh{position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none}
+.bg-mesh::before{content:'';position:absolute;width:150vw;height:150vh;top:-25vh;left:-25vw;
+background:radial-gradient(ellipse at 30% 20%,rgba(110,63,255,.08) 0%,transparent 50%),
+radial-gradient(ellipse at 70% 80%,rgba(0,240,255,.06) 0%,transparent 50%),
+radial-gradient(ellipse at 50% 50%,rgba(0,255,136,.03) 0%,transparent 40%);
+animation:meshDrift 30s ease-in-out infinite alternate}
+@keyframes meshDrift{0%{transform:translate(0,0) rotate(0deg)}100%{transform:translate(-3vw,2vh) rotate(2deg)}}
+
+/* ── GRID OVERLAY ─────────────────────────────────── */
+.bg-mesh::after{content:'';position:absolute;inset:0;
+background-image:linear-gradient(rgba(110,63,255,.03) 1px,transparent 1px),
+linear-gradient(90deg,rgba(110,63,255,.03) 1px,transparent 1px);
+background-size:60px 60px;opacity:.5}
+
+/* ── GLASS PANELS ─────────────────────────────────── */
+.glass{background:var(--glass);backdrop-filter:blur(20px) saturate(1.4);
+-webkit-backdrop-filter:blur(20px) saturate(1.4);
+border:1px solid var(--border);border-radius:16px;transition:all .3s cubic-bezier(.4,0,.2,1)}
+.glass:hover{border-color:rgba(110,63,255,.25);box-shadow:0 0 30px rgba(110,63,255,.08)}
+
+/* ── LAYOUT ───────────────────────────────────────── */
+.app{position:relative;z-index:1;max-width:1400px;margin:0 auto;padding:20px}
+
+/* ── HEADER ───────────────────────────────────────── */
+.header{display:flex;align-items:center;justify-content:space-between;padding:16px 24px;margin-bottom:24px}
+.logo-section{display:flex;align-items:center;gap:14px}
+.logo-mark{width:42px;height:42px;border-radius:12px;background:var(--grad);
+display:flex;align-items:center;justify-content:center;font-weight:900;font-size:18px;
+box-shadow:0 0 20px rgba(110,63,255,.3),inset 0 1px 0 rgba(255,255,255,.15)}
+.logo-text{font-size:22px;font-weight:700;letter-spacing:-.02em}
+.logo-text span{background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.version-badge{font-family:'JetBrains Mono',monospace;font-size:10px;padding:3px 8px;
+border-radius:6px;background:rgba(110,63,255,.12);color:var(--accent);border:1px solid rgba(110,63,255,.2);
+font-weight:600;letter-spacing:.05em}
+.header-right{display:flex;align-items:center;gap:12px}
+.tier-selector{background:var(--panel);border:1px solid var(--border);border-radius:10px;
+padding:8px 14px;color:var(--text);font-family:'Inter',sans-serif;font-size:13px;cursor:pointer;
+appearance:none;-webkit-appearance:none;outline:none}
+.tier-selector option{background:var(--panel);color:var(--text)}
+.provider-selector{background:var(--panel);border:1px solid var(--border);border-radius:10px;
+padding:8px 14px;color:var(--text);font-family:'Inter',sans-serif;font-size:13px;cursor:pointer;
+appearance:none;-webkit-appearance:none;outline:none}
+.omni-status{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--accent2);
+padding:4px 10px;border:1px solid rgba(0,240,255,.2);border-radius:6px;letter-spacing:.08em}
+
+/* ── OMNI PROTOCOL STATUS BAR ─────────────────────── */
+.omni-bar{display:flex;align-items:center;gap:8px;padding:10px 20px;margin-bottom:16px;
+font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text3);overflow-x:auto}
+.omni-phase{padding:4px 10px;border-radius:6px;border:1px solid rgba(110,63,255,.1);
+transition:all .4s ease;white-space:nowrap}
+.omni-phase.active{color:var(--accent2);border-color:rgba(0,240,255,.4);
+background:rgba(0,240,255,.06);box-shadow:0 0 12px rgba(0,240,255,.1)}
+.omni-phase.complete{color:var(--green);border-color:rgba(0,255,136,.3);background:rgba(0,255,136,.05)}
+.omni-arrow{color:var(--text3);font-size:10px}
+
+/* ── INPUT SECTION ────────────────────────────────── */
+.input-section{margin-bottom:24px;padding:24px}
+.input-label{font-size:11px;font-weight:600;letter-spacing:.1em;color:var(--text3);
+text-transform:uppercase;margin-bottom:10px}
+.input-row{display:flex;gap:12px}
+.query-input{flex:1;background:var(--panel);border:1px solid var(--border);border-radius:12px;
+padding:14px 18px;color:var(--text);font-family:'Inter',sans-serif;font-size:15px;
+outline:none;transition:all .3s ease;resize:none;min-height:52px}
+.query-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(110,63,255,.1)}
+.query-input::placeholder{color:var(--text3)}
+.submit-btn{padding:14px 28px;border:none;border-radius:12px;background:var(--grad);color:#fff;
+font-family:'Inter',sans-serif;font-size:14px;font-weight:600;cursor:pointer;white-space:nowrap;
+transition:all .3s ease;letter-spacing:.02em;
+box-shadow:0 4px 15px rgba(110,63,255,.3),inset 0 1px 0 rgba(255,255,255,.15)}
+.submit-btn:hover{transform:translateY(-1px);box-shadow:0 6px 25px rgba(110,63,255,.4)}
+.submit-btn:active{transform:translateY(0)}
+.submit-btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+
+/* ── TABS ─────────────────────────────────────────── */
+.tabs{display:flex;gap:4px;padding:0 4px;margin-bottom:20px;overflow-x:auto;
+scrollbar-width:none;-ms-overflow-style:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{padding:9px 16px;border-radius:10px;font-size:12px;font-weight:500;cursor:pointer;
+color:var(--text3);transition:all .25s ease;white-space:nowrap;border:1px solid transparent;
+letter-spacing:.02em;user-select:none}
+.tab:hover{color:var(--text2);background:rgba(110,63,255,.05)}
+.tab.active{color:var(--accent2);background:rgba(0,240,255,.06);border-color:rgba(0,240,255,.15)}
+
+/* ── RESULTS PANELS ───────────────────────────────── */
+.results{display:none;margin-top:4px}
+.results.visible{display:block;animation:fadeUp .4s ease}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.panel{display:none;padding:20px}
+.panel.active{display:block}
+
+/* ── TRUST BADGE ──────────────────────────────────── */
+.trust-badge{display:inline-flex;align-items:center;gap:8px;padding:8px 16px;
+border-radius:10px;font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:600}
+.trust-t1{background:rgba(0,255,136,.08);color:#00ff88;border:1px solid rgba(0,255,136,.2)}
+.trust-t2{background:rgba(136,255,0,.08);color:#88ff00;border:1px solid rgba(136,255,0,.2)}
+.trust-t3{background:rgba(255,170,0,.08);color:#ffaa00;border:1px solid rgba(255,170,0,.2)}
+.trust-t4{background:rgba(255,68,68,.08);color:#ff4466;border:1px solid rgba(255,68,68,.2)}
+
+/* ── EXECUTIVE SUMMARY ────────────────────────────── */
+.exec-summary{font-size:16px;line-height:1.7;color:var(--text);margin:16px 0;
+padding:20px;border-left:3px solid var(--accent);background:rgba(110,63,255,.03);border-radius:0 12px 12px 0}
+
+/* ── CAUSAL CHAIN ─────────────────────────────────── */
+.chain-step{display:flex;gap:16px;padding:16px 0;border-bottom:1px solid rgba(110,63,255,.06)}
+.chain-step:last-child{border-bottom:none}
+.chain-num{width:32px;height:32px;border-radius:8px;background:rgba(110,63,255,.1);
+display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;
+font-size:12px;font-weight:600;color:var(--accent);flex-shrink:0}
+.chain-content{flex:1}
+.chain-event{font-size:14px;font-weight:500;margin-bottom:4px}
+.chain-meta{display:flex;gap:12px;font-size:11px;color:var(--text3);font-family:'JetBrains Mono',monospace}
+.confidence-bar{width:60px;height:4px;border-radius:2px;background:var(--panel);overflow:hidden;display:inline-block;vertical-align:middle}
+.confidence-fill{height:100%;border-radius:2px;transition:width .6s ease}
+
+/* ── NODE WEB VISUALIZATION ───────────────────────── */
+.node-web-container{width:100%;height:500px;border-radius:12px;overflow:hidden;
+background:radial-gradient(ellipse at center,rgba(110,63,255,.03) 0%,var(--bg) 70%);
+border:1px solid var(--border);position:relative}
+.node-web-container svg{width:100%;height:100%}
+.node-web-overlay{position:absolute;bottom:12px;right:12px;display:flex;gap:8px}
+.node-legend{display:flex;align-items:center;gap:4px;font-size:10px;color:var(--text3);
+font-family:'JetBrains Mono',monospace;padding:4px 8px;background:rgba(0,0,0,.5);border-radius:6px}
+.node-legend-dot{width:8px;height:8px;border-radius:50%}
+
+/* ── GLASS FANG PANEL ─────────────────────────────── */
+.gf-header{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+.gf-icon{font-size:24px}
+.gf-title{font-size:16px;font-weight:700;letter-spacing:-.01em}
+.gf-verdict{font-family:'JetBrains Mono',monospace;font-size:12px;padding:4px 12px;border-radius:6px}
+.gf-passed{background:rgba(0,255,136,.1);color:var(--green);border:1px solid rgba(0,255,136,.2)}
+.gf-flagged{background:rgba(255,170,0,.1);color:var(--orange);border:1px solid rgba(255,170,0,.2)}
+.gf-rejected{background:rgba(255,68,102,.1);color:var(--red);border:1px solid rgba(255,68,102,.2)}
+.gf-vuln{padding:12px 16px;margin:8px 0;border-radius:10px;border-left:3px solid var(--orange);
+background:rgba(255,170,0,.03);font-size:13px}
+.gf-vuln.critical{border-left-color:var(--red);background:rgba(255,68,102,.03)}
+.gf-vuln.high{border-left-color:var(--orange)}
+.gf-vuln.medium{border-left-color:var(--yellow)}
+.gf-vuln.low{border-left-color:var(--text3)}
+
+/* ── NEMESIS ENGINE PANEL ─────────────────────────── */
+.nem-challenge{padding:16px;margin:10px 0;border-radius:12px;border:1px solid var(--border);
+background:rgba(255,0,170,.02)}
+.nem-original{font-size:13px;color:var(--text2);margin-bottom:8px;padding-left:12px;
+border-left:2px solid var(--accent)}
+.nem-counter{font-size:13px;color:var(--red);margin-bottom:8px;padding-left:12px;
+border-left:2px solid var(--red)}
+.nem-verdict-tag{font-family:'JetBrains Mono',monospace;font-size:11px;padding:3px 8px;
+border-radius:4px;display:inline-block}
+.nem-survives{background:rgba(0,255,136,.1);color:var(--green)}
+.nem-weakened{background:rgba(255,170,0,.1);color:var(--orange)}
+.nem-refuted{background:rgba(255,68,102,.1);color:var(--red)}
+
+/* ── FORECAST PANEL ───────────────────────────────── */
+.forecast-card{padding:16px;margin:10px 0;border-radius:12px;border:1px solid var(--border);
+background:var(--panel)}
+.forecast-scenario{font-size:14px;font-weight:500;margin-bottom:8px}
+.forecast-prob{font-family:'JetBrains Mono',monospace;font-size:20px;font-weight:700}
+.forecast-drivers{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.forecast-driver{font-size:11px;padding:3px 8px;border-radius:6px;
+background:rgba(110,63,255,.08);color:var(--purple);border:1px solid rgba(110,63,255,.12)}
+
+/* ── MACRO LENS ───────────────────────────────────── */
+.macro-card{padding:16px;margin:10px 0;border-radius:12px;border:1px solid var(--border);
+display:flex;justify-content:space-between;align-items:center}
+.macro-trend{font-size:14px;font-weight:500;flex:1}
+.macro-domains{display:flex;gap:4px;flex-wrap:wrap}
+.macro-domain{font-size:10px;padding:2px 6px;border-radius:4px;background:rgba(0,240,255,.08);
+color:var(--accent2);border:1px solid rgba(0,240,255,.12)}
+.macro-prob{font-family:'JetBrains Mono',monospace;font-size:16px;font-weight:700;
+min-width:60px;text-align:right}
+
+/* ── LOADING STATES ───────────────────────────────── */
+.loading-overlay{display:none;padding:60px 20px;text-align:center}
+.loading-overlay.visible{display:block}
+.loader{width:48px;height:48px;border:3px solid var(--border);border-top-color:var(--accent);
+border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 20px}
 @keyframes spin{to{transform:rotate(360deg)}}
-.sec{font-size:13px;font-weight:700;color:var(--blue);text-transform:uppercase;letter-spacing:.8px;margin:20px 0 10px}
-.subsec{font-size:11px;font-weight:700;color:var(--purple);text-transform:uppercase;letter-spacing:.5px;margin:14px 0 6px}
-.card{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:10px}
-.card-red{border-left:3px solid var(--red)}.card-green{border-left:3px solid var(--green)}.card-blue{border-left:3px solid var(--blue)}.card-yellow{border-left:3px solid var(--yellow)}.card-purple{border-left:3px solid var(--purple)}
-.score-hero{display:flex;gap:16px;align-items:center;background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:16px;flex-wrap:wrap}
-.score-circle{width:76px;height:76px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:24px;font-weight:800;flex-shrink:0;border:3px solid}
-.score-circle.green{border-color:var(--green);color:var(--green);background:rgba(61,220,151,.08)}
-.score-circle.yellow{border-color:var(--yellow);color:var(--yellow);background:rgba(244,185,66,.08)}
-.score-circle.red{border-color:var(--red);color:var(--red);background:rgba(239,71,111,.08)}
-.score-circle .sub{font-size:10px;font-weight:500;opacity:.7;margin-top:1px}
-.score-right{flex:1;min-width:180px}
-.score-topic{font-size:17px;font-weight:700;margin-bottom:4px}
-.badge{display:inline-block;padding:2px 8px;border-radius:99px;font-size:11px;font-weight:600;margin-left:5px}
-.vel-accelerating{background:#1a3328;color:var(--green)}.vel-emerging{background:#162033;color:var(--blue)}
-.vel-steady{background:#1c2742;color:#9aa3ad}.vel-decelerating{background:#2a2010;color:var(--yellow)}.vel-reversing{background:#2a1018;color:var(--red)}
-.risk-critical{background:#2a1018;color:var(--red);border:1px solid var(--red)}.risk-high{background:#2a2010;color:var(--yellow);border:1px solid var(--yellow)}
-.risk-medium{background:#0e1a2a;color:var(--blue);border:1px solid var(--blue)}.risk-low{background:#0e2220;color:var(--green);border:1px solid var(--green)}
-.sbar{height:8px;border-radius:99px;background:#1c2742;overflow:hidden;margin-top:3px}
-.sbar-fill{height:100%;border-radius:99px;transition:width 1s ease}
-.fill-blue{background:linear-gradient(90deg,#4f8ef7,#8ab4ff)}.fill-green{background:linear-gradient(90deg,var(--green),#26a96c)}
-.fill-yellow{background:linear-gradient(90deg,var(--yellow),#e88c10)}.fill-red{background:linear-gradient(90deg,var(--red),#c0203f)}.fill-purple{background:linear-gradient(90deg,var(--purple),#7c3aed)}
-.prov-badge{font-size:10px;padding:2px 6px;border-radius:99px;background:#0d1117;color:#9aa3ad;border:1px solid var(--border);margin-left:5px}
-.summary-box{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:16px;font-size:14px;line-height:1.75;color:var(--text);margin-bottom:12px}
-.real-box{background:#0d1117;border:1px solid var(--blue);border-radius:12px;padding:16px;font-size:14px;line-height:1.75;color:var(--text);margin-bottom:12px}
-.real-lbl{font-size:11px;color:var(--blue);font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px}
-.origin-box{background:#0d0a1a;border:1px solid var(--purple);border-radius:12px;padding:14px;margin-bottom:12px;font-size:13px;line-height:1.7;color:var(--text)}
-.contra-box{background:#1a0d2a;border:1px solid var(--purple);border-radius:10px;padding:12px;margin-bottom:12px}
-.contra-lbl{font-size:11px;color:var(--purple);font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
-.party-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
-.party-card{background:var(--panel);border-radius:10px;padding:10px 12px}
-.party-gains{border:1px solid var(--green)}.party-loses{border:1px solid var(--red)}
-.party-gains .plbl{color:var(--green)}.party-loses .plbl{color:var(--red)}
-.plbl{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
-.pitem{font-size:12px;color:var(--text);padding:2px 0;border-bottom:1px solid var(--border)}.pitem:last-child{border-bottom:none}
-.causal-step{display:flex;gap:0;margin-bottom:4px;position:relative}
-.cs-num{min-width:32px;height:32px;border-radius:50%;background:#162033;border:2px solid var(--blue);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--blue);flex-shrink:0;margin-top:2px}
-.cs-line{position:absolute;left:15px;top:34px;bottom:-4px;width:2px;background:var(--border)}
-.cs-body{flex:1;padding:0 0 16px 12px}
-.cs-event{font-size:13px;font-weight:600;color:var(--bright);margin-bottom:3px}
-.cs-date{font-size:11px;color:var(--blue);margin-bottom:4px}
-.cs-mech{font-size:12px;color:var(--muted);margin-bottom:3px}
-.cs-conf{font-size:11px;color:var(--green)}
-.counter-card{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:8px}
-.counter-header{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:8px}
-.counter-claim{font-size:12px;font-weight:600;color:var(--bright);flex:1}
-.validity-score{font-size:12px;font-weight:700;padding:2px 8px;border-radius:99px}
-.vs-high{background:#2a1018;color:var(--red);border:1px solid var(--red)}
-.vs-mid{background:#2a2010;color:var(--yellow);border:1px solid var(--yellow)}
-.vs-low{background:#0e2220;color:var(--green);border:1px solid var(--green)}
-.counter-arg{font-size:12px;color:var(--text);margin-bottom:6px;line-height:1.5}
-.counter-res{font-size:11px;color:var(--muted);font-style:italic}
-.friction-card{background:#0d1117;border:1px solid var(--yellow);border-left:3px solid var(--yellow);border-radius:0 10px 10px 0;padding:12px;margin-bottom:8px}
-.friction-items{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:center;margin-bottom:8px}
-.fitem{background:var(--panel);border-radius:8px;padding:8px;font-size:12px;color:var(--text)}
-.fvs{text-align:center;font-size:18px;color:var(--yellow)}
-.ftension{font-size:12px;color:var(--yellow);margin-bottom:4px;font-weight:600}
-.fimpl{font-size:12px;color:var(--muted)}
-.trow{display:grid;grid-template-columns:110px 1fr;gap:0;margin-bottom:3px}
-.twin{background:#0d1117;border-radius:10px 0 0 10px;padding:10px 14px;font-size:12px;color:#9aa3ad;display:flex;align-items:center;font-weight:600;border:1px solid var(--border);border-right:none}
-.tevs{background:var(--panel);border-radius:0 10px 10px 0;padding:10px 14px;border:1px solid var(--border)}
-.tev{margin-bottom:10px}.tev:last-child{margin-bottom:0}
-.tev-top{display:flex;align-items:center;gap:10px;margin-bottom:3px}
-.tprob{font-size:13px;font-weight:700;min-width:40px}.tname{font-size:13px;color:var(--bright);flex:1}
-.trat{font-size:12px;color:var(--muted);margin-left:50px;line-height:1.4;margin-bottom:4px}
-.prob-high{color:var(--green)}.prob-mid{color:var(--yellow)}.prob-low{color:var(--red)}
-.pbar{height:4px;border-radius:4px;background:#1c2742;overflow:hidden;margin-top:3px}
-.pbar-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,var(--blue),#8ab4ff)}
-.chip-wrap{display:flex;flex-wrap:wrap;gap:4px;margin-top:4px}
-.chip{font-size:10px;padding:2px 7px;border-radius:99px}
-.chip-blue{background:#162033;color:var(--blue);border:1px solid #1c3050}
-.chip-green{background:#0e2220;color:var(--green);border:1px solid #1a4040}
-.chip-red{background:#2a1018;color:var(--red);border:1px solid #4a1828}
-.chip-yellow{background:#2a2010;color:var(--yellow);border:1px solid #4a3820}
-.chip-purple{background:#1e1030;color:var(--purple);border:1px solid #3a1870}
-.narr-card{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:10px}
-.narr-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
-.narr-lbl{font-weight:600;font-size:14px}
-.trust-badge{font-size:11px;padding:3px 8px;border-radius:99px;font-weight:600}
-.trust-confirmed{background:#1a3328;color:var(--green);border:1px solid var(--green)}
-.trust-inferred{background:#2a2010;color:var(--yellow);border:1px solid var(--yellow)}
-.trust-contested{background:#2a1a08;color:#ff9a3c;border:1px solid #ff9a3c}
-.trust-corrupted{background:#2a1018;color:var(--red);border:1px solid var(--red)}
-.frame-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
-.frame-cell{background:#0d1117;border-radius:8px;padding:8px;font-size:11px}
-.frame-dom{color:#9aa3ad;margin-bottom:3px;text-transform:uppercase;letter-spacing:.4px;font-size:10px}
-.conn-card{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:8px;display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:center}
-.conn-node{font-size:12px;color:var(--bright);padding:6px 10px;background:#0d1117;border-radius:8px;text-align:center}
-.conn-mid{text-align:center}.conn-type{font-size:10px;color:var(--blue);font-weight:700;text-transform:uppercase;letter-spacing:.5px}.conn-str{font-size:11px;color:#9aa3ad}
-.conn-ins{font-size:12px;color:var(--muted);margin-top:8px;grid-column:1/-1;border-top:1px solid var(--border);padding-top:8px}
-.conn-why{font-size:11px;color:var(--purple);margin-top:3px;grid-column:1/-1;font-style:italic}
-.ws-card{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:10px 12px;margin-bottom:8px;display:flex;gap:10px}
-.ws-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:4px}
-.ws-nascent{background:#9aa3ad}.ws-weak{background:var(--yellow)}.ws-building{background:var(--green)}
-.ws-body{flex:1}
-.ws-sig{font-size:13px;font-weight:600;color:var(--bright);margin-bottom:2px}
-.ws-dom{font-size:11px;color:var(--blue);margin-bottom:4px}
-.ws-why{font-size:12px;color:var(--muted);line-height:1.4}
-.ws-track{font-size:11px;color:var(--purple);margin-top:4px}
-.opp-card{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:10px}
-.opp-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
-.opp-act{font-weight:600;font-size:14px;flex:1}
-.urg-immediate{background:#1a3328;color:var(--green);border:1px solid var(--green)}
-.urg-near_term,.urg-near{background:#2a2010;color:var(--yellow);border:1px solid var(--yellow)}
-.urg-long_term,.urg-long{background:#0e1a2a;color:var(--blue);border:1px solid #267fff}
-.src-card{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:8px}
-.src-head{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:6px}
-.src-title{font-size:13px;font-weight:600;color:var(--bright);flex:1}
-.src-meta{display:flex;gap:10px;font-size:11px;color:#9aa3ad;flex-wrap:wrap}
-.src-link{font-size:11px;color:var(--blue);word-break:break-all}
-.val-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px}
-.val-cell{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center}
-.val-num{font-size:24px;font-weight:700;color:var(--blue)}.val-lbl{font-size:11px;color:#9aa3ad;margin-top:3px;text-transform:uppercase;letter-spacing:.5px}
-.qcard{background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:10px 14px;margin-bottom:6px;display:flex;align-items:center;gap:10px;cursor:pointer;transition:border-color .15s}
-.qcard:hover{border-color:#267fff}
-.qicon{font-size:14px;color:var(--blue);flex-shrink:0}.qtext{font-size:13px;color:var(--text)}
-.gap-card{background:#0a0f1a;border:1px dashed var(--blue);border-radius:8px;padding:10px 14px;margin-bottom:6px;font-size:13px;color:var(--muted)}
-.monitor-box{background:#0a0f1a;border:1px solid var(--border);border-radius:10px;padding:14px;font-size:13px;color:var(--text);line-height:1.7;white-space:pre-wrap}
-.export-bar{display:flex;gap:8px;margin-top:16px;justify-content:flex-end}
-.export-btn{font-size:12px;padding:6px 12px;border-radius:8px;border:1px solid var(--border);background:transparent;color:#9aa3ad;cursor:pointer;transition:all .15s}
-.export-btn:hover{border-color:#267fff;color:var(--blue)}
-.provider-selector{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
-.provider-btn{font-size:12px;padding:5px 10px;border-radius:8px;border:1px solid var(--border);background:transparent;color:#9aa3ad;cursor:pointer;transition:all .15s}
-.provider-btn.active{background:#162033;color:var(--blue);border-color:#267fff}
-.provider-btn:hover:not(.active){border-color:#267fff;color:#ccd}
-.intel-badge{display:inline-flex;align-items:center;gap:5px;font-size:11px;padding:4px 10px;border-radius:99px;background:#0e1a2a;color:var(--blue);border:1px solid #1c3050;margin-right:6px;margin-bottom:4px}
-.sys-risk-critical{color:var(--red)}.sys-risk-high{color:var(--yellow)}.sys-risk-medium{color:var(--blue)}.sys-risk-low{color:var(--green)}
+.loading-text{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--text3)}
+.loading-phase{font-size:11px;color:var(--accent2);margin-top:8px}
+
+/* ── RESPONSIVE ───────────────────────────────────── */
+@media(max-width:768px){
+.app{padding:12px}
+.header{flex-direction:column;gap:12px;align-items:flex-start}
+.input-row{flex-direction:column}
+.node-web-container{height:350px}
+.omni-bar{font-size:9px}
+}
+
+/* ── RAW JSON ─────────────────────────────────────── */
+.json-output{background:var(--panel);border:1px solid var(--border);border-radius:12px;
+padding:16px;overflow:auto;max-height:600px;font-family:'JetBrains Mono',monospace;
+font-size:12px;color:var(--text2);line-height:1.6;white-space:pre-wrap;word-break:break-all}
+
+/* ── SCROLLBAR ────────────────────────────────────── */
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:rgba(110,63,255,.2);border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:rgba(110,63,255,.4)}
 </style>
 </head>
 <body>
+<div class="bg-mesh"></div>
 <div class="app">
-<header class="header">
-  <div class="brand">SubMind</div>
-  <nav class="nav"><a href="/">Forecast</a> <a href="/admin" class="muted">Admin</a></nav>
-</header>
-<main class="main" style="flex-direction:column;align-items:center;padding:24px 16px">
-<section class="panel" style="max-width:1000px;width:100%">
-  <h1 style="margin:0 0 4px">Autonomous Intelligence Engine</h1>
-  <p style="margin:0 0 16px;color:#9aa3ad;font-size:14px">SubMind applies causal chain reasoning, counterpoint validation, and asymmetric signal detection to surface intelligence a human analyst would miss.</p>
-  <label style="font-size:13px;color:#9aa3ad;display:block;margin-bottom:6px">Input — paste articles, URLs, data, claims, or mixed sources</label>
-  <textarea id="input" placeholder="Paste news, articles, research papers, financial data, geopolitical events, earnings reports, or URLs. Mix multiple sources for multi-layered analysis." style="min-height:150px"></textarea>
-  <div class="row" style="margin-top:12px;flex-wrap:wrap;gap:10px;align-items:center">
-    <button id="run">&#9654; Run Analysis</button>
-    <label class="toggle"><input type="checkbox" id="fetchUrls" checked/><span>Auto-fetch URLs</span></label>
-    <label class="toggle"><input type="checkbox" id="deepMode"/><span>Deep Mode (12 sources)</span></label>
+
+<!-- HEADER -->
+<header class="header glass">
+  <div class="logo-section">
+    <div class="logo-mark">S</div>
+    <div>
+      <div class="logo-text"><span>SubMind</span></div>
+      <div style="font-size:10px;color:var(--text3);letter-spacing:.08em;font-family:'JetBrains Mono',monospace">AUTONOMOUS INTELLIGENCE ENGINE</div>
+    </div>
+    <span class="version-badge">v5.0</span>
   </div>
-  <div style="margin-top:10px">
-    <div style="font-size:12px;color:#9aa3ad;margin-bottom:6px">AI Engine:</div>
-    <div class="provider-selector">
-      <button class="provider-btn active" data-provider="auto">&#9679; Auto (Best Available)</button>
-      <button class="provider-btn" data-provider="claude">Claude (Deepest)</button>
-      <button class="provider-btn" data-provider="cerebras">Cerebras (Fast)</button>
-      <button class="provider-btn" data-provider="gemini">Gemini</button>
+  <div class="header-right">
+    <div class="omni-status">OMNI PROTOCOL ACTIVE</div>
+    <select class="tier-selector" id="tierSelect">
+      <option value="OBSERVER">Observer — Free</option>
+      <option value="ANALYST">Analyst — Pro</option>
+      <option value="ORACLE" selected>Oracle — Full</option>
+      <option value="SOVEREIGN">Sovereign — Enterprise</option>
+    </select>
+    <select class="provider-selector" id="providerSelect">
+      <option value="auto">Auto (Best Available)</option>
+      <option value="claude">Claude — Primary</option>
+      <option value="cerebras">Cerebras — Fast</option>
+      <option value="gemini">Gemini — Fallback</option>
+    </select>
+  </div>
+</header>
+
+<!-- OMNI PROTOCOL STATUS BAR -->
+<div class="omni-bar glass" id="omniBar">
+  <div class="omni-phase" id="omni-intent" data-phase="1">1 INTENT LOCK</div>
+  <div class="omni-arrow">→</div>
+  <div class="omni-phase" id="omni-ingest" data-phase="2">2 INGEST</div>
+  <div class="omni-arrow">→</div>
+  <div class="omni-phase" id="omni-score" data-phase="3">3 SCORE</div>
+  <div class="omni-arrow">→</div>
+  <div class="omni-phase" id="omni-glassfang" data-phase="4">4 GLASS FANG</div>
+  <div class="omni-arrow">→</div>
+  <div class="omni-phase" id="omni-nemesis" data-phase="5">5 NEMESIS</div>
+  <div class="omni-arrow">→</div>
+  <div class="omni-phase" id="omni-weave" data-phase="6">6 NODE WEAVE</div>
+  <div class="omni-arrow">→</div>
+  <div class="omni-phase" id="omni-resolve" data-phase="7">7 STATE RESOLVE</div>
+  <div class="omni-arrow">→</div>
+  <div class="omni-phase" id="omni-collapse" data-phase="8">8 COLLAPSE</div>
+</div>
+
+<!-- INPUT -->
+<section class="input-section glass">
+  <div class="input-label">Define Target Truth State</div>
+  <div class="input-row">
+    <textarea class="query-input" id="queryInput" placeholder="Enter any topic, event, claim, or trend to validate through the SubMind intelligence pipeline..." rows="2"></textarea>
+    <button class="submit-btn" id="submitBtn" onclick="runAnalysis()">
+      Resolve
+    </button>
+  </div>
+</section>
+
+<!-- LOADING -->
+<div class="loading-overlay glass" id="loadingOverlay">
+  <div class="loader"></div>
+  <div class="loading-text" id="loadingText">Initializing OMNI Protocol...</div>
+  <div class="loading-phase" id="loadingPhase">Phase 1: Intent Lock</div>
+</div>
+
+<!-- TABS -->
+<div class="tabs" id="tabBar" style="display:none">
+  <div class="tab active" data-panel="summary" onclick="switchTab(this)">Executive Summary</div>
+  <div class="tab" data-panel="chain" onclick="switchTab(this)">Causal Chain</div>
+  <div class="tab" data-panel="nodes" onclick="switchTab(this)">Node Web</div>
+  <div class="tab" data-panel="glassfang" onclick="switchTab(this)">Glass Fang</div>
+  <div class="tab" data-panel="nemesis" onclick="switchTab(this)">Nemesis Engine</div>
+  <div class="tab" data-panel="counterpoints" onclick="switchTab(this)">Counterpoints</div>
+  <div class="tab" data-panel="friction" onclick="switchTab(this)">Friction Points</div>
+  <div class="tab" data-panel="forecast" onclick="switchTab(this)">Forecast</div>
+  <div class="tab" data-panel="macro" onclick="switchTab(this)">Macro Lens</div>
+  <div class="tab" data-panel="timeline" onclick="switchTab(this)">Timeline</div>
+  <div class="tab" data-panel="weakSignals" onclick="switchTab(this)">Weak Signals</div>
+  <div class="tab" data-panel="raw" onclick="switchTab(this)">Raw JSON</div>
+</div>
+
+<!-- RESULTS -->
+<div class="results" id="results">
+
+  <!-- SUMMARY -->
+  <div class="panel active glass" id="panel-summary"></div>
+
+  <!-- CAUSAL CHAIN -->
+  <div class="panel glass" id="panel-chain"></div>
+
+  <!-- NODE WEB -->
+  <div class="panel glass" id="panel-nodes">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <div style="font-size:14px;font-weight:600">Knowledge Node Web</div>
+      <div style="font-size:11px;color:var(--text3);font-family:'JetBrains Mono',monospace" id="nodeStats"></div>
+    </div>
+    <div class="node-web-container" id="nodeWebContainer">
+      <svg id="nodeWebSvg"></svg>
+      <div class="node-web-overlay">
+        <div class="node-legend"><div class="node-legend-dot" style="background:var(--node-event)"></div>Event</div>
+        <div class="node-legend"><div class="node-legend-dot" style="background:var(--node-actor)"></div>Actor</div>
+        <div class="node-legend"><div class="node-legend-dot" style="background:var(--node-trend)"></div>Trend</div>
+        <div class="node-legend"><div class="node-legend-dot" style="background:var(--node-risk)"></div>Risk</div>
+        <div class="node-legend"><div class="node-legend-dot" style="background:var(--node-opp)"></div>Opportunity</div>
+      </div>
     </div>
   </div>
-  <div id="status" style="min-height:24px;margin-top:10px;color:#9aa3ad;font-size:13px"></div>
-</section>
-<section class="panel results" id="results" style="max-width:1000px;width:100%;margin-top:16px">
-  <div id="scoreHero"></div>
-  <div class="tabs" id="tabBar"></div>
-  <div id="tabContent"></div>
-  <div class="export-bar">
-    <button class="export-btn" id="copyJson">Copy JSON</button>
-    <button class="export-btn" id="downloadJson">Download JSON</button>
+
+  <!-- GLASS FANG -->
+  <div class="panel glass" id="panel-glassfang"></div>
+
+  <!-- NEMESIS -->
+  <div class="panel glass" id="panel-nemesis"></div>
+
+  <!-- COUNTERPOINTS -->
+  <div class="panel glass" id="panel-counterpoints"></div>
+
+  <!-- FRICTION POINTS -->
+  <div class="panel glass" id="panel-friction"></div>
+
+  <!-- FORECAST -->
+  <div class="panel glass" id="panel-forecast"></div>
+
+  <!-- MACRO LENS -->
+  <div class="panel glass" id="panel-macro"></div>
+
+  <!-- TIMELINE -->
+  <div class="panel glass" id="panel-timeline"></div>
+
+  <!-- WEAK SIGNALS -->
+  <div class="panel glass" id="panel-weakSignals"></div>
+
+  <!-- RAW JSON -->
+  <div class="panel glass" id="panel-raw">
+    <div class="json-output" id="jsonOutput"></div>
   </div>
-</section>
-</main>
-<footer class="footer">
-  <div>SubMind v4.0 &bull; Autonomous Reasoning Intelligence &bull; Claude + Cerebras + Gemini</div>
-  <div><a href="https://www.submind.us" target="_blank" rel="noreferrer">submind.us</a></div>
-</footer>
+
+</div>
 </div>
 <script>
-let selectedProvider='auto', lastData=null;
-document.querySelectorAll('.provider-btn').forEach(b=>{b.addEventListener('click',()=>{document.querySelectorAll('.provider-btn').forEach(x=>x.classList.remove('active'));b.classList.add('active');selectedProvider=b.dataset.provider;});});
-function esc(s){return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
-function pct(v){return Math.round((v||0)*100)+'%';}
-function clamp(v,a,b){return Math.max(a,Math.min(b,v));}
-function scol(n){return n>=70?'green':n>=40?'yellow':'red';}
-function sfill(n){return n>=70?'fill-green':n>=40?'fill-yellow':'fill-red';}
-function prcls(p){return p>=0.65?'prob-high':p>=0.35?'prob-mid':'prob-low';}
-function velcls(v){return 'vel-'+(v||'steady').toLowerCase().replace(/[^a-z]/g,'');}
-function mbar(label,val,cls,max){var p=Math.round(clamp(val,0,max||100)/(max||100)*100);return '<div style="flex:1;min-width:100px"><div style="display:flex;justify-content:space-between;font-size:11px;color:#9aa3ad;margin-bottom:2px"><span>'+label+'</span><span>'+Math.round(val||0)+'</span></div><div class="sbar"><div class="sbar-fill '+cls+'" style="width:'+p+'%"></div></div></div>';}
-function chips(arr,cls){return arr&&arr.length?'<div class="chip-wrap">'+arr.map(x=>'<span class="chip '+cls+'">'+esc(x)+'</span>').join('')+'</div>':'';}
+// ================================================================
+// SUBMIND v5.0 — OMNI Protocol Frontend Engine
+// ================================================================
+// Implements: Desired-State Resolution, Proof-Before-Display,
+// Zero-Trust Validation Pipeline, State Collapse rendering
+// ================================================================
 
-function renderHero(d){
-  var score=d.trust_weighted_score||d.reliability_score||0;
-  var tm=d.trend_meta||{};
-  var prov=d.provider?'<span class="prov-badge">'+esc(d.provider)+(d.model?' · '+esc(d.model.split('-').slice(0,2).join('-')):'')+'</span>':'';
-  var sysRisk=tm.systemic_risk_level?'<span class="badge sys-risk-'+tm.systemic_risk_level+'">'+esc(tm.systemic_risk_level)+' systemic risk</span>':'';
-  var geoScope=tm.geographic_scope?'<span class="badge" style="background:#1c2742;color:#9aa3ad">'+esc(tm.geographic_scope)+'</span>':'';
-  return '<div class="score-circle '+scol(score)+'"><span>'+score+'</span><span class="sub">TWS</span></div>'+
-    '<div class="score-right">'+
-    '<div class="score-topic">'+esc(tm.topic||'Analysis')+'<span class="badge '+velcls(tm.velocity)+'">'+esc(tm.velocity||'unknown')+'</span>'+prov+sysRisk+geoScope+'</div>'+
-    '<div style="font-size:12px;color:#9aa3ad;margin-bottom:8px">Category: '+esc(tm.category||'—')+' | Signal: '+esc(tm.signal_strength||'—')+' | Scope: '+esc(tm.geographic_scope||'—')+' | Entropy: '+(d.source_entropy||0)+'</div>'+
-    '<div style="display:flex;gap:12px;flex-wrap:wrap">'+mbar('Momentum',tm.momentum_score,  'fill-blue')+mbar('Novelty',tm.novelty_score,'fill-purple')+mbar('Reliability',score,sfill(score))+'</div>'+
-    (tm.time_to_mainstream?'<div style="font-size:11px;color:#9aa3ad;margin-top:6px">Mainstream in: '+esc(tm.time_to_mainstream)+'</div>':'')+
-    '</div>';
+let currentData = null;
+
+// ── OMNI PROTOCOL PHASE ANIMATION ─────────────────
+function setOmniPhase(phaseId, state) {
+  const el = document.getElementById(phaseId);
+  if (!el) return;
+  el.classList.remove('active','complete');
+  if (state === 'active') el.classList.add('active');
+  if (state === 'complete') el.classList.add('complete');
 }
 
-function renderOverview(d){
-  var out='';
-  if(d.summary) out+='<div class="sec">Executive Brief</div><div class="summary-box">'+esc(d.summary)+'</div>';
-  if(d.real_story) out+='<div class="sec">The Real Story</div><div class="real-box"><div class="real-lbl">&#128270; Below the headline</div>'+esc(d.real_story)+'</div>';
-  if(d.origin_analysis) out+='<div class="sec">Origin Analysis</div><div class="origin-box"><div style="font-size:11px;color:var(--purple);font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">&#128336; Historical Root</div>'+esc(d.origin_analysis)+'</div>';
-  var tm=d.trend_meta||{};
-  if(tm.contrarian_angle) out+='<div class="contra-box"><div class="contra-lbl">&#9889; Contrarian Angle</div><div style="font-size:13px;color:var(--text);line-height:1.5">'+esc(tm.contrarian_angle)+'</div></div>';
-  if(tm.asymmetric_edge) out+='<div style="background:#0a1520;border:1px solid var(--blue);border-radius:10px;padding:12px;margin-bottom:12px"><div style="font-size:11px;color:var(--blue);font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">&#128249; Asymmetric Edge</div><div style="font-size:13px;color:var(--text)">'+esc(tm.asymmetric_edge)+'</div></div>';
-  if(d.beneficiaries&&d.beneficiaries.length||d.harmed_parties&&d.harmed_parties.length){
-    out+='<div class="sec">Impact Mapping</div><div class="party-grid">';
-    if(d.beneficiaries&&d.beneficiaries.length) out+='<div class="party-card party-gains"><div class="plbl">&#9650; Gains</div>'+d.beneficiaries.map(x=>'<div class="pitem">'+esc(x)+'</div>').join('')+'</div>';
-    if(d.harmed_parties&&d.harmed_parties.length) out+='<div class="party-card party-loses"><div class="plbl">&#9660; Loses</div>'+d.harmed_parties.map(x=>'<div class="pitem">'+esc(x)+'</div>').join('')+'</div>';
-    out+='</div>';
+function resetOmniPhases() {
+  document.querySelectorAll('.omni-phase').forEach(p => p.classList.remove('active','complete'));
+}
+
+async function animateOmniProtocol() {
+  const phases = [
+    { id: 'omni-intent', text: 'Phase 1: Semantic Intent Lock — defining target truth state', delay: 400 },
+    { id: 'omni-ingest', text: 'Phase 2: Ingesting signals — normalizing sources', delay: 800 },
+    { id: 'omni-score', text: 'Phase 3: Scoring & clustering — confidence weighting', delay: 600 },
+    { id: 'omni-glassfang', text: 'Phase 4: Glass Fang — parallel shadow validation', delay: 1200 },
+    { id: 'omni-nemesis', text: 'Phase 5: Nemesis Engine — adversarial counter-process', delay: 1000 },
+    { id: 'omni-weave', text: 'Phase 6: Node Weaving — building knowledge graph', delay: 600 },
+    { id: 'omni-resolve', text: 'Phase 7: State Resolution — computing truth matrix', delay: 500 },
+    { id: 'omni-collapse', text: 'Phase 8: State Collapse — only validated facts remain', delay: 300 }
+  ];
+
+  for (let i = 0; i < phases.length; i++) {
+    if (i > 0) setOmniPhase(phases[i-1].id, 'complete');
+    setOmniPhase(phases[i].id, 'active');
+    document.getElementById('loadingPhase').textContent = phases[i].text;
+    await new Promise(r => setTimeout(r, phases[i].delay));
   }
-  return out||'<p style="color:#9aa3ad;font-size:13px">No overview data.</p>';
+  setOmniPhase(phases[phases.length-1].id, 'complete');
 }
 
-function renderCausalChain(d){
-  var chain=d.causal_chain||[];
-  if(!chain.length) return '<p style="color:#9aa3ad;font-size:13px">No causal chain data.</p>';
-  return '<p style="color:#9aa3ad;font-size:12px;margin-bottom:16px">SubMind traced the origin-to-present causal path:</p>'+
-  chain.map((s,i)=>{
-    var isLast=i===chain.length-1;
-    return '<div class="causal-step">'+(!isLast?'<div class="cs-line"></div>':'')+
-    '<div class="cs-num">'+((s.step||i+1))+'</div>'+
-    '<div class="cs-body">'+
-    '<div class="cs-event">'+esc(s.event)+'</div>'+
-    (s.date_approx?'<div class="cs-date">&#128336; '+esc(s.date_approx)+'</div>':'')+
-    (s.mechanism?'<div class="cs-mech">&#8594; '+esc(s.mechanism)+'</div>':'')+
-    (s.evidence?'<div style="font-size:11px;color:var(--muted);margin-bottom:3px">Evidence: '+esc(s.evidence)+'</div>':'')+
-    (s.confidence?'<div class="cs-conf">Confidence: '+Math.round(s.confidence*100)+'%</div>':'')+
-    '</div></div>';
-  }).join('');
-}
+// ── MAIN ANALYSIS FUNCTION ────────────────────────
+async function runAnalysis() {
+  const topic = document.getElementById('queryInput').value.trim();
+  if (!topic) return;
 
-function renderCounterpoints(d){
-  var cps=d.counterpoints||[];
-  if(!cps.length) return '<p style="color:#9aa3ad;font-size:13px">No counterpoints generated.</p>';
-  return '<p style="color:#9aa3ad;font-size:12px;margin-bottom:12px">SubMind challenged each major claim with the strongest opposing evidence:</p>'+
-  cps.map(cp=>{
-    var vs=cp.validity_score||0;
-    var vscls=vs>=70?'vs-high':vs>=40?'vs-mid':'vs-low';
-    return '<div class="counter-card">'+
-    '<div class="counter-header"><span class="counter-claim">Claim: '+esc(cp.claim)+'</span><span class="validity-score '+vscls+'">Validity: '+vs+'%</span></div>'+
-    '<div class="counter-arg">'+esc(cp.counterargument)+'</div>'+
-    (cp.resolution?'<div class="counter-res">Resolution: '+esc(cp.resolution)+'</div>':'')+
-    (cp.adjusts_confidence_by?'<div style="font-size:11px;color:'+(cp.adjusts_confidence_by<0?'var(--red)':'var(--green)')+'">Confidence adjustment: '+(cp.adjusts_confidence_by>0?'+':'')+Math.round(cp.adjusts_confidence_by*100)+'%</div>':'')+
-    '</div>';
-  }).join('');
-}
+  const tier = document.getElementById('tierSelect').value;
+  const provider = document.getElementById('providerSelect').value;
+  const btn = document.getElementById('submitBtn');
 
-function renderFriction(d){
-  var fps=d.friction_points||[];
-  if(!fps.length) return '<p style="color:#9aa3ad;font-size:13px">No friction points detected.</p>';
-  return '<p style="color:#9aa3ad;font-size:12px;margin-bottom:12px">Observations that should not coexist — these contradictions reveal hidden dynamics:</p>'+
-  fps.map(fp=>'<div class="friction-card">'+
-    '<div class="friction-items"><div class="fitem">'+esc(fp.observation_a)+'</div><div class="fvs">&#8800;</div><div class="fitem">'+esc(fp.observation_b)+'</div></div>'+
-    '<div class="ftension">&#9889; Tension: '+esc(fp.tension)+'</div>'+
-    '<div class="fimpl">&#128270; Implication: '+esc(fp.implication)+'</div>'+
-    '</div>').join('');
-}
-
-function renderTimeline(d){
-  var tl=d.prediction_timeline||[];
-  if(!tl.length) return '<p style="color:#9aa3ad;font-size:13px">No timeline data.</p>';
-  return tl.map(row=>{
-    var evs=(row.events||[]).map(e=>{
-      var p=e.probability||0,pc=Math.round(p*100);
-      return '<div class="tev">'+
-        '<div class="tev-top"><span class="tprob '+prcls(p)+'">'+pc+'%</span><span class="tname">'+esc(e.event)+'</span></div>'+
-        '<div class="pbar"><div class="pbar-fill" style="width:'+pc+'%"></div></div>'+
-        (e.rationale?'<div class="trat">'+esc(e.rationale)+'</div>':'')+
-        (e.leading_indicators&&e.leading_indicators.length?'<div style="margin-top:4px;margin-left:50px">'+chips(e.leading_indicators,'chip-blue')+'</div>':'')+
-        (e.invalidating_signals&&e.invalidating_signals.length?'<div style="margin-top:4px;margin-left:50px">'+chips(e.invalidating_signals,'chip-red')+'</div>':'')+
-        '</div>';
-    }).join('');
-    return '<div class="trow"><div class="twin">'+esc(row.window)+'</div><div class="tevs">'+(evs||'<span style="color:#9aa3ad;font-size:12px">No events</span>')+'</div></div>';
-  }).join('');
-}
-
-function renderNarratives(d){
-  var ns=d.narratives||[];
-  if(!ns.length) return '<p style="color:#9aa3ad;font-size:13px">No narratives.</p>';
-  return ns.map(n=>'<div class="narr-card">'+
-    '<div class="narr-head"><span class="narr-lbl">'+esc(n.label)+'</span>'+
-    '<span class="trust-badge trust-'+(n.status||'inferred')+'">'+esc(n.status||'inferred')+(n.source_count?' ('+n.source_count+' src)':'')+'</span></div>'+
-    (n.narrative_controller?'<div style="font-size:11px;color:var(--yellow);margin-bottom:8px">Controlled by: '+esc(n.narrative_controller)+'</div>':'')+
-    '<div class="frame-grid">'+
-    (n.dominant_framing?'<div class="frame-cell"><div class="frame-dom">Dominant Framing</div><div style="color:var(--text)">'+esc(n.dominant_framing)+'</div></div>':'')+
-    (n.alternative_framing?'<div class="frame-cell"><div class="frame-dom" style="color:var(--purple)">Alternative Framing</div><div style="color:var(--text)">'+esc(n.alternative_framing)+'</div></div>':'')+
-    '</div>'+
-    (n.drivers&&n.drivers.length?'<div style="margin-top:8px"><div class="subsec">Drivers</div>'+chips(n.drivers,'chip-blue')+'</div>':'')+
-    (n.counterpoints&&n.counterpoints.length?'<div style="margin-top:8px"><div class="subsec">Weaknesses</div>'+chips(n.counterpoints,'chip-red')+'</div>':'')+
-    '</div>').join('');
-}
-
-function renderConnections(d){
-  var cs=d.signal_connections||[];
-  if(!cs.length) return '<p style="color:#9aa3ad;font-size:13px">No signal connections detected.</p>';
-  return cs.map(c=>'<div class="conn-card">'+
-    '<div class="conn-node">'+esc(c.signal_a)+'</div>'+
-    '<div class="conn-mid"><div class="conn-type">'+esc(c.connection_type)+'</div><div class="conn-str">'+Math.round((c.strength||0)*100)+'% strength'+(c.time_lag_months?' · '+c.time_lag_months+'mo lag':'')+'</div></div>'+
-    '<div class="conn-node">'+esc(c.signal_b)+'</div>'+
-    (c.insight?'<div class="conn-ins">'+esc(c.insight)+'</div>':'')+
-    (c.why_overlooked?'<div class="conn-why">&#128064; Why overlooked: '+esc(c.why_overlooked)+'</div>':'')+
-    '</div>').join('');
-}
-
-function renderWeakSignals(d){
-  var ws=d.weak_signals||[];
-  if(!ws.length) return '<p style="color:#9aa3ad;font-size:13px">No weak signals detected.</p>';
-  return '<p style="color:#9aa3ad;font-size:12px;margin-bottom:12px">Non-obvious early indicators most analysts dismiss as noise:</p>'+
-  ws.map(s=>'<div class="ws-card"><div class="ws-dot ws-'+(s.strength||'weak')+'"></div>'+
-    '<div class="ws-body">'+
-    '<div class="ws-sig">'+esc(s.signal)+'</div>'+
-    '<div class="ws-dom">'+esc(s.domain)+'</div>'+
-    '<div class="ws-why">'+esc(s.why_matters)+'</div>'+
-    (s.estimated_lag_months?'<div style="font-size:11px;color:#9aa3ad;margin-top:3px">~'+s.estimated_lag_months+' months to mainstream</div>':'')+
-    (s.tracking_method?'<div class="ws-track">Track: '+esc(s.tracking_method)+'</div>':'')+
-    '</div></div>').join('');
-}
-
-function renderOpportunities(d){
-  var ops=d.opportunities||[];
-  if(!ops.length) return '<p style="color:#9aa3ad;font-size:13px">No opportunities identified.</p>';
-  return ops.map(o=>'<div class="opp-card">'+
-    '<div class="opp-head"><span class="opp-act">'+esc(o.action)+'</span>'+
-    '<span class="badge urg-'+(o.urgency||'near_term').replace(' ','_')+'">'+esc((o.urgency||'near term').replace('_',' '))+'</span></div>'+
-    (o.why_now?'<div style="font-size:12px;color:#9aa3ad;margin-bottom:6px">'+esc(o.why_now)+'</div>':'')+
-    (o.asymmetric_edge?'<div style="font-size:12px;color:var(--purple);margin-bottom:4px">&#9889; Edge: '+esc(o.asymmetric_edge)+'</div>':'')+
-    (o.expected_value_note?'<div style="font-size:12px;color:var(--muted);font-style:italic">'+esc(o.expected_value_note)+'</div>':'')+
-    (o.risks&&o.risks.length?'<div style="font-size:11px;color:#9aa3ad;margin-top:8px">Risks: '+o.risks.map(r=>'<span style="color:var(--red)">'+esc(r)+'</span>').join(', ')+'</div>':'')+
-    '</div>').join('');
-}
-
-function renderRisks(d){
-  var rs=d.risks||[];
-  if(!rs.length) return '<p style="color:#9aa3ad;font-size:13px">No risks identified.</p>';
-  return rs.map(r=>{
-    var systemic=r.systemic_risk?'<span class="badge risk-critical" style="margin-left:6px;font-size:10px">SYSTEMIC</span>':'';
-    return '<div class="card card-'+(r.severity==='critical'||r.severity==='high'?'red':r.severity==='medium'?'blue':'green')+'" style="border-left:3px solid">'+
-      '<div style="display:flex;justify-content:space-between;margin-bottom:6px">'+
-      '<span style="font-weight:600;font-size:13px">'+esc(r.risk)+systemic+'</span>'+
-      '<span class="badge risk-'+(r.severity||'medium')+'">'+esc(r.severity||'medium')+' &bull; '+pct(r.probability)+'</span></div>'+
-      (r.mitigation?'<div style="font-size:12px;color:var(--muted);margin-bottom:4px">Mitigation: '+esc(r.mitigation)+'</div>':'')+
-      (r.cascade_potential?'<div style="font-size:12px;color:var(--yellow);margin-bottom:4px">Cascade: '+esc(r.cascade_potential)+'</div>':'')+
-      (r.time_horizon?'<div style="font-size:11px;color:#9aa3ad;margin-bottom:4px">Horizon: '+esc(r.time_horizon)+'</div>':'')+
-      chips(r.early_warning_signals,'chip-yellow')+
-      '</div>';
-  }).join('');
-}
-
-function renderSources(d){
-  var ss=d.sources||[];
-  if(!ss.length) return '<p style="color:#9aa3ad;font-size:13px">No sources listed.</p>';
-  var tri=ss.filter(s=>s.trust==='confirmed').length;
-  var hdr=tri?'<div style="font-size:12px;color:var(--green);margin-bottom:12px">&#9989; '+tri+' source'+(tri>1?'s':'')+' confirmed via cross-validation</div>':'';
-  return hdr+ss.map(s=>'<div class="src-card">'+
-    '<div class="src-head">'+
-    '<span class="src-title">'+esc(s.title||s.url||'Untitled')+'</span>'+
-    '<div style="display:flex;gap:5px;flex-shrink:0">'+
-    '<span class="trust-badge trust-'+(s.trust||'inferred')+'">'+esc(s.trust)+'</span>'+
-    '<span class="badge" style="background:#0e1a2a;color:var(--blue);border:1px solid #267fff">'+Math.round(s.credibility_score||0)+'%</span>'+
-    '</div></div>'+
-    '<div class="src-meta">'+
-    '<span>Stance: '+esc(s.stance||'—')+'</span>'+
-    '<span>Type: '+esc(s.domain_type||'—')+'</span>'+
-    '<span>Salience: '+Math.round((s.salience||0)*100)+'%</span>'+
-    (s.corroboration_count?'<span>Corroborated by: '+s.corroboration_count+' sources</span>':'')+
-    (s.published?'<span>'+esc(s.published)+'</span>':'')+
-    '</div>'+
-    (s.key_claim?'<div style="font-size:12px;color:var(--text);margin-top:6px;border-top:1px solid var(--border);padding-top:6px">&#8220;'+esc(s.key_claim)+'&#8221;</div>':'')+
-    (s.bias_indicators?'<div style="font-size:11px;color:var(--yellow);margin-top:4px">Bias: '+esc(s.bias_indicators)+'</div>':'')+
-    (s.url?'<div style="margin-top:6px"><a class="src-link" href="'+esc(s.url)+'" target="_blank" rel="noreferrer">'+esc(s.url)+'</a></div>':'')+
-    '</div>').join('');
-}
-
-function renderValidation(d){
-  var vm=d.validation_matrix||{};
-  var total=Math.max((d.trust_confirmed||0)+(d.trust_inferred||0)+(d.trust_corrupted||0),1);
-  function trustBar(label,val,cls){var p=Math.round(val/total*100);return '<div style="margin-bottom:10px"><div style="display:flex;justify-content:space-between;font-size:11px;color:#9aa3ad;margin-bottom:3px"><span>'+label+'</span><span>'+val+' src ('+p+'%)</span></div><div class="sbar"><div class="sbar-fill '+cls+'" style="width:'+p+'%"></div></div></div>';}
-  return '<div class="val-grid">'+
-    '<div class="val-cell"><div class="val-num">'+Math.round((vm.source_agreement||0)*100)+'%</div><div class="val-lbl">Agreement</div></div>'+
-    '<div class="val-cell"><div class="val-num">'+(vm.cross_validation_count||0)+'</div><div class="val-lbl">Cross-Validated</div></div>'+
-    '<div class="val-cell"><div class="val-num">'+(vm.contradictions_found||0)+'</div><div class="val-lbl">Contradictions</div></div>'+
-    '<div class="val-cell"><div class="val-num">'+(vm.data_freshness_score||0)+'</div><div class="val-lbl">Freshness</div></div>'+
-    (vm.narrative_diversity_score!==undefined?'<div class="val-cell"><div class="val-num">'+Math.round((vm.narrative_diversity_score||0)*100)+'%</div><div class="val-lbl">Narrative Diversity</div></div>':'')+
-    (vm.expert_consensus_level?'<div class="val-cell"><div class="val-num" style="font-size:16px">'+esc(vm.expert_consensus_level)+'</div><div class="val-lbl">Expert Consensus</div></div>':'')+
-    '</div>'+
-    '<div style="margin-top:16px"><div class="sec">Trust Breakdown</div>'+trustBar('Confirmed','fill-green')+trustBar('Inferred','fill-yellow')+trustBar('Corrupted','fill-red')+'</div>'+
-    (d.notes?'<div style="margin-top:16px"><div class="sec">Analyst Notes</div><div style="background:#0d1117;border:1px dashed #1c3050;border-radius:10px;padding:14px;font-size:13px;color:var(--muted);line-height:1.6;white-space:pre-wrap">'+esc(d.notes)+'</div></div>':'');
-}
-
-function renderPipeline(d){
-  var qs=d.autonomous_queries||[], gaps=d.intelligence_gaps||[], mon=d.monitoring_protocol;
-  var out='';
-  if(qs.length){out+='<div class="sec">Autonomous Query Pipeline</div><p style="color:#9aa3ad;font-size:12px;margin-bottom:12px">SubMind would autonomously run these queries to deepen this analysis:</p>';out+=qs.map(q=>'<div class="qcard"><span class="qicon">&#128269;</span><span class="qtext">'+esc(q)+'</span></div>').join('');}
-  if(gaps.length){out+='<div class="sec" style="margin-top:20px">Intelligence Gaps</div><p style="color:#9aa3ad;font-size:12px;margin-bottom:10px">Missing information that would materially change this analysis:</p>';out+=gaps.map(g=>'<div class="gap-card">&#10067; '+esc(g)+'</div>').join('');}
-  if(mon){out+='<div class="sec" style="margin-top:20px">Monitoring Protocol</div><div class="monitor-box">'+esc(mon)+'</div>';}
-  return out||'<p style="color:#9aa3ad;font-size:13px">No pipeline data.</p>';
-}
-
-var TABS=[
-  {id:'overview',label:'Overview',render:renderOverview},
-  {id:'causal',label:'&#128200; Causal Chain',render:renderCausalChain},
-  {id:'counter',label:'&#9876; Counterpoints',render:renderCounterpoints},
-  {id:'friction',label:'&#9889; Friction Points',render:renderFriction},
-  {id:'timeline',label:'Timeline',render:renderTimeline},
-  {id:'narratives',label:'Narratives',render:renderNarratives},
-  {id:'signals',label:'Signal Map',render:renderConnections},
-  {id:'weaksigs',label:'Weak Signals',render:renderWeakSignals},
-  {id:'opps',label:'Opportunities',render:renderOpportunities},
-  {id:'risks',label:'Risks',render:renderRisks},
-  {id:'sources',label:'Sources',render:renderSources},
-  {id:'validation',label:'Validation',render:renderValidation},
-  {id:'pipeline',label:'&#128270; Pipeline',render:renderPipeline}
-];
-
-function renderResults(data){
-  lastData=data;
-  document.getElementById('scoreHero').innerHTML=renderHero(data);
-  var bar=document.getElementById('tabBar'), content=document.getElementById('tabContent');
-  bar.innerHTML=''; content.innerHTML='';
-  TABS.forEach(function(t,i){
-    var btn=document.createElement('button'); btn.className='tab-btn'+(i===0?' active':''); btn.innerHTML=t.label;
-    btn.onclick=function(){bar.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));content.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('active'));btn.classList.add('active');document.getElementById('tab-'+t.id).classList.add('active');};
-    bar.appendChild(btn);
-    var pane=document.createElement('div'); pane.className='tab-pane'+(i===0?' active':''); pane.id='tab-'+t.id;
-    pane.innerHTML='<div class="sec">'+t.label+'</div>'+t.render(data); content.appendChild(pane);
-  });
-  document.getElementById('results').classList.add('visible');
-  document.getElementById('results').scrollIntoView({behavior:'smooth',block:'start'});
-}
-
-document.getElementById('run').addEventListener('click',async function(){
-  var q=document.getElementById('input').value.trim();
-  if(!q){document.getElementById('status').textContent='Please enter content to analyse.';return;}
-  this.disabled=true;
-  document.getElementById('status').innerHTML='<span class="spinner"></span>Running deep analysis...';
+  // Reset state
+  btn.disabled = true;
+  btn.textContent = 'Resolving...';
   document.getElementById('results').classList.remove('visible');
-  try{
-    var body={query:q,fetchUrls:document.getElementById('fetchUrls').checked,deepMode:document.getElementById('deepMode').checked,provider:selectedProvider};
-    var res=await fetch('/api/predict',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
-    if(!res.ok){var tx=await res.text();var errData;try{errData=JSON.parse(tx);}catch{errData={error:tx};}throw new Error(errData.error||'HTTP '+res.status);}
-    var data=await res.json();
-    if(data.error) throw new Error(data.error);
-    document.getElementById('status').innerHTML='<span style="color:var(--green)">&#10003; Analysis complete</span> <span style="color:#9aa3ad;font-size:11px">via '+esc(data.provider||'unknown')+(data.model?' &middot; '+esc(data.model.split('-').slice(0,3).join('-'))+' &middot; v'+esc(data.engine_version||'4.0'):'')+'</span>';
-    renderResults(data);
-  }catch(e){document.getElementById('status').innerHTML='<span style="color:var(--red)">Error: '+esc(e.message)+'</span>';}
-  finally{this.disabled=false;}
-});
+  document.getElementById('tabBar').style.display = 'none';
+  document.getElementById('loadingOverlay').classList.add('visible');
+  document.getElementById('loadingText').textContent = 'Initializing OMNI Protocol...';
+  resetOmniPhases();
 
-document.getElementById('copyJson').addEventListener('click',function(){if(!lastData)return;navigator.clipboard.writeText(JSON.stringify(lastData,null,2)).then(()=>{this.textContent='Copied!';setTimeout(()=>this.textContent='Copy JSON',2000);});});
-document.getElementById('downloadJson').addEventListener('click',function(){if(!lastData)return;var b=new Blob([JSON.stringify(lastData,null,2)],{type:'application/json'});var a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='submind-v4-'+Date.now()+'.json';a.click();});
+  // Start OMNI animation
+  const omniAnimation = animateOmniProtocol();
+
+  try {
+    const resp = await fetch('/api/predict', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ topic, tier, provider, context: '' })
+    });
+
+    if (!resp.ok) {
+      const err = await resp.json().catch(() => ({ error: 'Network error' }));
+      throw new Error(err.error || err.detail || 'Analysis failed');
+    }
+
+    const data = await resp.json();
+    currentData = data;
+
+    // Wait for OMNI animation to finish
+    await omniAnimation;
+
+    // Render all panels
+    renderSummary(data);
+    renderCausalChain(data);
+    renderGlassFang(data);
+    renderNemesis(data);
+    renderCounterpoints(data);
+    renderFrictionPoints(data);
+    renderForecast(data);
+    renderMacroLens(data);
+    renderTimeline(data);
+    renderWeakSignals(data);
+    renderNodeWeb(data);
+    document.getElementById('jsonOutput').textContent = JSON.stringify(data, null, 2);
+
+    // Show results
+    document.getElementById('loadingOverlay').classList.remove('visible');
+    document.getElementById('tabBar').style.display = 'flex';
+    document.getElementById('results').classList.add('visible');
+
+  } catch (err) {
+    await omniAnimation;
+    document.getElementById('loadingOverlay').classList.remove('visible');
+    alert('SubMind Error: ' + err.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Resolve';
+  }
+}
+
+// ── TAB SWITCHING ─────────────────────────────────
+function switchTab(el) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  el.classList.add('active');
+  const panel = document.getElementById('panel-' + el.dataset.panel);
+  if (panel) panel.classList.add('active');
+}
+
+// ── TRUST BADGE HELPER ────────────────────────────
+function trustBadge(score) {
+  const pct = (score * 100).toFixed(1);
+  if (score >= 0.75) return '<span class="trust-badge trust-t1">T1 CONFIRMED ' + pct + '%</span>';
+  if (score >= 0.50) return '<span class="trust-badge trust-t2">T2 PROBABLE ' + pct + '%</span>';
+  if (score >= 0.25) return '<span class="trust-badge trust-t3">T3 UNCERTAIN ' + pct + '%</span>';
+  return '<span class="trust-badge trust-t4">T4 DISPUTED ' + pct + '%</span>';
+}
+
+function confColor(v) {
+  if (v >= 0.75) return 'var(--green)';
+  if (v >= 0.50) return '#88ff00';
+  if (v >= 0.25) return 'var(--orange)';
+  return 'var(--red)';
+}
+
+// ── RENDER: EXECUTIVE SUMMARY ─────────────────────
+function renderSummary(d) {
+  const trust = d.trust || d.trust_classification || {};
+  const score = trust.score || d.confidence_weights?.overall || 0.5;
+  const pz = d.patient_zero || {};
+
+  document.getElementById('panel-summary').innerHTML =
+    '<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:16px">' +
+      '<div style="font-size:18px;font-weight:700">Intelligence Assessment</div>' +
+      trustBadge(score) +
+    '</div>' +
+    '<div class="exec-summary">' + (d.executive_summary || 'No summary generated.') + '</div>' +
+    (pz.event ? '<div style="margin-top:16px;padding:14px 18px;border-radius:10px;border:1px solid rgba(255,102,0,.2);background:rgba(255,102,0,.04)">' +
+      '<div style="font-size:11px;font-weight:600;color:var(--orange);letter-spacing:.08em;margin-bottom:6px;font-family:\'JetBrains Mono\',monospace">PATIENT ZERO — ORIGIN EVENT</div>' +
+      '<div style="font-size:14px;font-weight:500">' + pz.event + '</div>' +
+      (pz.date ? '<div style="font-size:12px;color:var(--text3);margin-top:4px">' + pz.date + ' — Confidence: ' + ((pz.confidence||0)*100).toFixed(0) + '%</div>' : '') +
+    '</div>' : '') +
+    '<div style="display:flex;gap:16px;margin-top:16px;flex-wrap:wrap">' +
+      '<div style="flex:1;min-width:140px;padding:12px 16px;border-radius:10px;background:var(--panel);border:1px solid var(--border)">' +
+        '<div style="font-size:10px;color:var(--text3);font-family:\'JetBrains Mono\',monospace;letter-spacing:.08em">PROVIDER</div>' +
+        '<div style="font-size:14px;font-weight:600;margin-top:4px">' + (d.provider || 'auto') + '</div></div>' +
+      '<div style="flex:1;min-width:140px;padding:12px 16px;border-radius:10px;background:var(--panel);border:1px solid var(--border)">' +
+        '<div style="font-size:10px;color:var(--text3);font-family:\'JetBrains Mono\',monospace;letter-spacing:.08em">PROCESSING</div>' +
+        '<div style="font-size:14px;font-weight:600;margin-top:4px">' + ((d.processingMs||0)/1000).toFixed(1) + 's</div></div>' +
+      '<div style="flex:1;min-width:140px;padding:12px 16px;border-radius:10px;background:var(--panel);border:1px solid var(--border)">' +
+        '<div style="font-size:10px;color:var(--text3);font-family:\'JetBrains Mono\',monospace;letter-spacing:.08em">TIER</div>' +
+        '<div style="font-size:14px;font-weight:600;margin-top:4px">' + (d.tier || 'Observer') + '</div></div>' +
+      '<div style="flex:1;min-width:140px;padding:12px 16px;border-radius:10px;background:var(--panel);border:1px solid var(--border)">' +
+        '<div style="font-size:10px;color:var(--text3);font-family:\'JetBrains Mono\',monospace;letter-spacing:.08em">SOURCES</div>' +
+        '<div style="font-size:14px;font-weight:600;margin-top:4px">' + (d.sources_analyzed || 0) + '</div></div>' +
+    '</div>';
+}
+
+// ── RENDER: CAUSAL CHAIN ──────────────────────────
+function renderCausalChain(d) {
+  const chain = d.causal_chain || [];
+  if (!chain.length) { document.getElementById('panel-chain').innerHTML = '<div style="color:var(--text3);padding:20px">No causal chain data in this analysis.</div>'; return; }
+
+  let html = '<div style="font-size:14px;font-weight:600;margin-bottom:16px">Causal Chain — ' + chain.length + ' Steps</div>';
+  chain.forEach((step, i) => {
+    const conf = step.confidence || step.causal_weight || 0.5;
+    html += '<div class="chain-step">' +
+      '<div class="chain-num">' + (step.step || i+1) + '</div>' +
+      '<div class="chain-content">' +
+        '<div class="chain-event">' + (step.event || 'Event ' + (i+1)) + '</div>' +
+        '<div class="chain-meta">' +
+          (step.date ? '<span>' + step.date + '</span>' : '') +
+          '<span style="color:' + confColor(conf) + '">' + (conf*100).toFixed(0) + '% conf</span>' +
+          (step.source_type ? '<span>' + step.source_type + '</span>' : '') +
+          '<span><span class="confidence-bar"><span class="confidence-fill" style="width:' + (conf*100) + '%;background:' + confColor(conf) + '"></span></span></span>' +
+        '</div></div></div>';
+  });
+  document.getElementById('panel-chain').innerHTML = html;
+}
+
+// ── RENDER: GLASS FANG ────────────────────────────
+function renderGlassFang(d) {
+  const gf = d.glass_fang || {};
+  if (!gf.enabled) {
+    document.getElementById('panel-glassfang').innerHTML =
+      '<div class="gf-header"><span class="gf-icon">🔒</span><span class="gf-title">Glass Fang — Locked</span></div>' +
+      '<div style="color:var(--text3);padding:12px 0">' + (gf.tier_gate || 'Upgrade to Oracle tier to unlock Glass Fang parallel validation.') + '</div>';
+    return;
+  }
+
+  const verdict = (gf.verdict || 'FLAGGED').toUpperCase();
+  const verdictClass = verdict === 'PASSED' ? 'gf-passed' : verdict === 'REJECTED' ? 'gf-rejected' : 'gf-flagged';
+
+  let html = '<div class="gf-header"><span class="gf-icon">🔱</span><span class="gf-title">Glass Fang — Shadow Validation</span>' +
+    '<span class="gf-verdict ' + verdictClass + '">' + verdict + '</span></div>';
+
+  if (gf.shadowTrustScore !== undefined) {
+    html += '<div style="margin:12px 0;font-family:\'JetBrains Mono\',monospace;font-size:13px">Shadow Trust Score: <strong style="color:' + confColor(gf.shadowTrustScore) + '">' + (gf.shadowTrustScore*100).toFixed(1) + '%</strong></div>';
+  }
+
+  const vulns = gf.criticalVulnerabilities || [];
+  if (vulns.length) {
+    html += '<div style="font-size:12px;font-weight:600;margin:16px 0 8px;color:var(--red)">Critical Vulnerabilities (' + vulns.length + ')</div>';
+    vulns.forEach(v => {
+      const sev = (v.severity || 'MEDIUM').toLowerCase();
+      html += '<div class="gf-vuln ' + sev + '"><strong>' + (v.type || 'Issue') + '</strong><br/><span style="color:var(--text2)">' + (v.detail || '') + '</span></div>';
+    });
+  }
+
+  const fallacies = gf.logicalFallacies || [];
+  if (fallacies.length) {
+    html += '<div style="font-size:12px;font-weight:600;margin:16px 0 8px;color:var(--orange)">Logical Fallacies Detected (' + fallacies.length + ')</div>';
+    fallacies.forEach(f => {
+      html += '<div class="gf-vuln medium"><strong>' + (f.fallacy || 'Fallacy') + '</strong><br/><span style="color:var(--text2)">' + (f.where_found || '') + '</span></div>';
+    });
+  }
+
+  const recs = gf.recommendations || [];
+  if (recs.length) {
+    html += '<div style="font-size:12px;font-weight:600;margin:16px 0 8px;color:var(--accent2)">Recommended Corrections</div>';
+    recs.forEach(r => { html += '<div style="padding:8px 12px;margin:4px 0;border-radius:8px;background:rgba(0,240,255,.03);border:1px solid rgba(0,240,255,.08);font-size:13px;color:var(--text2)">' + r + '</div>'; });
+  }
+
+  document.getElementById('panel-glassfang').innerHTML = html;
+}
+
+// ── RENDER: NEMESIS ENGINE ────────────────────────
+function renderNemesis(d) {
+  const nem = d.nemesis || {};
+  if (!nem.enabled) {
+    document.getElementById('panel-nemesis').innerHTML =
+      '<div style="font-size:16px;font-weight:700;margin-bottom:12px">⚔ Nemesis Engine — Locked</div>' +
+      '<div style="color:var(--text3)">' + (nem.tier_gate || 'Upgrade to Oracle tier to unlock adversarial counter-validation.') + '</div>';
+    return;
+  }
+
+  const verdict = (nem.verdict || 'WEAKENED').toUpperCase();
+  let html = '<div style="display:flex;align-items:center;gap:12px;margin-bottom:16px">' +
+    '<div style="font-size:16px;font-weight:700">⚔ Nemesis Engine — Ghost Rival Process</div>' +
+    '<span class="nem-verdict-tag ' + (verdict === 'VALIDATED' ? 'nem-survives' : verdict === 'REFUTED' ? 'nem-refuted' : 'nem-weakened') + '">' + verdict + '</span></div>';
+
+  if (nem.survivalScore !== undefined) {
+    html += '<div style="margin:12px 0;font-family:\'JetBrains Mono\',monospace;font-size:13px">Survival Score: <strong style="color:' + confColor(nem.survivalScore) + '">' + (nem.survivalScore*100).toFixed(1) + '%</strong></div>';
+  }
+
+  if (nem.counterNarrative) {
+    html += '<div style="margin:16px 0;padding:14px 18px;border-radius:10px;border:1px solid rgba(255,0,170,.15);background:rgba(255,0,170,.03)">' +
+      '<div style="font-size:11px;font-weight:600;color:var(--red);letter-spacing:.06em;margin-bottom:6px;font-family:\'JetBrains Mono\',monospace">COUNTER-NARRATIVE</div>' +
+      '<div style="font-size:13px;color:var(--text2);line-height:1.6">' + nem.counterNarrative + '</div></div>';
+  }
+
+  const challenges = nem.challenges || [];
+  if (challenges.length) {
+    html += '<div style="font-size:12px;font-weight:600;margin:16px 0 8px">Adversarial Challenges (' + challenges.length + ')</div>';
+    challenges.forEach(c => {
+      const v = (c.verdict || 'WEAKENED').toUpperCase();
+      html += '<div class="nem-challenge">' +
+        '<div class="nem-original"><strong>Original:</strong> ' + (c.original_claim || c.challenged_claim || '') + '</div>' +
+        '<div class="nem-counter"><strong>Ghost Rival:</strong> ' + (c.ghost_rival_argument || c.adversarial_argument || '') + '</div>' +
+        '<div style="display:flex;align-items:center;gap:8px">' +
+          '<span class="nem-verdict-tag ' + (v === 'SURVIVES' ? 'nem-survives' : v === 'REFUTED' ? 'nem-refuted' : 'nem-weakened') + '">' + v + '</span>' +
+          '<span style="font-family:\'JetBrains Mono\',monospace;font-size:11px;color:var(--text3)">Strength: ' + ((c.survival_confidence || c.strength || 0.5)*100).toFixed(0) + '%</span>' +
+        '</div></div>';
+    });
+  }
+
+  const validated = nem.validatedFacts || nem.clearedFacts || [];
+  if (validated.length) {
+    html += '<div style="font-size:12px;font-weight:600;margin:16px 0 8px;color:var(--green)">✓ Nemesis-Cleared Facts (' + validated.length + ')</div>';
+    validated.forEach(f => { html += '<div style="padding:8px 12px;margin:4px 0;border-radius:8px;background:rgba(0,255,136,.04);border:1px solid rgba(0,255,136,.1);font-size:13px;color:var(--green)">' + f + '</div>'; });
+  }
+
+  document.getElementById('panel-nemesis').innerHTML = html;
+}
+
+// ── RENDER: COUNTERPOINTS ─────────────────────────
+function renderCounterpoints(d) {
+  const cps = d.counterpoints || [];
+  if (!cps.length) { document.getElementById('panel-counterpoints').innerHTML = '<div style="color:var(--text3);padding:20px">No counterpoints in this analysis.</div>'; return; }
+  let html = '<div style="font-size:14px;font-weight:600;margin-bottom:16px">Counterpoint Validation — ' + cps.length + ' Points</div>';
+  cps.forEach(cp => {
+    html += '<div style="padding:14px;margin:10px 0;border-radius:12px;border:1px solid var(--border)">' +
+      '<div style="font-size:13px;margin-bottom:6px"><strong style="color:var(--accent)">Claim:</strong> ' + (cp.claim || '') + '</div>' +
+      '<div style="font-size:13px;margin-bottom:6px;color:var(--red)"><strong>Counter:</strong> ' + (cp.counter || '') + '</div>' +
+      '<div style="font-size:13px;color:var(--green)"><strong>Resolution:</strong> ' + (cp.resolution || '') + '</div>' +
+      (cp.confidence ? '<div style="font-size:11px;color:var(--text3);margin-top:6px;font-family:\'JetBrains Mono\',monospace">Confidence: ' + (cp.confidence*100).toFixed(0) + '%</div>' : '') +
+    '</div>';
+  });
+  document.getElementById('panel-counterpoints').innerHTML = html;
+}
+
+// ── RENDER: FRICTION POINTS ───────────────────────
+function renderFrictionPoints(d) {
+  const fps = d.friction_points || [];
+  if (!fps.length) { document.getElementById('panel-friction').innerHTML = '<div style="color:var(--text3);padding:20px">No friction points identified.</div>'; return; }
+  let html = '<div style="font-size:14px;font-weight:600;margin-bottom:16px">Friction Points — ' + fps.length + ' Identified</div>';
+  fps.forEach(fp => {
+    const sev = (fp.severity || 'MEDIUM').toUpperCase();
+    const sevColor = sev === 'CRITICAL' ? 'var(--red)' : sev === 'HIGH' ? 'var(--orange)' : sev === 'MEDIUM' ? 'var(--yellow)' : 'var(--text3)';
+    html += '<div style="padding:12px 16px;margin:8px 0;border-radius:10px;border-left:3px solid ' + sevColor + ';background:rgba(255,255,255,.01)">' +
+      '<div style="display:flex;justify-content:space-between;align-items:center">' +
+        '<span style="font-size:13px">' + (fp.point || '') + '</span>' +
+        '<span style="font-family:\'JetBrains Mono\',monospace;font-size:11px;color:' + sevColor + '">' + sev + (fp.probability ? ' · ' + (fp.probability*100).toFixed(0) + '%' : '') + '</span>' +
+      '</div></div>';
+  });
+  document.getElementById('panel-friction').innerHTML = html;
+}
+
+// ── RENDER: FORECAST ──────────────────────────────
+function renderForecast(d) {
+  const forecasts = d.predictive_forecast || [];
+  if (!forecasts.length) { document.getElementById('panel-forecast').innerHTML = '<div style="color:var(--text3);padding:20px">No forecast data available.</div>'; return; }
+  let html = '<div style="font-size:14px;font-weight:600;margin-bottom:16px">Predictive Forecast</div>';
+  forecasts.forEach(f => {
+    html += '<div class="forecast-card">' +
+      '<div style="display:flex;justify-content:space-between;align-items:flex-start">' +
+        '<div class="forecast-scenario">' + (f.scenario || '') + '</div>' +
+        '<div class="forecast-prob" style="color:' + confColor(f.probability || 0.5) + '">' + ((f.probability||0)*100).toFixed(0) + '%</div>' +
+      '</div>' +
+      (f.timeframe ? '<div style="font-size:12px;color:var(--text3);margin:6px 0">' + f.timeframe + '</div>' : '') +
+      '<div class="forecast-drivers">' +
+        (f.key_drivers || []).map(d => '<span class="forecast-driver">' + d + '</span>').join('') +
+      '</div></div>';
+  });
+  document.getElementById('panel-forecast').innerHTML = html;
+}
+
+// ── RENDER: MACRO LENS ────────────────────────────
+function renderMacroLens(d) {
+  const trends = d.macro_trends || [];
+  if (!trends.length) { document.getElementById('panel-macro').innerHTML = '<div style="color:var(--text3);padding:20px">No macro trends identified.</div>'; return; }
+  let html = '<div style="font-size:14px;font-weight:600;margin-bottom:16px">Macro Lens — What the Top 1% See</div>';
+  trends.forEach(t => {
+    html += '<div class="macro-card">' +
+      '<div><div class="macro-trend">' + (t.trend || '') + '</div>' +
+        (t.timeframe ? '<div style="font-size:11px;color:var(--text3);margin-top:4px">' + t.timeframe + '</div>' : '') +
+        '<div class="macro-domains" style="margin-top:6px">' +
+          (t.affected_domains || []).map(d => '<span class="macro-domain">' + d + '</span>').join('') +
+        '</div></div>' +
+      '<div class="macro-prob" style="color:' + confColor(t.probability || 0.5) + '">' + ((t.probability||0)*100).toFixed(0) + '%</div>' +
+    '</div>';
+  });
+  document.getElementById('panel-macro').innerHTML = html;
+}
+
+// ── RENDER: TIMELINE ──────────────────────────────
+function renderTimeline(d) {
+  const tl = d.timeline || [];
+  if (!tl.length) { document.getElementById('panel-timeline').innerHTML = '<div style="color:var(--text3);padding:20px">No timeline data.</div>'; return; }
+  let html = '<div style="font-size:14px;font-weight:600;margin-bottom:16px">Event Timeline</div><div style="position:relative;padding-left:20px;border-left:2px solid var(--border)">';
+  tl.forEach(t => {
+    const isPredicted = t.is_predicted;
+    html += '<div style="padding:10px 0 10px 16px;position:relative">' +
+      '<div style="position:absolute;left:-7px;top:14px;width:12px;height:12px;border-radius:50%;' +
+        'background:' + (isPredicted ? 'var(--accent)' : 'var(--accent2)') + ';border:2px solid var(--bg)"></div>' +
+      '<div style="font-size:11px;color:var(--text3);font-family:\'JetBrains Mono\',monospace">' + (t.date || '') +
+        (isPredicted ? ' <span style="color:var(--accent);font-size:10px">PREDICTED</span>' : '') + '</div>' +
+      '<div style="font-size:13px;margin-top:2px">' + (t.event || '') + '</div>' +
+    '</div>';
+  });
+  html += '</div>';
+  document.getElementById('panel-timeline').innerHTML = html;
+}
+
+// ── RENDER: WEAK SIGNALS ──────────────────────────
+function renderWeakSignals(d) {
+  const ws = d.weak_signals || [];
+  if (!ws.length) { document.getElementById('panel-weakSignals').innerHTML = '<div style="color:var(--text3);padding:20px">No weak signals detected.</div>'; return; }
+  let html = '<div style="font-size:14px;font-weight:600;margin-bottom:16px">Weak Signals — Preserved for Reactivation</div>' +
+    '<div style="font-size:12px;color:var(--text3);margin-bottom:12px">These signals are too faint to confirm but are logged for future pattern matching.</div>';
+  ws.forEach(s => {
+    html += '<div style="padding:10px 14px;margin:6px 0;border-radius:8px;border:1px dashed rgba(110,63,255,.15);font-size:13px;color:var(--text2)">' +
+      '<span style="color:var(--purple);margin-right:8px">◌</span>' + s + '</div>';
+  });
+  document.getElementById('panel-weakSignals').innerHTML = html;
+}
+
+// ── RENDER: D3 NODE WEB ───────────────────────────
+function renderNodeWeb(d) {
+  const graph = d.node_graph || {};
+  const nodes = graph.nodes || [];
+  const edges = graph.edges || [];
+
+  document.getElementById('nodeStats').textContent = nodes.length + ' nodes · ' + edges.length + ' edges';
+
+  if (!nodes.length) return;
+
+  const container = document.getElementById('nodeWebContainer');
+  const width = container.clientWidth || 800;
+  const height = container.clientHeight || 500;
+
+  d3.select('#nodeWebSvg').selectAll('*').remove();
+  const svg = d3.select('#nodeWebSvg').attr('viewBox', [0, 0, width, height]);
+
+  // Defs for glow
+  const defs = svg.append('defs');
+  const filter = defs.append('filter').attr('id', 'glow');
+  filter.append('feGaussianBlur').attr('stdDeviation', '3').attr('result', 'blur');
+  filter.append('feMerge').selectAll('feMergeNode')
+    .data(['blur', 'SourceGraphic']).join('feMergeNode').attr('in', d => d);
+
+  const g = svg.append('g');
+
+  // Zoom behavior
+  const zoom = d3.zoom().scaleExtent([0.2, 5])
+    .on('zoom', (e) => g.attr('transform', e.transform));
+  svg.call(zoom);
+
+  // Build simulation data
+  const simNodes = nodes.map((n, i) => ({
+    ...n, index: i,
+    x: (n.x || 0) + width/2,
+    y: (n.y || 0) + height/2
+  }));
+
+  const nodeById = new Map(simNodes.map(n => [n.id, n]));
+
+  const simLinks = edges.filter(e => nodeById.has(e.from) && nodeById.has(e.to))
+    .map(e => ({
+      source: nodeById.get(e.from),
+      target: nodeById.get(e.to),
+      weight: e.weight || 0.5,
+      type: e.type || 'RELATED'
+    }));
+
+  // Simulation
+  const simulation = d3.forceSimulation(simNodes)
+    .force('link', d3.forceLink(simLinks).distance(100).strength(l => l.weight * 0.5))
+    .force('charge', d3.forceManyBody().strength(-200))
+    .force('center', d3.forceCenter(width/2, height/2))
+    .force('collision', d3.forceCollide().radius(25));
+
+  // Links
+  const link = g.append('g').selectAll('line').data(simLinks).join('line')
+    .attr('stroke', 'rgba(110,63,255,0.15)')
+    .attr('stroke-width', d => Math.max(0.5, d.weight * 3));
+
+  // Nodes
+  const node = g.append('g').selectAll('g').data(simNodes).join('g')
+    .call(d3.drag()
+      .on('start', (e, d) => { if (!e.active) simulation.alphaTarget(0.3).restart(); d.fx = d.x; d.fy = d.y; })
+      .on('drag', (e, d) => { d.fx = e.x; d.fy = e.y; })
+      .on('end', (e, d) => { if (!e.active) simulation.alphaTarget(0); d.fx = null; d.fy = null; }));
+
+  node.append('circle')
+    .attr('r', d => 4 + (d.weight || 0.5) * 12)
+    .attr('fill', d => d.color || '#6e3fff')
+    .attr('stroke', d => d.color || '#6e3fff')
+    .attr('stroke-width', 1.5)
+    .attr('stroke-opacity', 0.3)
+    .attr('fill-opacity', 0.7)
+    .style('filter', 'url(#glow)');
+
+  node.append('text')
+    .text(d => d.label ? (d.label.length > 25 ? d.label.substring(0,25) + '...' : d.label) : '')
+    .attr('dx', d => 6 + (d.weight || 0.5) * 12)
+    .attr('dy', 4)
+    .attr('fill', 'var(--text2)')
+    .attr('font-size', '10px')
+    .attr('font-family', 'Inter, sans-serif');
+
+  // Tooltip on hover
+  node.append('title').text(d => d.label + ' (' + d.category + ')\nWeight: ' + ((d.weight||0)*100).toFixed(0) + '%');
+
+  simulation.on('tick', () => {
+    link
+      .attr('x1', d => d.source.x).attr('y1', d => d.source.y)
+      .attr('x2', d => d.target.x).attr('y2', d => d.target.y);
+    node.attr('transform', d => 'translate(' + d.x + ',' + d.y + ')');
+  });
+}
+
+// ── KEYBOARD SHORTCUT ─────────────────────────────
+document.addEventListener('keydown', e => {
+  if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') runAnalysis();
+});
 </script>
 </body>
-</html>
+    </html>
