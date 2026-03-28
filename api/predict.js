@@ -1,8 +1,8 @@
 import nodeFetch from "node-fetch";
 
-// SUBMIND v9.0 - DEEP INTELLIGENCE RESEARCH ENGINE
-// URL-verified sources + Parallel multi-provider + Glass Fang + Nemesis
-// Every source link guaranteed to work or replaced with verified fallback
+// SUBMIND v9.1 - DEEP INTELLIGENCE RESEARCH ENGINE
+// URL-verified sources + Reasoning chain + Pattern engine + Glass Fang + Nemesis
+// Every source link verified + SubMind reasoning chain + competitive features
 
 const GEMINI_KEYS = (() => {
     const keys = [];
@@ -248,7 +248,8 @@ FORMAT: Return valid JSON with this structure:
       "probability": 75,
       "timeframe": "Q3 2025",
       "basis": "Pattern recognition basis",
-      "indicators": ["What to watch for"]
+      "indicators": ["What to watch for"],
+      "confidence_interval": "plus or minus 5%"
     }
   ],
   "pattern_analysis": {
@@ -256,6 +257,14 @@ FORMAT: Return valid JSON with this structure:
     "current_signals": ["Current indicators"],
     "convergence_points": ["Where patterns intersect"]
   },
+    "reasoning_chain": [
+    {
+      "step": 1,
+      "thought": "SubMind analytical reasoning step",
+      "evidence": "What data supports this",
+      "conclusion": "What this means"
+    }
+  ],
   "investment_relevance": {
     "sectors_affected": ["sector1"],
     "risk_level": "HIGH|MEDIUM|LOW",
@@ -287,7 +296,9 @@ Requirements:
 5. Every date must be YYYY-MM-DD format
 6. Include investment relevance and what to watch for
 7. Pattern analysis showing historical precedents and current signals
-8. Make predictions with probability percentages and basis`
+8. Make predictions with probability percentages, basis, and confidence intervals
+9. Include a REASONING CHAIN showing SubMind step-by-step analytical process
+10. Each reasoning step must have: step number, thought process, supporting evidence, and conclusion`
                 }],
                 temperature: 0.3,
                 max_tokens: 8000
@@ -443,6 +454,19 @@ function nemesisEngine(briefing) {
     const undated = timeline.filter(t => !t.date || t.date === 'Unknown');
     if (undated.length) issues.push({ type: 'missing_dates', detail: undated.length + ' timeline events without dates' });
     
+    // Check reasoning chain quality
+    const reasoning = s.reasoning_chain || [];
+    if (reasoning.length < 2) issues.push({ type: 'weak_reasoning', detail: 'Reasoning chain has fewer than 2 steps' });
+    const unsupported = reasoning.filter(r => !r.evidence);
+    if (unsupported.length) issues.push({ type: 'unsupported_reasoning', detail: unsupported.length + ' reasoning steps lack evidence' });
+    
+    // Check source-finding alignment
+    const findingSrcCount = (s.key_findings || []).filter(f => f.sources && f.sources.length > 0).length;
+    const totalFindings = (s.key_findings || []).length;
+    if (totalFindings > 0 && findingSrcCount / totalFindings < 0.5) {
+        issues.push({ type: 'poorly_sourced_findings', detail: 'Less than 50% of findings have source citations' });
+    }
+    
     return { issues, count: issues.length, severity: issues.length > 5 ? 'HIGH' : issues.length > 2 ? 'MEDIUM' : 'LOW' };
 }
 
@@ -484,7 +508,7 @@ export default async function handler(req, res) {
     if (!query) return res.status(400).json({ error: 'Query required' });
     
     const startTime = Date.now();
-    console.log('[SubMind v9.0] Query:', query);
+    console.log('[SubMind v9.1] Query:', query);
     
     try {
         // ===== PHASE 1: PARALLEL SOURCE GATHERING =====
@@ -535,7 +559,7 @@ export default async function handler(req, res) {
         console.log('[Phase 6] Nemesis issues:', nemesis.count, '| Severity:', nemesis.severity);
         
         const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
-        console.log('[SubMind v9.0] Complete in', elapsed + 's');
+        console.log('[SubMind v9.1] Complete in', elapsed + 's');
         
         // ===== RESPONSE =====
         return res.status(200).json({
@@ -550,7 +574,7 @@ export default async function handler(req, res) {
                 nemesis: nemesis
             },
             meta: {
-                version: '9.0',
+                version: '9.1',
                 elapsed_seconds: parseFloat(elapsed),
                 providers: {
                     search: gemini.sources.length > 0 ? 'gemini' : 'openai',
@@ -564,7 +588,7 @@ export default async function handler(req, res) {
             }
         });
     } catch(e) {
-        console.error('[SubMind v9.0] Fatal:', e.message);
+        console.error('[SubMind v9.1] Fatal:', e.message);
         return res.status(500).json({ error: 'Pipeline failed', detail: e.message });
     }
 }
