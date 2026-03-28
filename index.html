@@ -24,8 +24,6 @@ body{
   min-height:100vh;line-height:1.65;
   -webkit-font-smoothing:antialiased;
 }
-
-/* ── HEADER ── */
 .header{
   padding:24px 0;border-bottom:1px solid var(--border);
   background:linear-gradient(180deg,rgba(67,24,255,0.03) 0%,transparent 100%);
@@ -40,8 +38,6 @@ body{
 }
 .logo-text{font-size:20px;font-weight:600;letter-spacing:-0.02em}
 .logo-sub{font-size:12px;color:var(--text3);letter-spacing:0.08em;text-transform:uppercase;margin-top:2px}
-
-/* ── SEARCH ── */
 .search-section{padding:48px 0 32px}
 .search-box{
   display:flex;gap:0;
@@ -62,16 +58,11 @@ body{
   background:var(--accent);color:#fff;border:none;
   padding:0 28px;font-size:14px;font-weight:600;font-family:inherit;
   cursor:pointer;letter-spacing:0.02em;
-  transition:background 0.15s,opacity 0.15s;
-  white-space:nowrap;
+  transition:background 0.15s,opacity 0.15s;white-space:nowrap;
 }
 .search-btn:hover{background:var(--accent2)}
 .search-btn:disabled{opacity:0.6;cursor:not-allowed}
-
-/* ── LOADING ── */
-.loading{
-  display:none;text-align:center;padding:64px 0;
-}
+.loading{display:none;text-align:center;padding:64px 0}
 .loading.active{display:block}
 .loading-spinner{
   width:36px;height:36px;border:3px solid var(--border);
@@ -80,139 +71,53 @@ body{
 }
 @keyframes spin{to{transform:rotate(360deg)}}
 .loading-phases{color:var(--text3);font-size:13px}
-.loading-phase{
-  margin:6px 0;opacity:0.4;transition:opacity 0.3s;
-}
+.loading-phase{margin:6px 0;opacity:0.4;transition:opacity 0.3s}
 .loading-phase.active{opacity:1;color:var(--text2)}
 .loading-phase.done{opacity:0.6;color:var(--green)}
-
-/* ── RESULTS ── */
 .results{display:none;padding:0 0 80px}
 .results.active{display:block}
-
-/* Brief Header */
 .brief-header{padding:32px 0 24px;border-bottom:1px solid var(--border)}
-.brief-title{
-  font-size:26px;font-weight:700;letter-spacing:-0.03em;
-  line-height:1.3;color:var(--text);margin-bottom:12px;
-}
+.brief-title{font-size:26px;font-weight:700;letter-spacing:-0.03em;line-height:1.3;margin-bottom:12px}
 .brief-meta{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
-.brief-badge{
-  font-size:11px;font-weight:600;letter-spacing:0.08em;
-  padding:4px 10px;border-radius:4px;text-transform:uppercase;
-}
+.brief-badge{font-size:11px;font-weight:600;letter-spacing:0.08em;padding:4px 10px;border-radius:4px;text-transform:uppercase}
 .badge-confirmed{background:rgba(0,196,140,0.12);color:var(--green);border:1px solid rgba(0,196,140,0.2)}
 .badge-probable{background:rgba(108,77,255,0.12);color:var(--accent2);border:1px solid rgba(108,77,255,0.2)}
 .badge-developing{background:rgba(255,159,67,0.12);color:var(--orange);border:1px solid rgba(255,159,67,0.2)}
 .badge-disputed{background:rgba(255,71,87,0.12);color:var(--red);border:1px solid rgba(255,71,87,0.2)}
 .meta-item{font-size:13px;color:var(--text3)}
 .meta-item strong{color:var(--text2);font-weight:500}
-
-/* Origin Card */
-.origin-card{
-  margin:24px 0;padding:20px 24px;
-  background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);
-  border-left:3px solid var(--accent);
-}
-.origin-label{
-  font-size:10px;font-weight:600;letter-spacing:0.12em;
-  text-transform:uppercase;color:var(--accent2);margin-bottom:8px;
-}
+.origin-card{margin:24px 0;padding:20px 24px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);border-left:3px solid var(--accent)}
+.origin-label{font-size:10px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:var(--accent2);margin-bottom:8px}
 .origin-event{font-size:16px;font-weight:600;margin-bottom:6px}
 .origin-detail{font-size:13px;color:var(--text2);line-height:1.6}
-
-/* Executive Summary */
-.exec-summary{
-  padding:20px 0;font-size:15px;color:var(--text2);
-  line-height:1.7;border-bottom:1px solid var(--border);
-}
-
-/* Main Briefing */
+.exec-summary{padding:20px 0;font-size:15px;color:var(--text2);line-height:1.7;border-bottom:1px solid var(--border)}
 .briefing-section{padding:28px 0}
 .briefing-content{font-size:15px;line-height:1.8;color:var(--text)}
 .briefing-content p{margin-bottom:16px}
 .briefing-content p:last-child{margin-bottom:0}
-
-/* Citations */
-.citation{
-  color:var(--accent2);font-size:12px;font-weight:600;
-  text-decoration:none;cursor:pointer;
-  padding:0 1px;border-radius:2px;
-  transition:background 0.15s;
-}
+.citation{color:var(--accent2);font-size:12px;font-weight:600;text-decoration:none;cursor:pointer;padding:0 1px;border-radius:2px;transition:background 0.15s}
 .citation:hover{background:var(--accent-glow);text-decoration:underline}
-
-/* Section Headers */
-.section-header{
-  font-size:11px;font-weight:600;letter-spacing:0.12em;
-  text-transform:uppercase;color:var(--text3);
-  padding:24px 0 16px;border-top:1px solid var(--border);
-  margin-top:8px;
-}
-
-/* Timeline */
-.tl-item{
-  display:grid;grid-template-columns:130px 1fr;gap:16px;
-  padding:12px 0;border-bottom:1px solid rgba(42,42,62,0.5);
-  align-items:baseline;
-}
-.tl-date{
-  font-family:'JetBrains Mono',monospace;font-size:13px;
-  color:var(--text3);font-weight:400;
-}
+.section-header{font-size:11px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:var(--text3);padding:24px 0 16px;border-top:1px solid var(--border);margin-top:8px}
+.tl-item{display:grid;grid-template-columns:130px 1fr;gap:16px;padding:12px 0;border-bottom:1px solid rgba(42,42,62,0.5);align-items:baseline}
+.tl-date{font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--text3);font-weight:400}
 .tl-event{font-size:14px;color:var(--text2)}
 .tl-item:last-child{border-bottom:none}
-
-/* Predictions */
-.pred-card{
-  padding:16px 0;border-bottom:1px solid rgba(42,42,62,0.5);
-}
+.pred-card{padding:16px 0;border-bottom:1px solid rgba(42,42,62,0.5)}
 .pred-card:last-child{border-bottom:none}
 .pred-scenario{font-size:14px;font-weight:500;color:var(--text);margin-bottom:6px}
 .pred-meta{display:flex;gap:12px;align-items:center;font-size:13px}
 .pred-prob{font-family:'JetBrains Mono',monospace;font-weight:600}
 .pred-timeframe{color:var(--text3)}
 .pred-basis{font-size:12px;color:var(--text3);margin-top:4px;line-height:1.5}
-
-/* Sources */
 .sources-grid{display:flex;flex-direction:column;gap:0}
-.source-item{
-  display:grid;grid-template-columns:28px 1fr;gap:12px;
-  padding:10px 0;border-bottom:1px solid rgba(42,42,62,0.3);
-  align-items:start;
-}
+.source-item{display:grid;grid-template-columns:28px 1fr;gap:12px;padding:10px 0;border-bottom:1px solid rgba(42,42,62,0.3);align-items:start}
 .source-item:last-child{border-bottom:none}
-.source-num{
-  font-family:'JetBrains Mono',monospace;font-size:12px;
-  color:var(--text3);padding-top:2px;
-}
-.source-title{
-  font-size:14px;color:var(--accent2);text-decoration:none;
-  display:block;line-height:1.4;
-}
+.source-num{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--text3);padding-top:2px}
+.source-title{font-size:14px;color:var(--accent2);text-decoration:none;display:block;line-height:1.4}
 .source-title:hover{text-decoration:underline}
 .source-domain{font-size:12px;color:var(--text3);margin-top:2px}
-.no-sources{
-  padding:16px 0;font-size:13px;color:var(--text3);
-  font-style:italic;
-}
-
-/* Methodology */
-.methodology{
-  margin-top:24px;padding:16px 20px;
-  background:var(--bg2);border-radius:var(--radius-sm);
-  font-size:12px;color:var(--text3);line-height:1.6;
-  border:1px solid var(--border);
-}
-
-/* Footer */
-.footer{
-  padding:24px 0;border-top:1px solid var(--border);
-  text-align:center;font-size:12px;color:var(--text3);
-  margin-top:40px;
-}
-
-/* Responsive */
+.methodology{margin-top:24px;padding:16px 20px;background:var(--bg2);border-radius:var(--radius-sm);font-size:12px;color:var(--text3);line-height:1.6;border:1px solid var(--border)}
+.footer{padding:24px 0;border-top:1px solid var(--border);text-align:center;font-size:12px;color:var(--text3);margin-top:40px}
 @media(max-width:640px){
   .container{padding:0 16px}
   .search-section{padding:32px 0 24px}
@@ -223,7 +128,6 @@ body{
 </style>
 </head>
 <body>
-
 <header class="header">
   <div class="container">
     <div class="logo">
@@ -235,17 +139,14 @@ body{
     </div>
   </div>
 </header>
-
 <section class="search-section">
   <div class="container">
     <div class="search-box">
-      <input type="text" class="search-input" id="searchInput"
-        placeholder="Enter any topic, event, or claim to research...">
+      <input type="text" class="search-input" id="searchInput" placeholder="Enter any topic, event, or claim to research...">
       <button class="search-btn" id="searchBtn">Research</button>
     </div>
   </div>
 </section>
-
 <div class="container">
   <div class="loading" id="loading">
     <div class="loading-spinner"></div>
@@ -256,7 +157,6 @@ body{
       <div class="loading-phase" id="lp4">○ Assembling briefing...</div>
     </div>
   </div>
-
   <div class="results" id="results">
     <div class="brief-header">
       <h1 class="brief-title" id="briefTitle"></h1>
@@ -267,97 +167,76 @@ body{
         <span class="meta-item" id="briefTime"></span>
       </div>
     </div>
-
     <div class="origin-card" id="originBox" style="display:none">
       <div class="origin-label">Origin Event</div>
       <div class="origin-event" id="originEvent"></div>
       <div class="origin-detail" id="originDetail"></div>
     </div>
-
     <div class="exec-summary" id="execSummary"></div>
-
     <div class="briefing-section">
       <div class="briefing-content" id="briefingContent"></div>
     </div>
-
     <div id="timelineSection" style="display:none">
       <div class="section-header">Timeline</div>
       <div id="timelineItems"></div>
     </div>
-
     <div id="predictionsSection" style="display:none">
       <div class="section-header">Forward Assessment</div>
       <div id="predictionItems"></div>
     </div>
-
     <div id="sourcesSection" style="display:none">
       <div class="section-header">Sources</div>
       <div class="sources-grid" id="sourceItems"></div>
     </div>
-
     <div class="methodology" id="methodology"></div>
-
-    <div class="footer">
-      SubMind v6.2 — Deep Intelligence Research Engine
-    </div>
+    <div class="footer">SubMind v6.2 — Deep Intelligence Research Engine</div>
   </div>
 </div>
-
 <script>
-// Search handler
-const searchBtn = document.getElementById('searchBtn');
-const searchInput = document.getElementById('searchInput');
+var searchBtn = document.getElementById('searchBtn');
+var searchInput = document.getElementById('searchInput');
+var loadingTimer;
 
-searchBtn.addEventListener('click', function() { runSearch(); });
+searchBtn.addEventListener('click', runSearch);
 searchInput.addEventListener('keydown', function(e) {
   if (e.key === 'Enter') runSearch();
 });
 
-let loadingTimer;
-
 async function runSearch() {
-  const topic = searchInput.value.trim();
+  var topic = searchInput.value.trim();
   if (!topic) { searchInput.focus(); return; }
-
   searchBtn.disabled = true;
   searchBtn.textContent = 'Researching...';
   document.getElementById('results').classList.remove('active');
   document.getElementById('loading').classList.add('active');
-
-  // Animate loading phases
-  const phases = ['lp1','lp2','lp3','lp4'];
-  let phaseIdx = 0;
+  var phases = ['lp1','lp2','lp3','lp4'];
+  var phaseIdx = 0;
   document.getElementById(phases[0]).classList.add('active');
   loadingTimer = setInterval(function() {
     if (phaseIdx < phases.length - 1) {
-      document.getElementById(phases[phaseIdx]).classList.remove('active');
-      document.getElementById(phases[phaseIdx]).classList.add('done');
-      document.getElementById(phases[phaseIdx]).textContent = '\u2713 ' + document.getElementById(phases[phaseIdx]).textContent.substring(2);
+      var curr = document.getElementById(phases[phaseIdx]);
+      curr.classList.remove('active');
+      curr.classList.add('done');
+      curr.textContent = '\u2713 ' + curr.textContent.substring(2);
       phaseIdx++;
       document.getElementById(phases[phaseIdx]).classList.add('active');
     }
   }, 1500);
-
   try {
-    const resp = await fetch('/api/predict', {
+    var resp = await fetch('/api/predict', {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
       body: JSON.stringify({ topic: topic })
     });
-
     clearInterval(loadingTimer);
-
     if (!resp.ok) {
-      const err = await resp.json().catch(function() { return {}; });
+      var err = await resp.json().catch(function() { return {}; });
       throw new Error(err.error || err.detail || 'Research failed');
     }
-
-    const data = await resp.json();
+    var data = await resp.json();
     renderBriefing(data);
     document.getElementById('loading').classList.remove('active');
     document.getElementById('results').classList.add('active');
-
-    // Scroll to results
     document.querySelector('.brief-header').scrollIntoView({ behavior: 'smooth', block: 'start' });
   } catch (err) {
     clearInterval(loadingTimer);
@@ -366,7 +245,6 @@ async function runSearch() {
   } finally {
     searchBtn.disabled = false;
     searchBtn.textContent = 'Research';
-    // Reset loading phases
     ['lp1','lp2','lp3','lp4'].forEach(function(id, i) {
       var el = document.getElementById(id);
       el.classList.remove('active', 'done');
@@ -382,22 +260,15 @@ async function runSearch() {
 }
 
 function renderBriefing(d) {
-  // Title
   document.getElementById('briefTitle').textContent = d.title || d.topic;
-
-  // Badge
   var badge = document.getElementById('briefBadge');
   var cls = (d.classification || 'DEVELOPING').toUpperCase();
   badge.textContent = cls;
   badge.className = 'brief-badge badge-' + cls.toLowerCase();
-
-  // Meta
-  var conf = d.confidence || d.validation?.adjustedConfidence || 0.5;
+  var conf = d.confidence || 0.5;
   document.getElementById('briefConf').innerHTML = '<strong>' + (conf * 100).toFixed(0) + '%</strong> confidence';
-  document.getElementById('briefSources').innerHTML = '<strong>' + (d.sourceCount || d.sources?.length || 0) + '</strong> sources';
+  document.getElementById('briefSources').innerHTML = '<strong>' + (d.sourceCount || 0) + '</strong> sources';
   document.getElementById('briefTime').innerHTML = '<strong>' + ((d.processingMs || 0) / 1000).toFixed(1) + 's</strong> analysis';
-
-  // Origin
   var origin = d.origin;
   if (origin && origin.event) {
     document.getElementById('originBox').style.display = '';
@@ -407,83 +278,53 @@ function renderBriefing(d) {
   } else {
     document.getElementById('originBox').style.display = 'none';
   }
-
-  // Exec summary
   document.getElementById('execSummary').textContent = d.summary || '';
-
-  // Main briefing with citations
   var briefText = d.briefing || '';
-  briefText = briefText.replace(/\[(\d+)\]/g, function(match, num) {
+  briefText = briefText.replace(/\[(\d+)\]/g, function(m, num) {
     var src = (d.sources || [])[parseInt(num) - 1];
     if (src && src.url) {
-      return '<a class="citation" href="' + src.url + '" target="_blank" rel="noopener" title="' + (src.title || 'Source ' + num).replace(/"/g, '&quot;') + '">[' + num + ']</a>';
+      return '<a class="citation" href="' + src.url + '" target="_blank" rel="noopener" title="' + (src.title || '').replace(/"/g, '&quot;') + '">[' + num + ']</a>';
     }
-    return '<span class="citation" style="cursor:default">[' + num + ']</span>';
+    return '<span class="citation">[' + num + ']</span>';
   });
   briefText = briefText.split(/\n\n+/).map(function(p) { return '<p>' + p.trim() + '</p>'; }).join('');
   document.getElementById('briefingContent').innerHTML = briefText;
-
-  // Timeline
   var tl = d.timeline || [];
   if (tl.length > 0) {
     document.getElementById('timelineSection').style.display = '';
     document.getElementById('timelineItems').innerHTML = tl.map(function(t) {
-      return '<div class="tl-item">' +
-        '<div class="tl-date">' + (t.date || '') + '</div>' +
-        '<div class="tl-event">' + (t.event || '') + '</div>' +
-        '</div>';
+      return '<div class="tl-item"><div class="tl-date">' + (t.date || '') + '</div><div class="tl-event">' + (t.event || '') + '</div></div>';
     }).join('');
   } else {
     document.getElementById('timelineSection').style.display = 'none';
   }
-
-  // Predictions
   var preds = d.predictions || [];
   if (preds.length > 0) {
     document.getElementById('predictionsSection').style.display = '';
     document.getElementById('predictionItems').innerHTML = preds.map(function(p) {
       var prob = p.probability || 0.5;
       var color = prob >= 0.7 ? 'var(--green)' : prob >= 0.4 ? 'var(--orange)' : 'var(--red)';
-      return '<div class="pred-card">' +
-        '<div class="pred-scenario">' + (p.scenario || '') + '</div>' +
-        '<div class="pred-meta">' +
-        '<span class="pred-prob" style="color:' + color + '">' + (prob * 100).toFixed(0) + '%</span>' +
-        (p.timeframe ? '<span class="pred-timeframe">' + p.timeframe + '</span>' : '') +
-        '</div>' +
-        (p.basis ? '<div class="pred-basis">' + p.basis + '</div>' : '') +
-        '</div>';
+      return '<div class="pred-card"><div class="pred-scenario">' + (p.scenario || '') + '</div><div class="pred-meta"><span class="pred-prob" style="color:' + color + '">' + (prob * 100).toFixed(0) + '%</span>' + (p.timeframe ? '<span class="pred-timeframe">' + p.timeframe + '</span>' : '') + '</div>' + (p.basis ? '<div class="pred-basis">' + p.basis + '</div>' : '') + '</div>';
     }).join('');
   } else {
     document.getElementById('predictionsSection').style.display = 'none';
   }
-
-  // Sources
   var sources = d.sources || [];
   if (sources.length > 0) {
     document.getElementById('sourcesSection').style.display = '';
     document.getElementById('sourceItems').innerHTML = sources.map(function(s) {
-      return '<div class="source-item">' +
-        '<div class="source-num">[' + s.index + ']</div>' +
-        '<div>' +
-        '<a class="source-title" href="' + (s.url || '#') + '" target="_blank" rel="noopener">' + (s.title || 'Source ' + s.index) + '</a>' +
-        '<div class="source-domain">' + (s.domain || '') + '</div>' +
-        '</div></div>';
+      return '<div class="source-item"><div class="source-num">[' + s.index + ']</div><div><a class="source-title" href="' + (s.url || '#') + '" target="_blank" rel="noopener">' + (s.title || 'Source') + '</a><div class="source-domain">' + (s.domain || '') + '</div></div></div>';
     }).join('');
   } else {
     document.getElementById('sourcesSection').style.display = 'none';
   }
-
-  // Methodology
   var parts = [];
   if (d.methodology_note) parts.push(d.methodology_note);
-  if (d.validation) {
-    var v = d.validation;
-    if (v.highAuthoritySources > 0) parts.push(v.highAuthoritySources + ' high-authority sources verified.');
-    if (v.glassFangIssues > 0) parts.push('Internal validation flagged ' + v.glassFangIssues + ' items; confidence adjusted.');
-  }
+  if (d.validation && d.validation.highAuthoritySources > 0) parts.push(d.validation.highAuthoritySources + ' high-authority sources verified.');
+  if (d.validation && d.validation.glassFangIssues > 0) parts.push('Internal validation flagged ' + d.validation.glassFangIssues + ' items; confidence adjusted.');
   parts.push('SubMind v6.2 \u2014 Provider: ' + (d.provider || 'auto'));
   document.getElementById('methodology').textContent = parts.join(' ');
 }
-<\/script>
+</script>
 </body>
-        </html>
+      </html>
