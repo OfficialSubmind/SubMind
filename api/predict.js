@@ -1645,8 +1645,8 @@ export default async function handler(req, res) {
     const enrichedContext = queryIntel.entities.length > 0 
       ? combinedContext + '\n\nKEY ENTITIES: ' + queryIntel.entities.map(e => e.name + ' (' + e.type + ')').join(', ') 
         + '\nDOMAIN: ' + queryIntel.classification.primary_domain
-        + '\nSEARCH ANGLES: ' + queryIntel.search_angles.join(';
-
+        + '\nSEARCH ANGLES: ' + queryIntel.search_angles.join('; ')
+        : combinedContext;
     // Apply Reality Gate to context
     if (realityCheck.verdict === 'UNVERIFIED') {
       gatedContext = 'CRITICAL REALITY GATE WARNING: SubMind found NO credible external evidence supporting this query. Reality Score: ' + realityCheck.reality_score + '/100. Flags: ' + realityCheck.flags.join('; ') + '. You MUST acknowledge this lack of evidence prominently in your briefing. Do NOT present unverified claims as facts. State clearly what could NOT be verified.\n\n' + enrichedContext;
