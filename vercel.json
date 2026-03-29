@@ -34,5 +34,10 @@
         { "key": "X-Content-Type-Options", "value": "nosniff" }
       ]
     }
-  ]
+  ],
+  "functions": {
+    "api/predict.js": {
+      "maxDuration": 60
+    }
+  }
 }
