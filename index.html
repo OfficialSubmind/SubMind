@@ -605,35 +605,7 @@
       const intel = data.intelligence || {};
       const vStats = meta.source_verification || {};
       const sources = b.sources || [];
-     // ===== QUERY INTELLIGENCE PANEL =====
-    const qi = data.intelligence && data.intelligence.query_intelligence;
-    if (qi) {
-      const domainColors = {
-        finance: '#00c8ff', technology: '#78ff00', geopolitical: '#ff4444',
-        climate_energy: '#44ff88', biotech_health: '#ff88ff', crypto: '#ffaa00',
-        regulatory: '#8888ff', aerospace: '#00ffcc', general: '#888'
-      };
-      const domainColor = domainColors[qi.classification.primary_domain] || '#888';
-      
-      el.innerHTML += '<div class="query-intel">'
-        + '<div class="query-intel-header">'
-        + '<span class="query-intel-title">Query Intelligence</span>'
-        + '<div class="query-intel-badges">'
-        + '<span class="qi-badge qi-domain" style="border-color:' + domainColor + ';color:' + domainColor + '">' + esc(qi.classification.primary_domain.toUpperCase()) + '</span>'
-        + (qi.entities.length > 0 ? qi.entities.map(function(e) { return '<span class="qi-badge qi-entity">' + esc(e.name) + '</span>'; }).join('') : '')
-        + '<span class="qi-badge qi-depth">' + esc(qi.classification.research_depth.toUpperCase()) + '</span>'
-        + '<span class="qi-badge qi-temporal">' + esc(qi.classification.temporal_context.toUpperCase()) + '</span>'
-        + '</div></div>'
-        + (qi.search_angles.length > 0 ? '<div class="qi-detail-group"><div class="qi-detail-label">Search Angles</div><div class="qi-detail-value">'
-          + qi.search_angles.map(function(a) { return '<span class="qi-angle" onclick="document.getElementById(\'q\').value=\'' + esc(a).replace(/'/g, '') + '\'">' + esc(a) + '</span>'; }).join('')
-          + '</div></div>' : '')
-        + (qi.expansions.length > 0 ? '<div class="qi-detail-group" style="margin-top:8px"><div class="qi-detail-label">Detected Abbreviations</div><div class="qi-detail-value">'
-          + qi.expansions.map(function(x) { return '<span style="color:#aaa">' + esc(x.abbreviation) + '</span> <span style="color:#666">&rarr;</span> <span style="color:#888">' + esc(x.expanded) + '</span>'; }).join(' &nbsp; ')
-          + '</div></div>' : '')
-        + '</div>';
-    }
-
-     const bd = b.behavioral_divergence || {};
+    const bd = b.behavioral_divergence || {};
       const divData = intel.behavioral_divergence || {};
       const clusters = intel.source_clusters || {};
       const provSummary = intel.provenance_summary || {};
@@ -643,6 +615,34 @@
       const searchCount = sources.filter(s => s.link_type === 'search').length;
 
       let html = '';
+
+    // ===== QUERY INTELLIGENCE PANEL =====
+    const qi = data.intelligence && data.intelligence.query_intelligence;
+    if (qi) {
+      const domainColors = {
+        finance: '#00c8ff', technology: '#78ff00', geopolitical: '#ff4444',
+        climate_energy: '#44ff88', biotech_health: '#ff88ff', crypto: '#ffaa00',
+        regulatory: '#8888ff', aerospace: '#00ffcc', general: '#888'
+      };
+      const domainColor = domainColors[qi.classification.primary_domain] || '#888';
+      
+      html += '<div class="query-intel">'
+        + '<div class="query-intel-header">'
+        + '<span class="query-intel-title">Query Intelligence</span>'
+        + '<div class="query-intel-badges">'
+        + '<span class="qi-badge qi-domain" style="border-color:' + domainColor + ';color:' + domainColor + '">' + esc(qi.classification.primary_domain.toUpperCase()) + '</span>'
+        + (qi.entities.length > 0 ? qi.entities.map(function(e) { return '<span class="qi-badge qi-entity">' + esc(e.name) + '</span>'; }).join('') : '')
+        + '<span class="qi-badge qi-depth">' + esc(qi.classification.research_depth.toUpperCase()) + '</span>'
+        + '<span class="qi-badge qi-temporal">' + esc(qi.classification.temporal_context.toUpperCase()) + '</span>'
+        + '</div></div>'
+        + (qi.search_angles.length > 0 ? '<div class="qi-detail-group"><div class="qi-detail-label">Search Angles</div><div class="qi-detail-value">'
+          + qi.search_angles.map(function(a) { return '<span class="qi-angle">' + esc(a) + '</span>'; }).join('')
+          + '</div></div>' : '')
+        + (qi.expansions.length > 0 ? '<div class="qi-detail-group" style="margin-top:8px"><div class="qi-detail-label">Detected Abbreviations</div><div class="qi-detail-value">'
+          + qi.expansions.map(function(x) { return '<span style="color:#aaa">' + esc(x.abbreviation) + '</span> <span style="color:#666">&rarr;</span> <span style="color:#888">' + esc(x.expanded) + '</span>'; }).join(' &nbsp; ')
+          + '</div></div>' : '')
+        + '</div>';
+    }
 
       // ===== TITLE & SUMMARY =====
       html += '<h2 class="fade-up" style="font-size:26px;font-weight:800;letter-spacing:-0.5px;margin-bottom:6px">' + esc(b.title || data.query) + '</h2>';
