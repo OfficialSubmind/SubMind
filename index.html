@@ -289,6 +289,7 @@
         .verification-layer.passed .layer-status { color:#4ecdc4; }
         .verification-layer.failed .layer-status { color:#ff4444; }
         .verification-layer .layer-detail { font-size:0.75rem; color:#666; margin-top:4px; }
+        .verification-layer .layer-tooltip { font-size:0.65rem; color:#888; margin-top:4px; font-style:italic; line-height:1.3; opacity:0.7; }
         
         .provenance-tag { display:inline-block; font-size:0.6rem; padding:2px 6px; border-radius:3px; font-weight:600; letter-spacing:0.5px; margin-left:5px; }
         .provenance-tag.synthetic { background:rgba(255,68,68,0.2); color:#ff6b6b; }
@@ -364,6 +365,25 @@
             color: #fcd34d;
         }
 
+
+        /* v13.1 UX IMPROVEMENTS - User-friendly explanations */
+        .metric-help { display:inline-block; width:16px; height:16px; border-radius:50%; background:rgba(255,255,255,0.1); color:#888; font-size:11px; text-align:center; line-height:16px; cursor:help; margin-left:6px; position:relative; }
+        .metric-help:hover::after { content:attr(data-tip); position:absolute; bottom:calc(100% + 8px); left:50%; transform:translateX(-50%); background:#1a1a2e; color:#ccc; padding:10px 14px; border-radius:8px; font-size:12px; line-height:1.5; width:260px; z-index:100; box-shadow:0 4px 20px rgba(0,0,0,0.4); border:1px solid rgba(255,255,255,0.1); font-style:normal; white-space:normal; pointer-events:none; }
+        .metric-help:hover::before { content:''; position:absolute; bottom:calc(100% + 2px); left:50%; transform:translateX(-50%); border:6px solid transparent; border-top-color:#1a1a2e; z-index:101; }
+        .scoring-explainer { background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:16px 20px; margin:16px 0; }
+        .scoring-explainer h4 { font-size:0.8rem; color:#f97316; margin:0 0 10px 0; text-transform:uppercase; letter-spacing:1px; }
+        .scoring-explainer .score-scale { display:flex; gap:4px; margin:8px 0; }
+        .scoring-explainer .score-segment { flex:1; height:6px; border-radius:3px; }
+        .scoring-explainer .score-labels { display:flex; justify-content:space-between; font-size:0.65rem; color:#666; }
+        .source-card { background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:14px 18px; margin:8px 0; transition:all 0.2s; }
+        .source-card:hover { border-color:rgba(249,115,22,0.3); background:rgba(255,255,255,0.05); }
+        .source-card .source-title { font-size:0.9rem; color:#e0e0e0; font-weight:500; }
+        .source-card .source-url { font-size:0.75rem; color:#f97316; word-break:break-all; margin-top:4px; }
+        .source-card .source-meta { display:flex; gap:12px; margin-top:6px; font-size:0.7rem; color:#666; }
+        .source-card .source-badge { display:inline-block; padding:2px 8px; border-radius:4px; font-size:0.65rem; font-weight:600; }
+        .source-badge.verified { background:rgba(34,197,94,0.15); color:#22c55e; }
+        .source-badge.fixed { background:rgba(234,179,8,0.15); color:#eab308; }
+        .source-badge.unverified { background:rgba(239,68,68,0.15); color:#ef4444; }
 </style>
 </head>
 <body>
@@ -502,6 +522,7 @@
         loading.classList.remove('active');
         renderBriefing(data);
         dashboard.classList.add('active');
+        enhanceUX();
       }catch(err){
         clearInterval(pTimer);
         loading.classList.remove('active');
@@ -637,10 +658,10 @@
             const ip = (data.intelligence || {}).input_provenance || {};
             
             html += '<div class="verification-layers">';
-            html += '<div class="verification-layer ' + (ev.pass !== false ? 'passed' : 'failed') + '"><div class="layer-name">Layer 1: Entity Verification</div><div class="layer-status">' + (ev.pass !== false ? '\u2713 PASSED' : '\u2717 FAILED') + '</div><div class="layer-detail">' + (ev.verified ? ev.verified.length : 0) + ' verified entities</div></div>';
-            html += '<div class="verification-layer ' + (se.pass !== false ? 'passed' : 'failed') + '"><div class="layer-name">Layer 2: Source Existence</div><div class="layer-status">' + (se.pass !== false ? '\u2713 PASSED' : '\u2717 FAILED') + '</div><div class="layer-detail">' + (se.existence_rate || 0) + '% sources confirmed</div></div>';
-            html += '<div class="verification-layer ' + (cf.blocked === false || !cf.blocked ? 'passed' : 'failed') + '"><div class="layer-name">Layer 3: Confidence Floor</div><div class="layer-status">' + (!cf.blocked ? '\u2713 PASSED' : '\u2717 BLOCKED') + '</div><div class="layer-detail">' + (cf.enforcement ? cf.enforcement.overall : 'ALLOWED') + '</div></div>';
-            html += '<div class="verification-layer passed"><div class="layer-name">Layer 4: Input Provenance</div><div class="layer-status">' + (ip.provenance_summary ? ip.provenance_summary.corroborated + ' corroborated' : 'Active') + '</div><div class="layer-detail">' + (ip.provenance_summary ? ip.provenance_summary.user_asserted + ' user-asserted' : '0 flagged') + '</div></div>';
+            html += '<div class="verification-layer ' + (ev.pass !== false ? 'passed' : 'failed') + '"><div class="layer-name">Layer 1: Entity Verification</div><div class="layer-status">' + (ev.pass !== false ? '\u2713 PASSED' : '\u2717 FAILED') + '</div><div class="layer-detail">' + (ev.verified ? ev.verified.length : 0) + ' verified entities</div><div class="layer-tooltip">Checks if people, orgs, and places mentioned actually exist</div></div>';
+            html += '<div class="verification-layer ' + (se.pass !== false ? 'passed' : 'failed') + '"><div class="layer-name">Layer 2: Source Existence</div><div class="layer-status">' + (se.pass !== false ? '\u2713 PASSED' : '\u2717 FAILED') + '</div><div class="layer-detail">' + (se.existence_rate || 0) + '% sources confirmed</div><div class="layer-tooltip">Verifies that cited sources actually exist and are accessible</div></div>';
+            html += '<div class="verification-layer ' + (cf.verdict !== 'REPORT_BLOCKED' ? 'passed' : 'failed') + '"><div class="layer-name">Layer 3: Confidence Floor</div><div class="layer-status">' + (cf.verdict !== 'REPORT_BLOCKED' ? '\u2713 PASSED' : '\u2717 FAILED') + '</div><div class="layer-detail">' + (cf.verdict === 'REPORT_BLOCKED' ? 'Report blocked' : 'Report allowed') + '</div><div class="layer-tooltip">Minimum evidence threshold — blocks reports with too little real data</div></div>';
+            html += '<div class="verification-layer passed"><div class="layer-name">Layer 4: Input Provenance</div><div class="layer-status">' + (ip.provenance_summary ? ip.provenance_summary.corroborated + ' corroborated' : 'N/A') + '</div><div class="layer-detail">' + (ip.provenance_summary ? ip.provenance_summary.user_asserted + ' user-asserted' : '') + '</div><div class="layer-tooltip">Tracks whether claims come from real sources or user input</div></div>';
             html += '</div>';
 
             // ===== PLAIN LANGUAGE SUMMARY =====
@@ -941,6 +962,67 @@
       html += '</div>';
 
       el.innerHTML = html;
+    }
+
+    // v13.1 UX Enhancement - Make metrics understandable to casual users
+    function enhanceUX() {
+      // Add help tooltips to metric titles
+      document.querySelectorAll('.trust-meter-title').forEach(el => {
+        if (!el.querySelector('.metric-help')) {
+          var helpIcon = document.createElement('span');
+          helpIcon.className = 'metric-help';
+          helpIcon.textContent = '?';
+          helpIcon.setAttribute('data-tip', 'This score rates how trustworthy this report is based on source quality, cross-referencing, and verification. 80+ is high confidence, 50-79 is moderate, below 50 means treat with caution.');
+          el.appendChild(helpIcon);
+        }
+      });
+      
+      // Add explanation to confidence calibration
+      document.querySelectorAll('.confidence-header').forEach(el => {
+        if (el.textContent.indexOf('CALIBRATION') >= 0 && !el.dataset.enhanced) {
+          el.dataset.enhanced = 'true';
+          el.textContent = 'HOW CONFIDENT IS THIS ANALYSIS?';
+        }
+      });
+      
+      // Add scoring scale explainer after verification layers
+      var layerGrid = document.querySelector('.verification-layers');
+      if (layerGrid && !layerGrid.nextElementSibling?.classList?.contains('scoring-explainer')) {
+        var explainer = document.createElement('div');
+        explainer.className = 'scoring-explainer';
+        explainer.innerHTML = '<h4>Understanding These Scores</h4>' +
+          '<p style="font-size:0.8rem;color:#aaa;margin:0 0 8px 0;">SubMind verifies every report through 4 independent checks before showing you results. Each layer must pass for the report to be trusted.</p>' +
+          '<div class="score-scale">' +
+          '<div class="score-segment" style="background:#ef4444"></div>' +
+          '<div class="score-segment" style="background:#f97316"></div>' +
+          '<div class="score-segment" style="background:#eab308"></div>' +
+          '<div class="score-segment" style="background:#22c55e"></div>' +
+          '<div class="score-segment" style="background:#22c55e"></div>' +
+          '</div>' +
+          '<div class="score-labels"><span>0-20 Unreliable</span><span>21-40 Caution</span><span>41-60 Mixed</span><span>61-80 Solid</span><span>81-100 High Trust</span></div>';
+        layerGrid.parentNode.insertBefore(explainer, layerGrid.nextSibling);
+      }
+      
+      // Enhance source display with better cards
+      document.querySelectorAll('.source-item').forEach(el => {
+        if (!el.dataset.enhanced) {
+          el.dataset.enhanced = 'true';
+          el.classList.add('source-card');
+          var badge = el.querySelector('.badge, .status-badge');
+          if (badge) {
+            var text = badge.textContent.toLowerCase();
+            if (text.indexOf('verified') >= 0) badge.classList.add('verified');
+            else if (text.indexOf('fixed') >= 0 || text.indexOf('redirect') >= 0) badge.classList.add('fixed');
+            else badge.classList.add('unverified');
+          }
+        }
+      });
+      
+      // Make REPORT_ALLOWED more human-readable
+      document.querySelectorAll('.layer-detail').forEach(el => {
+        if (el.textContent === 'REPORT_ALLOWED') el.textContent = 'Report allowed';
+        if (el.textContent === 'REPORT_BLOCKED') el.textContent = 'Report blocked';
+      });
     }
     </script>
 </body>
