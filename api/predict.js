@@ -2,8 +2,9 @@ import nodeFetch from "node-fetch";
 
 import { createClient } from "@supabase/supabase-js";
 
-// SUBMIND v12.0 - DEEP INTELLIGENCE RESEARCH ENGINE
+// SUBMIND v13.0 - DEEP INTELLIGENCE RESEARCH ENGINE
 // Advanced: Contradiction Detection + Strategic Intelligence + Confidence Calibration
+// v13.0: Entity Verification + Source Existence Check + Confidence Floor + Input Provenance Tagging
 // Multi-Source Consensus + Temporal Anomaly Detection + Enhanced Behavioral Divergence
 // Supabase persistence + Upstash Redis caching + Full pipeline
 // Behavioral Divergence + Source Provenance + Semantic Clustering
@@ -62,7 +63,7 @@ async function savePrediction(supabase, query, responseData) {
       source_count: meta.providers?.source_count || 0,
       verified_source_count: meta.source_verification?.verified || 0,
       provenance_summary: intel.provenance_summary || {},
-      version: meta.version || '11.0',
+      version: meta.version || '13.0',
       created_at: new Date().toISOString()
     };
     const { data, error } = await supabase.from('predictions').insert(row).select('id').single();
@@ -1182,6 +1183,364 @@ function calibrateConfidence(briefing, glassFang, nemesis, contradictionData, di
   };
 }
 
+// ===== LAYER 1: ENTITY VERIFICATION ENGINE =====
+// Verifies tickers/companies against Yahoo Finance before analysis
+async function verifyEntity(queryIntel) {
+  const entities = queryIntel.entities || [];
+  const tickerPattern = /\b[A-Z]{1,5}\b/;
+  const results = { verified: [], unverifiable: [], checked: 0, pass: true, details: [] };
+  
+  // Extract potential tickers from entities and raw query
+  const candidates = [];
+  for (const e of entities) {
+    if (e.type === 'company' || e.type === 'ticker') candidates.push(e.name);
+  }
+  // Also check for standalone tickers in the query
+  const queryTokens = (queryIntel.original_query || '').split(/\s+/);
+  for (const t of queryTokens) {
+    if (/^[A-Z]{1,5}$/.test(t) && !['AI', 'EU', 'US', 'UK', 'GDP', 'FDA', 'SEC', 'IPO', 'CEO', 'CTO', 'CFO', 'ETF', 'ESG', 'API', 'IOT', 'VR', 'AR', 'EV', 'WHO', 'UN', 'NATO', 'NASA'].includes(t)) {
+      candidates.push(t);
+    }
+  }
+  
+  if (candidates.length === 0) {
+    results.details.push({ note: 'No ticker/entity candidates detected - general topic query' });
+    return results;
+  }
+  
+  for (const candidate of [...new Set(candidates)]) {
+    results.checked++;
+    try {
+      const url = 'https://query1.finance.yahoo.com/v1/finance/search?q=' + encodeURIComponent(candidate) + '&quotesCount=3&newsCount=0';
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), 4000);
+      const res = await nodeFetch(url, {
+        signal: controller.signal,
+        headers: { 'User-Agent': 'SubMind/13.0 EntityVerifier' }
+      });
+      clearTimeout(timer);
+      
+      if (res.ok) {
+        const data = await res.json();
+        const quotes = data.quotes || [];
+        if (quotes.length > 0) {
+          const match = quotes[0];
+          results.verified.push({
+            input: candidate,
+            symbol: match.symbol,
+            name: match.shortname || match.longname || candidate,
+            exchange: match.exchange || 'UNKNOWN',
+            type: match.quoteType || 'UNKNOWN',
+            score: match.score || 0
+          });
+          results.details.push({ entity: candidate, status: 'VERIFIED', symbol: match.symbol, exchange: match.exchange });
+        } else {
+          results.unverifiable.push(candidate);
+          results.details.push({ entity: candidate, status: 'NOT_FOUND', reason: 'No matching securities found' });
+        }
+      } else {
+        // API error - don't penalize, mark as unchecked
+        results.details.push({ entity: candidate, status: 'API_ERROR', code: res.status });
+      }
+    } catch(e) {
+      results.details.push({ entity: candidate, status: 'TIMEOUT', reason: e.message });
+    }
+  }
+  
+  // If we checked entities and NONE verified, flag as fail
+  if (results.checked > 0 && results.verified.length === 0 && results.unverifiable.length > 0) {
+    results.pass = false;
+  }
+  
+  return results;
+}
+
+// ===== LAYER 2: SOURCE EXISTENCE CHECK =====
+// Verifies cited sources actually exist at their URLs. Already partially done in Phase 4.
+// This adds SYNTHETIC tagging to sources that fail verification.
+function tagSyntheticSources(sources, verificationStats) {
+  let syntheticCount = 0;
+  let confirmedCount = 0;
+  const tagged = sources.map(s => {
+    const isVerified = s.verification_status === 'verified' || s.verification_status === 'fixed';
+    if (isVerified) {
+      confirmedCount++;
+      return { ...s, provenance_tag: s.provenance_tag || 'RETRIEVED', synthetic: false };
+    } else {
+      syntheticCount++;
+      return { ...s, provenance_tag: 'SYNTHETIC', synthetic: true, trust_weight: 0 };
+    }
+  });
+  
+  const existenceRate = sources.length > 0 ? confirmedCount / sources.length : 0;
+  return {
+    sources: tagged,
+    existence_check: {
+      total: sources.length,
+      confirmed: confirmedCount,
+      synthetic: syntheticCount,
+      existence_rate: Math.round(existenceRate * 100),
+      threshold: 30,
+      pass: existenceRate * 100 >= 30
+    }
+  };
+}
+
+// ===== LAYER 3: CONFIDENCE FLOOR ENFORCEMENT =====
+// Gates the entire report if entity verification OR source existence fails
+function enforceConfidenceFloor(entityVerification, sourceExistence) {
+  const entityPass = entityVerification.pass;
+  const sourcePass = sourceExistence.pass;
+  const existenceRate = sourceExistence.existence_rate;
+  
+  const blocked = !entityPass || !sourcePass;
+  const reasons = [];
+  
+  if (!entityPass) {
+    reasons.push({
+      layer: 'ENTITY_VERIFICATION',
+      severity: 'CRITICAL',
+      message: 'Could not verify any referenced securities/entities against financial databases',
+      unverifiable: entityVerification.unverifiable
+    });
+  }
+  
+  if (!sourcePass) {
+    reasons.push({
+      layer: 'SOURCE_EXISTENCE',
+      severity: 'CRITICAL',
+      message: 'Source existence rate (' + existenceRate + '%) below minimum threshold (30%)',
+      existence_rate: existenceRate
+    });
+  }
+  
+  return {
+    blocked,
+    synthetic_data_detected: blocked,
+    reasons,
+    enforcement: {
+      entity_gate: entityPass ? 'PASSED' : 'BLOCKED',
+      source_gate: sourcePass ? 'PASSED' : 'BLOCKED',
+      overall: blocked ? 'REPORT_BLOCKED' : 'REPORT_ALLOWED'
+    }
+  };
+}
+
+// ===== LAYER 4: INPUT PROVENANCE TAGGING =====
+// Tags data points from user input vs SubMind retrieval
+function tagInputProvenance(briefing, originalQuery) {
+  const queryTerms = originalQuery.toLowerCase().split(/\s+/).filter(t => t.length > 3);
+  const tagged = {
+    user_asserted_claims: [],
+    independently_corroborated: [],
+    provenance_summary: { user_asserted: 0, corroborated: 0, total_claims: 0 }
+  };
+  
+  // Check predictions for user-asserted data
+  const predictions = briefing.predictions || [];
+  for (const pred of predictions) {
+    tagged.provenance_summary.total_claims++;
+    const predText = (pred.prediction || pred.title || '').toLowerCase();
+    // If prediction closely mirrors query terms without independent evidence
+    const queryOverlap = queryTerms.filter(t => predText.includes(t)).length;
+    const overlapRatio = queryTerms.length > 0 ? queryOverlap / queryTerms.length : 0;
+    
+    if (overlapRatio > 0.7 && (!pred.evidence || pred.evidence === '')) {
+      tagged.user_asserted_claims.push({
+        claim: pred.prediction || pred.title,
+        tag: 'USER_ASSERTED',
+        weight: 0,
+        reason: 'High query overlap without independent evidence'
+      });
+      tagged.provenance_summary.user_asserted++;
+    } else {
+      tagged.independently_corroborated.push({
+        claim: pred.prediction || pred.title,
+        tag: 'CORROBORATED',
+        weight: 1
+      });
+      tagged.provenance_summary.corroborated++;
+    }
+  }
+  
+  // Check key findings
+  const findings = briefing.key_findings || [];
+  for (const finding of findings) {
+    tagged.provenance_summary.total_claims++;
+    const findingText = (finding.finding || finding.title || '').toLowerCase();
+    const queryOverlap = queryTerms.filter(t => findingText.includes(t)).length;
+    const overlapRatio = queryTerms.length > 0 ? queryOverlap / queryTerms.length : 0;
+    
+    if (overlapRatio > 0.7 && (!finding.evidence || finding.source === '')) {
+      tagged.user_asserted_claims.push({
+        claim: finding.finding || finding.title,
+        tag: 'USER_ASSERTED',
+        weight: 0,
+        reason: 'Finding mirrors user query without independent source'
+      });
+      tagged.provenance_summary.user_asserted++;
+    } else {
+      tagged.independently_corroborated.push({
+        claim: finding.finding || finding.title,
+        tag: 'CORROBORATED',
+        weight: 1
+      });
+      tagged.provenance_summary.corroborated++;
+    }
+  }
+  
+  return tagged;
+}
+
+
+// ===== REALITY GATE ENGINE =====
+// Validates whether source evidence actually supports the user's query
+// before allowing the pipeline to generate analysis. Prevents fabricated
+// inputs from producing authoritative-looking but baseless output.
+function realityGate(query, sources, sourceContext) {
+  const result = {
+    passed: true,
+    reality_score: 100,
+    verdict: 'VERIFIED',
+    flags: [],
+    evidence_density: 0,
+    source_corroboration: 0,
+    recommendation: null,
+    details: {}
+  };
+
+  // ---- CHECK 1: Source Quantity ----
+  // If we found very few or zero sources, that's a red flag
+  const sourceCount = sources.length;
+  let sourceScore = 100;
+  if (sourceCount === 0) {
+    sourceScore = 0;
+    result.flags.push('ZERO_SOURCES: No external sources found for this claim');
+  } else if (sourceCount <= 2) {
+    sourceScore = 30;
+    result.flags.push('MINIMAL_SOURCES: Only ' + sourceCount + ' source(s) found');
+  } else if (sourceCount <= 4) {
+    sourceScore = 60;
+  }
+  result.details.source_quantity_score = sourceScore;
+
+  // ---- CHECK 2: Source-Query Relevance ----
+  // Extract key terms from query and check how many appear in source text
+  const queryWords = query.toLowerCase()
+    .replace(/[^a-z0-9\s]/g, '')
+    .split(/\s+/)
+    .filter(w => w.length > 3 && !['what','when','where','which','that','this','from','with','about','have','will','been','more','than','them','they','their','some','could','would','should','into','also','does','most','just','over','only','such','after','before','other','very','much','each','between','through','these','those','being','during','without','again','further','then','once','here','there','both','under','same','until','while','because','against','among','since','within','along','across','around','toward','above','below','near','upon','onto','whether','though','although'].includes(w));
+  
+  const contextLower = (sourceContext || '').toLowerCase();
+  let matchedTerms = 0;
+  let unmatchedTerms = [];
+  for (const word of queryWords) {
+    if (contextLower.includes(word)) {
+      matchedTerms++;
+    } else {
+      unmatchedTerms.push(word);
+    }
+  }
+  const relevanceRatio = queryWords.length > 0 ? matchedTerms / queryWords.length : 0;
+  let relevanceScore = Math.round(relevanceRatio * 100);
+  
+  if (relevanceRatio < 0.2) {
+    result.flags.push('LOW_RELEVANCE: Sources do not mention most key terms from query (' + unmatchedTerms.slice(0, 5).join(', ') + ')');
+  } else if (relevanceRatio < 0.4) {
+    result.flags.push('PARTIAL_RELEVANCE: Sources only partially match query terms');
+  }
+  result.details.relevance_score = relevanceScore;
+  result.details.query_terms = queryWords.length;
+  result.details.matched_terms = matchedTerms;
+  result.details.unmatched_key_terms = unmatchedTerms.slice(0, 8);
+
+  // ---- CHECK 3: Evidence Density ----
+  // Check if source text is substantial or just filler
+  const contextLength = (sourceContext || '').length;
+  let densityScore = 100;
+  if (contextLength < 200) {
+    densityScore = 10;
+    result.flags.push('EMPTY_EVIDENCE: Almost no source content retrieved');
+  } else if (contextLength < 500) {
+    densityScore = 30;
+    result.flags.push('THIN_EVIDENCE: Very little source content available');
+  } else if (contextLength < 1000) {
+    densityScore = 60;
+  }
+  result.details.evidence_density_score = densityScore;
+  result.details.context_chars = contextLength;
+
+  // ---- CHECK 4: Source URL Quality ----
+  // Check if sources have actual URLs or are fabricated
+  let validUrlCount = 0;
+  let brokenUrlCount = 0;
+  for (const src of sources) {
+    const url = src.url || src.link || '';
+    if (url && (url.startsWith('http://') || url.startsWith('https://'))) {
+      validUrlCount++;
+    } else if (url) {
+      brokenUrlCount++;
+    }
+  }
+  const urlQualityScore = sourceCount > 0 ? Math.round((validUrlCount / sourceCount) * 100) : 0;
+  result.details.url_quality_score = urlQualityScore;
+  result.details.valid_urls = validUrlCount;
+  
+  if (validUrlCount === 0 && sourceCount > 0) {
+    result.flags.push('NO_VALID_URLS: None of the sources have verifiable URLs');
+  }
+
+  // ---- CHECK 5: Fabrication Indicators ----
+  // Look for signs the query contains very specific claims that sources can't back
+  const hasSpecificNumbers = /\d{2,}/.test(query);
+  const hasSpecificNames = /[A-Z][a-z]+\s[A-Z][a-z]+/.test(query);
+  const hasQuotes = query.includes('"') || query.includes("'");
+  const specificityCues = (hasSpecificNumbers ? 1 : 0) + (hasSpecificNames ? 1 : 0) + (hasQuotes ? 1 : 0);
+  
+  // High specificity + low source match = likely fabricated
+  let fabricationRisk = 0;
+  if (specificityCues >= 2 && relevanceRatio < 0.3) {
+    fabricationRisk = 80;
+    result.flags.push('FABRICATION_RISK: Query contains specific claims but sources cannot corroborate');
+  } else if (specificityCues >= 1 && relevanceRatio < 0.2) {
+    fabricationRisk = 60;
+    result.flags.push('UNVERIFIABLE_CLAIMS: Specific claims in query have no source backing');
+  }
+  result.details.fabrication_risk = fabricationRisk;
+
+  // ---- AGGREGATE SCORING ----
+  const weights = { source: 0.25, relevance: 0.30, density: 0.20, urlQuality: 0.10, fabrication: 0.15 };
+  const fabricationPenalty = fabricationRisk > 0 ? (100 - fabricationRisk) : 100;
+  
+  result.reality_score = Math.round(
+    sourceScore * weights.source +
+    relevanceScore * weights.relevance +
+    densityScore * weights.density +
+    urlQualityScore * weights.urlQuality +
+    fabricationPenalty * weights.fabrication
+  );
+  
+  result.evidence_density = densityScore;
+  result.source_corroboration = relevanceScore;
+
+  // ---- VERDICT ----
+  if (result.reality_score >= 70) {
+    result.verdict = 'VERIFIED';
+    result.passed = true;
+    result.recommendation = null;
+  } else if (result.reality_score >= 40) {
+    result.verdict = 'LOW_CONFIDENCE';
+    result.passed = true; // Still passes but with warnings
+    result.recommendation = 'CAUTION: Limited evidence found. Results may rely heavily on AI inference rather than verified sources. Treat conclusions as speculative.';
+  } else {
+    result.verdict = 'UNVERIFIED';
+    result.passed = false;
+    result.recommendation = 'WARNING: SubMind could not find credible sources to support this query. The information below is based on minimal or no external evidence and should NOT be treated as reliable intelligence.';
+  }
+
+  return result;
+}
+
 // ===== MAIN HANDLER =====
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -1197,7 +1556,7 @@ export default async function handler(req, res) {
       return res.status(health.pass ? 200 : 503).json({
         success: true,
         type: 'healthcheck',
-        version: '12.0',
+        version: '13.0',
         ...health
       });
     } catch(e) {
@@ -1231,8 +1590,32 @@ export default async function handler(req, res) {
   }
   console.log('[Cache] MISS - running full pipeline');
 
+    // ===== LAYER 1: ENTITY VERIFICATION =====
+    console.log('[Layer 1] Verifying entities against securities databases...');
+    const entityVerification = await verifyEntity(queryIntel);
+    console.log('[Layer 1] Verified:', entityVerification.verified.length, '| Unverifiable:', entityVerification.unverifiable.length, '| Pass:', entityVerification.pass);
+    
+    // If entity verification fails completely, short-circuit with blocked response
+    if (!entityVerification.pass) {
+      console.log('[Layer 1] BLOCKED - Unverifiable entities:', entityVerification.unverifiable.join(', '));
+      const blockedPayload = {
+        success: true,
+        query,
+        blocked: true,
+        synthetic_data_detected: true,
+        block_reason: 'ENTITY_VERIFICATION_FAILED',
+        message: 'SubMind could not verify the referenced entities against financial databases. The ticker(s) [' + entityVerification.unverifiable.join(', ') + '] returned no results. SubMind only analyzes what it can independently corroborate.',
+        entity_verification: entityVerification,
+        meta: { version: '13.0', pipeline: ['preprocess', 'entity_verify'], blocked_at: 'Layer 1 - Entity Verification' }
+      };
+      // Still cache the blocked result to avoid repeated lookups
+      try { await redisSet(cacheKey, { data: blockedPayload, timestamp: new Date().toISOString() }, 600); } catch(e) {}
+      res.status(200).json(blockedPayload);
+      return;
+    }
+
   const supabase = makeSupabase();
-  console.log('[SubMind v12.0] Query:', query);
+  console.log('[SubMind v13.0] Query:', query);
 
   try {
     // ===== PHASE 1: PARALLEL SOURCE GATHERING =====
@@ -1251,13 +1634,26 @@ export default async function handler(req, res) {
     console.log('[Phase 1] Gemini sources:', gemini.sources.length, '| Deep sources:', deep.sources.length, '| OpenAI sources:', openai.sources.length);
 
     // ===== PHASE 2: INTELLIGENCE BRIEFING =====
+    // ---- Phase 1.5: REALITY GATE ----
+    const allSourcesForGate = [...(gemini.sources || []), ...(deep.sources || [])];
+    const realityCheck = realityGate(query, allSourcesForGate, combinedContext);
+    console.log('[Reality Gate] Score:', realityCheck.reality_score, '| Verdict:', realityCheck.verdict, '| Flags:', realityCheck.flags.length);
+    
+    // If reality gate fails hard, inject warning into the context
+    let gatedContext = enrichedContext;
+    if (realityCheck.verdict === 'UNVERIFIED') {
+      gatedContext = 'CRITICAL REALITY GATE WARNING: SubMind found NO credible external evidence supporting this query. Reality Score: ' + realityCheck.reality_score + '/100. Flags: ' + realityCheck.flags.join('; ') + '. You MUST acknowledge this lack of evidence prominently in your briefing. Do NOT present unverified claims as facts. State clearly what could NOT be verified.\n\n' + enrichedContext;
+    } else if (realityCheck.verdict === 'LOW_CONFIDENCE') {
+      gatedContext = 'REALITY GATE CAUTION: Evidence quality is low for this query. Reality Score: ' + realityCheck.reality_score + '/100. Flags: ' + realityCheck.flags.join('; ') + '. Clearly distinguish between verified facts and speculation in your briefing.\n\n' + enrichedContext;
+    }
+
     console.log('[Phase 2] Generating intelligence briefing...');
     const enrichedContext = queryIntel.entities.length > 0 
       ? combinedContext + '\n\nKEY ENTITIES: ' + queryIntel.entities.map(e => e.name + ' (' + e.type + ')').join(', ') 
         + '\nDOMAIN: ' + queryIntel.classification.primary_domain
         + '\nSEARCH ANGLES: ' + queryIntel.search_angles.join('; ')
       : combinedContext;
-    const { briefing, provider: briefingProvider, raw_length } = await generateBriefing(query, enrichedContext);
+    const { briefing, provider: briefingProvider, raw_length } = await generateBriefing(query, gatedContext);
 
     if (!briefing) {
       return res.status(500).json({
@@ -1277,9 +1673,39 @@ export default async function handler(req, res) {
     const { sources: verifiedSources, stats: verificationStats } = await verifyAndFixSources(mergedSources);
     console.log('[Phase 4] Verified:', verificationStats.verified, '| Fixed:', verificationStats.fixed);
 
+    // ===== LAYER 2: SOURCE EXISTENCE CHECK =====
+    console.log('[Layer 2] Checking source existence & tagging synthetics...');
+    const { sources: existenceTaggedSources, existence_check: sourceExistence } = tagSyntheticSources(verifiedSources, verificationStats);
+    console.log('[Layer 2] Confirmed:', sourceExistence.confirmed, '| Synthetic:', sourceExistence.synthetic, '| Rate:', sourceExistence.existence_rate + '%', '| Pass:', sourceExistence.pass);
+    
+    // ===== LAYER 3: CONFIDENCE FLOOR ENFORCEMENT =====
+    console.log('[Layer 3] Enforcing confidence floor...');
+    const confidenceFloor = enforceConfidenceFloor(entityVerification, sourceExistence);
+    console.log('[Layer 3] Entity gate:', confidenceFloor.enforcement.entity_gate, '| Source gate:', confidenceFloor.enforcement.source_gate, '| Overall:', confidenceFloor.enforcement.overall);
+    
+    if (confidenceFloor.blocked) {
+      console.log('[Layer 3] REPORT BLOCKED - Synthetic data detected');
+      const blockedPayload = {
+        success: true,
+        query,
+        blocked: true,
+        synthetic_data_detected: true,
+        block_reason: 'CONFIDENCE_FLOOR_FAILED',
+        message: 'SubMind detected insufficient verifiable data to generate a reliable report. ' + confidenceFloor.reasons.map(r => r.message).join(' '),
+        confidence_floor: confidenceFloor,
+        entity_verification: entityVerification,
+        source_existence: sourceExistence,
+        briefing: { ...briefing, sources: existenceTaggedSources },
+        meta: { version: '13.0', pipeline: ['preprocess', 'entity_verify', 'search', 'briefing', 'merge', 'verify_urls', 'existence_check', 'confidence_floor'], blocked_at: 'Layer 3 - Confidence Floor' }
+      };
+      try { await redisSet(cacheKey, { data: blockedPayload, timestamp: new Date().toISOString() }, 600); } catch(e) {}
+      res.status(200).json(blockedPayload);
+      return;
+    }
+
     // ===== PHASE 5: SOURCE PROVENANCE CLASSIFICATION =====
     console.log('[Phase 5] Classifying source provenance...');
-    const classifiedSources = verifiedSources.map(src => ({
+    const classifiedSources = existenceTaggedSources.map(src => ({
       ...src,
       provenance: classifySourceProvenance(src.url)
     }));
@@ -1328,8 +1754,13 @@ export default async function handler(req, res) {
     const strategicIntel = generateStrategicIntel(briefing, divergenceData, contradictionData);
     console.log('[Phase 12] Strategies:', strategicIntel.count, '| Stance:', strategicIntel.overall_stance);
 
+    // ===== LAYER 4: INPUT PROVENANCE TAGGING =====
+    console.log('[Layer 4] Tagging input provenance...');
+    const inputProvenance = tagInputProvenance(briefing, query);
+    console.log('[Layer 4] User-asserted:', inputProvenance.provenance_summary.user_asserted, '| Corroborated:', inputProvenance.provenance_summary.corroborated);
+
 const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
-    console.log('[SubMind v12.0] Complete in', elapsed + 's');
+    console.log('[SubMind v13.0] Complete in', elapsed + 's');
 
     // ===== PERSIST TO SUPABASE + CACHE =====
     const responsePayload = {
@@ -1348,12 +1779,17 @@ const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
         query_intelligence: queryIntel,
         source_clusters: clusterData,
         provenance_summary: provenanceSummary,
+        reality_gate: realityCheck,
         contradictions: contradictionData,
         strategic_intel: strategicIntel,
-        confidence_calibration: calibratedConf
+        confidence_calibration: calibratedConf,
+        entity_verification: entityVerification,
+        source_existence: sourceExistence,
+        confidence_floor: confidenceFloor,
+        input_provenance: inputProvenance
       },
       meta: {
-        version: '11.0',
+        version: '13.0',
         elapsed_seconds: parseFloat(elapsed),
         providers: {
           search: gemini.sources.length > 0 ? 'gemini' : 'openai',
@@ -1363,7 +1799,7 @@ const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
           ai_referenced_sources: openai.sources.length
         },
         source_verification: verificationStats,
-        pipeline: ['search', 'briefing', 'merge', 'verify_urls', 'provenance', 'cluster', 'divergence', 'glass_fang', 'nemesis', 'contradictions', 'calibration', 'strategy', 'persist']
+        pipeline: ['preprocess', 'entity_verify', 'search', 'briefing', 'merge', 'verify_urls', 'existence_check', 'confidence_floor', 'provenance', 'cluster', 'divergence', 'glass_fang', 'nemesis', 'contradictions', 'calibration', 'strategic_intel', 'input_provenance']
       }
     };
 
@@ -1386,7 +1822,7 @@ const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
     // ===== RESPONSE =====
     return res.status(200).json(responsePayload);
   } catch(e) {
-    console.error('[SubMind v12.0] Fatal:', e.message);
+    console.error('[SubMind v13.0] Fatal:', e.message);
     return res.status(500).json({ error: 'Pipeline failed', detail: e.message });
   }
           }
