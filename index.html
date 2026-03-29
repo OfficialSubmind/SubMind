@@ -234,7 +234,7 @@ a:hover{color:var(--accent2)}
     <div class="logo">
       <div class="logo-icon">S</div>
       SubMind
-      <span class="version-badge">v10.0</span>
+      <span class="version-badge">v10.1</span>
     </div>
     <div style="font-size:12px;color:var(--text3)">Deep Intelligence Research Engine</div>
   </div>
@@ -267,6 +267,22 @@ a:hover{color:var(--accent2)}
 <script>
 
 const API = '/api/predict';
+
+    // ===== XSS SANITIZATION =====
+    function esc(str) {
+      if (!str) return '';
+      const div = document.createElement('div');
+      div.appendChild(document.createTextNode(String(str)));
+      return div.innerHTML;
+    }
+    function escUrl(url) {
+      if (!url) return '#';
+      try {
+        const u = new URL(url);
+        if (!['http:', 'https:'].includes(u.protocol)) return '#';
+        return u.href;
+      } catch(e) { return '#'; }
+    }
 const phases = [
   {id:'search', label:'Gathering sources from multiple providers...', icon:'ð'},
   {id:'briefing', label:'Generating intelligence briefing...', icon:'ð§ '},
@@ -364,8 +380,8 @@ function renderBriefing(data) {
   let html = '';
   
   // Title
-  html += '<h2 class="fade-up" style="font-size:24px;font-weight:700;letter-spacing:-0.5px;margin-bottom:6px">' + (b.title || data.query) + '</h2>';
-  html += '<p class="fade-up fade-up-1" style="font-size:15px;color:var(--text2);margin-bottom:20px;line-height:1.6">' + (b.summary || '') + '</p>';
+  html += '<h2 class="fade-up" style="font-size:24px;font-weight:700;letter-spacing:-0.5px;margin-bottom:6px">' + esc(b.title || data.query) + '</h2>';
+  html += '<p class="fade-up fade-up-1" style="font-size:15px;color:var(--text2);margin-bottom:20px;line-height:1.6">' + esc(b.summary || '') + '</p>';
   
   // Meta Bar
   html += '<div class="meta-bar fade-up fade-up-2">';
@@ -375,7 +391,8 @@ function renderBriefing(data) {
   if (meta.elapsed_seconds) html += '<div class="meta-chip"><span class="val">' + meta.elapsed_seconds + 's</span> pipeline</div>';
   html += '<div class="meta-chip">GF <span class="val">' + (gf.score || 0) + '/100</span></div>';
   if (nem.count !== undefined) html += '<div class="meta-chip">Nemesis <span class="val">' + nem.count + '</span> issues</div>';
-  html += '</div>';
+  if (data.meta?.cache === 'HIT') html += '<div class="meta-chip" style="border-color:var(--green)"><span class="val" style="color:var(--green)">\u26A1 CACHED</span></div>';
+    html += '</div>';
   
   // Source Verification Stats Bar
   html += '<div class="verification-bar fade-up fade-up-2" style="margin-bottom:20px">';
@@ -417,8 +434,8 @@ function renderBriefing(data) {
     html += '<div class="card-header"><span class="icon">ð</span>Key Findings</div>';
     for (const f of b.key_findings) {
       html += '<div class="finding-item">';
-      html += '<div class="finding-text">' + (f.finding || '') + '</div>';
-      if (f.evidence) html += '<div class="finding-evidence">' + f.evidence + '</div>';
+      html += '<div class="finding-text">' + esc(f.finding || '') + '</div>';
+      if (f.evidence) html += '<div class="finding-evidence">' + esc(f.evidence) + '</div>';
       if (f.impact) html += '<span class="finding-impact impact-' + f.impact + '">' + f.impact + '</span>';
       html += '</div>';
     }
@@ -432,9 +449,9 @@ function renderBriefing(data) {
     html += '<div class="timeline">';
     b.timeline.forEach((t, i) => {
       html += '<div class="tl-item" style="animation-delay:' + (i * 0.1) + 's">';
-      html += '<div class="tl-date">' + (t.date || '') + '</div>';
-      html += '<div class="tl-event">' + (t.event || '') + '</div>';
-      if (t.significance) html += '<div class="tl-sig">' + t.significance + '</div>';
+      html += '<div class="tl-date">' + esc(t.date || '') + '</div>';
+      html += '<div class="tl-event">' + esc(t.event || '') + '</div>';
+      if (t.significance) html += '<div class="tl-sig">' + esc(t.significance) + '</div>';
       html += '</div>';
     });
     html += '</div></div>';
@@ -448,11 +465,11 @@ function renderBriefing(data) {
       const prob = p.probability || 50;
       const pColor = prob >= 75 ? 'var(--green)' : prob >= 50 ? 'var(--yellow)' : 'var(--red)';
       html += '<div class="prediction-item">';
-      html += '<div class="pred-header"><div class="pred-text">' + (p.prediction || '') + '</div>';
+      html += '<div class="pred-header"><div class="pred-text">' + esc(p.prediction || '') + '</div>';
       html += '<span class="pred-prob" style="background:' + pColor + '22;color:' + pColor + '">' + prob + '%</span></div>';
       html += '<div class="pred-bar"><div class="pred-bar-fill" style="width:' + prob + '%;background:' + pColor + '"></div></div>';
       if (p.timeframe) html += '<div class="pred-basis" style="color:var(--text2)">â³ ' + p.timeframe + '</div>';
-      if (p.basis) html += '<div class="pred-basis">' + p.basis + '</div>';
+      if (p.basis) html += '<div class="pred-basis">' + esc(p.basis) + '</div>';
       if (p.confidence_interval) html += '<div class="confidence-interval">' + p.confidence_interval + '</div>';
       if (p.indicators && p.indicators.length) {
         html += '<div class="pred-indicators">';
@@ -484,7 +501,7 @@ function renderBriefing(data) {
         html += '<div class="pattern-label" style="color:' + g.color + '">' + g.label + '</div>';
         html += '<div class="pattern-items">';
         for (const item of pa[g.key]) {
-          html += '<div class="pattern-item" style="border-left-color:' + g.color + '">' + item + '</div>';
+          html += '<div class="pattern-item" style="border-left-color:' + g.color + '">' + esc(item) + '</div>';
         }
         html += '</div></div>';
       }
@@ -500,9 +517,9 @@ function renderBriefing(data) {
     html += '<div class="reasoning-chain">';
     for (const r of b.reasoning_chain) {
       html += '<div class="reasoning-step" data-step="' + (r.step || '') + '">';
-      html += '<div class="reasoning-thought">' + (r.thought || '') + '</div>';
+      html += '<div class="reasoning-thought">' + esc(r.thought || '') + '</div>';
       if (r.evidence) html += '<div class="reasoning-evidence">' + r.evidence + '</div>';
-      if (r.conclusion) html += '<div class="reasoning-conclusion">\u2192 ' + r.conclusion + '</div>';
+      if (r.conclusion) html += '<div class="reasoning-conclusion">\u2192 ' + esc(r.conclusion) + '</div>';
       html += '</div>';
     }
     html += '</div></div>';
@@ -552,7 +569,7 @@ function renderBriefing(data) {
     html += '<div class="source-item">';
     html += '<div class="source-num">' + (i + 1) + '</div>';
     html += '<div>';
-    html += '<div class="source-title"><a href="' + (s.url || '#') + '" target="_blank" rel="noopener">' + (s.title || 'Source') + '</a></div>';
+    html += '<div class="source-title"><a href="' + escUrl(s.url || '#') + '" target="_blank" rel="noopener">' + esc(s.title || 'Source') + '</a></div>';
     html += '<div class="source-meta">';
     
     // Type badge
@@ -599,8 +616,8 @@ function renderBriefing(data) {
     for (const a of b.executive_actions) {
       html += '<div class="action-item">';
       html += '<span class="action-urgency urgency-' + (a.urgency || 'MEDIUM') + '">' + (a.urgency || 'MEDIUM') + '</span>';
-      html += '<div><div class="action-text">' + (a.action || '') + '</div>';
-      if (a.rationale) html += '<div class="action-rationale">' + a.rationale + '</div>';
+      html += '<div><div class="action-text">' + esc(a.action || '') + '</div>';
+      if (a.rationale) html += '<div class="action-rationale">' + esc(a.rationale) + '</div>';
       html += '</div></div>';
     }
     html += '</div>';
@@ -612,10 +629,10 @@ function renderBriefing(data) {
     html += '<div class="card fade-up fade-up-5">';
     html += '<div class="card-header"><span class="icon">\u26A0\uFE0F</span>Risk Matrix</div>';
     html += '<div class="risk-grid">';
-    if (rm.primary_risk) html += '<div class="risk-box risk-primary"><div class="risk-box-label">Primary Risk (' + (rm.risk_probability || '?') + '% probability)</div><div class="risk-box-value">' + rm.primary_risk + '</div></div>';
-    if (rm.mitigation) html += '<div class="risk-box risk-mitigation"><div class="risk-box-label">Mitigation Strategy</div><div class="risk-box-value">' + rm.mitigation + '</div></div>';
-    if (rm.upside_scenario) html += '<div class="risk-box risk-upside"><div class="risk-box-label">\u2191 Upside Scenario</div><div class="risk-box-value">' + rm.upside_scenario + '</div></div>';
-    if (rm.downside_scenario) html += '<div class="risk-box risk-downside"><div class="risk-box-label">\u2193 Downside Scenario</div><div class="risk-box-value">' + rm.downside_scenario + '</div></div>';
+    if (rm.primary_risk) html += '<div class="risk-box risk-primary"><div class="risk-box-label">Primary Risk (' + (rm.risk_probability || '?') + '% probability)</div><div class="risk-box-value">' + esc(rm.primary_risk) + '</div></div>';
+    if (rm.mitigation) html += '<div class="risk-box risk-mitigation"><div class="risk-box-label">Mitigation Strategy</div><div class="risk-box-value">' + esc(rm.mitigation) + '</div></div>';
+    if (rm.upside_scenario) html += '<div class="risk-box risk-upside"><div class="risk-box-label">\u2191 Upside Scenario</div><div class="risk-box-value">' + esc(rm.upside_scenario) + '</div></div>';
+    if (rm.downside_scenario) html += '<div class="risk-box risk-downside"><div class="risk-box-label">\u2193 Downside Scenario</div><div class="risk-box-value">' + esc(rm.downside_scenario) + '</div></div>';
     html += '</div></div>';
   }
 
@@ -623,7 +640,7 @@ function renderBriefing(data) {
   if (b.methodology_note) {
     html += '<div class="card fade-up fade-up-5" style="border-color:var(--border2)">';
     html += '<div class="card-header"><span class="icon">âï¸</span>Methodology</div>';
-    html += '<p style="font-size:13px;color:var(--text3);line-height:1.6">' + b.methodology_note + '</p>';
+    html += '<p style="font-size:13px;color:var(--text3);line-height:1.6">' + esc(b.methodology_note) + '</p>';
     html += '</div>';
   }
   
