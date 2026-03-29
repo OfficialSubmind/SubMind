@@ -1,1298 +1,614 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SubMind - Deep Intelligence Research</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%23f97316'/><text x='50' y='68' font-size='55' text-anchor='middle' fill='white' font-family='system-ui' font-weight='700'>S</text></svg>">
-  <style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SubMind - Deep Intelligence Research</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%23e8650a'/><text x='50' y='72' text-anchor='middle' font-size='60' font-weight='bold' fill='white'>S</text></svg>">
+    <style>
     *{margin:0;padding:0;box-sizing:border-box}
     :root{
-      --bg:#09090b;--bg2:#18181b;--bg3:#1e1e23;--surface:#27272a;
-      --border:#2e2e33;--border2:#3f3f46;
-      --text:#fafafa;--text2:#a1a1aa;--text3:#71717a;
-      --accent:#f97316;--accent2:#fb923c;--accent-glow:rgba(249,115,22,0.15);
-      --green:#22c55e;--green2:#16a34a;--green-glow:rgba(34,197,94,0.12);
-      --red:#ef4444;--yellow:#eab308;--blue:#3b82f6;--purple:#a855f7;--cyan:#06b6d4;
-      --tier1:#22c55e;--tier2:#3b82f6;--tier3:#a855f7;--tier4:#eab308;--tier5:#71717a;
-      --verified:#22c55e;--search-link:#eab308;--failed:#ef4444;
+      --bg:#0a0a0f;--surface:#111118;--surface2:#1a1a24;--surface3:#222230;
+      --border:#2a2a3a;--border2:#3a3a4a;
+      --text:#e8e8f0;--text2:#a0a0b8;--text3:#707088;
+      --accent:#e8650a;--accent2:#ff8533;
+      --green:#22c55e;--yellow:#eab308;--red:#ef4444;--blue:#3b82f6;--purple:#a855f7;--cyan:#06b6d4;
     }
-    body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
-    a{color:var(--accent);text-decoration:none;transition:color 0.2s}
-    a:hover{color:var(--accent2)}
+    body{background:var(--bg);color:var(--text);font-family:'Inter',system-ui,sans-serif;line-height:1.6;overflow-x:hidden}
     ::-webkit-scrollbar{width:6px}
-    ::-webkit-scrollbar-track{background:var(--bg)}
-    ::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+    ::-webkit-scrollbar-track{background:transparent}
+    ::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
 
-    /* Header */
-    .header{position:sticky;top:0;z-index:100;background:rgba(9,9,11,0.85);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:14px 0}
-    .header-inner{max-width:1400px;margin:0 auto;padding:0 24px;display:flex;align-items:center;justify-content:space-between}
-    .logo{display:flex;align-items:center;gap:10px;font-weight:700;font-size:20px;letter-spacing:-0.5px}
-    .logo-icon{width:32px;height:32px;background:var(--accent);border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:16px;color:white}
-    .version-badge{font-size:10px;padding:3px 8px;background:var(--accent-glow);color:var(--accent);border-radius:6px;font-weight:600;letter-spacing:0.5px}
-    .header-right{display:flex;align-items:center;gap:16px}
-    .header-stat{font-size:11px;color:var(--text3);display:flex;align-items:center;gap:4px}
-    .header-stat .dot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:pulse 2s infinite}
-    @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+    /* ===== HEADER ===== */
+    .header{position:sticky;top:0;z-index:100;background:rgba(10,10,15,0.9);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:12px 24px;display:flex;align-items:center;justify-content:space-between}
+    .logo{display:flex;align-items:center;gap:10px}
+    .logo-icon{width:32px;height:32px;background:var(--accent);border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:16px;color:#fff}
+    .logo-text{font-weight:700;font-size:18px;color:var(--text)}
+    .logo-version{font-size:11px;background:var(--surface2);color:var(--text3);padding:2px 8px;border-radius:10px;margin-left:4px}
+    .header-right{display:flex;align-items:center;gap:16px;font-size:13px;color:var(--text3)}
+    .status-dot{width:7px;height:7px;background:var(--green);border-radius:50%;display:inline-block;margin-right:4px}
 
-    /* Hero */
-    .hero{text-align:center;padding:80px 24px 40px;max-width:800px;margin:0 auto;transition:all 0.4s ease}
-    .hero h1{font-size:clamp(32px,5vw,52px);font-weight:700;letter-spacing:-1.5px;line-height:1.1;margin-bottom:16px;background:linear-gradient(135deg,#fff 0%,#a1a1aa 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-    .hero p{font-size:18px;color:var(--text2);max-width:550px;margin:0 auto 40px;line-height:1.6}
-    .hero.collapsed{padding:20px 24px 16px}
-    .hero.collapsed h1,.hero.collapsed p{display:none}
+    /* ===== HERO ===== */
+    .hero{min-height:calc(100vh - 56px);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 24px;text-align:center}
+    .hero h1{font-size:clamp(28px,5vw,52px);font-weight:800;letter-spacing:-1px;color:var(--text);line-height:1.15;margin-bottom:16px}
+    .hero p{font-size:16px;color:var(--text2);max-width:600px;margin-bottom:40px}
+    .search-box{position:relative;width:100%;max-width:680px;margin-bottom:16px}
+    .search-box input{width:100%;padding:16px 56px 16px 20px;background:var(--surface);border:1.5px solid var(--border);border-radius:14px;color:var(--text);font-size:16px;font-family:inherit;outline:none;transition:border-color 0.2s}
+    .search-box input:focus{border-color:var(--accent)}
+    .search-box input::placeholder{color:var(--text3)}
+    .search-box button{position:absolute;right:8px;top:50%;transform:translateY(-50%);background:var(--accent);border:none;border-radius:10px;width:40px;height:40px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background 0.2s}
+    .search-box button:hover{background:var(--accent2)}
+    .search-box button svg{width:18px;height:18px;stroke:#fff;fill:none;stroke-width:2.5}
+    .history-pills{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;max-width:700px}
+    .history-pill{padding:6px 14px;background:var(--surface);border:1px solid var(--border);border-radius:20px;color:var(--text2);font-size:13px;cursor:pointer;transition:all 0.2s;max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .history-pill:hover{border-color:var(--accent);color:var(--text)}
 
-    /* Search */
-    .search-container{max-width:680px;margin:0 auto;position:relative}
-    .search-box{width:100%;padding:18px 60px 18px 24px;background:var(--bg2);border:1px solid var(--border);border-radius:16px;color:var(--text);font-size:16px;font-family:inherit;outline:none;transition:all 0.3s}
-    .search-box:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-glow)}
-    .search-box::placeholder{color:var(--text3)}
-    .search-btn{position:absolute;right:8px;top:50%;transform:translateY(-50%);width:44px;height:44px;background:var(--accent);border:none;border-radius:12px;color:white;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.2s}
-    .search-btn:hover{background:var(--accent2);transform:translateY(-50%) scale(1.05)}
-    .search-btn:disabled{opacity:0.5;cursor:not-allowed}
-    .history-bar{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0 0;max-width:680px;margin-left:auto;margin-right:auto}
-    .history-chip{font-size:11px;padding:4px 12px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;color:var(--text3);cursor:pointer;transition:all 0.2s;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-    .history-chip:hover{border-color:var(--accent);color:var(--text)}
-
-    /* Loading */
-    .loading{display:none;text-align:center;padding:60px 24px}
+    /* ===== LOADING ===== */
+    .loading{display:none;padding:60px 24px;text-align:center}
     .loading.active{display:block}
-    .loading-phases{max-width:500px;margin:20px auto}
-    .phase{display:flex;align-items:center;gap:12px;padding:10px 0;color:var(--text3);font-size:14px;transition:all 0.3s}
-    .phase.active{color:var(--accent)}
-    .phase.done{color:var(--green)}
-    .phase-icon{width:24px;text-align:center}
-    .spinner{width:20px;height:20px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 0.8s linear infinite;margin:20px auto}
+    .loading .spinner{width:40px;height:40px;border:3px solid var(--border);border-top:3px solid var(--accent);border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 24px}
     @keyframes spin{to{transform:rotate(360deg)}}
+    .phase-list{max-width:500px;margin:0 auto;text-align:left}
+    .phase-item{padding:8px 0;color:var(--text3);font-size:14px;transition:color 0.3s}
+    .phase-item.active{color:var(--text)}
+    .phase-item .check{color:var(--green);margin-right:8px}
 
-    /* Dashboard */
-    .dashboard{display:none;max-width:1400px;margin:0 auto;padding:0 24px 80px}
+    /* ===== DASHBOARD ===== */
+    .dashboard{display:none;max-width:900px;margin:0 auto;padding:24px 24px 60px}
     .dashboard.active{display:block}
 
-    /* Intel Summary Strip - everything at a glance */
-    .intel-strip{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:24px;padding:16px;background:linear-gradient(135deg,rgba(24,24,27,0.8),rgba(30,30,35,0.6));border:1px solid var(--border);border-radius:16px}
-    .intel-cell{text-align:center;padding:8px}
-    .intel-cell-label{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px}
-    .intel-cell-value{font-size:22px;font-weight:700;font-family:'JetBrains Mono',monospace}
-    .intel-cell-sub{font-size:11px;color:var(--text3);margin-top:2px}
+    /* ===== TOOLTIP SYSTEM ===== */
+    .has-tip{position:relative;cursor:help;border-bottom:1px dotted var(--text3)}
+    .tip-icon{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:50%;background:var(--surface3);color:var(--text3);font-size:10px;font-weight:700;cursor:help;margin-left:4px;vertical-align:middle;transition:all 0.2s}
+    .tip-icon:hover{background:var(--accent);color:#fff}
+    .tooltip{display:none;position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%);background:var(--surface2);border:1px solid var(--border2);border-radius:10px;padding:12px 16px;font-size:13px;color:var(--text2);line-height:1.5;width:280px;z-index:50;box-shadow:0 8px 32px rgba(0,0,0,0.4)}
+    .tooltip::after{content:'';position:absolute;top:100%;left:50%;transform:translateX(-50%);border:6px solid transparent;border-top-color:var(--border2)}
+    .tip-icon:hover + .tooltip,.tooltip:hover{display:block}
 
-    /* Meta Bar */
-    .meta-bar{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:24px;align-items:center}
-    .meta-chip{display:flex;align-items:center;gap:6px;padding:6px 14px;background:var(--bg2);border:1px solid var(--border);border-radius:10px;font-size:13px;color:var(--text2)}
-    .meta-chip .val{color:var(--text);font-weight:600}
-    .status-badge{padding:6px 16px;border-radius:10px;font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase}
-    .status-CONFIRMED{background:var(--green-glow);color:var(--green);border:1px solid rgba(34,197,94,0.3)}
-    .status-DEVELOPING{background:rgba(59,130,246,0.12);color:var(--blue);border:1px solid rgba(59,130,246,0.3)}
-    .status-PROJECTED{background:rgba(168,85,247,0.12);color:var(--purple);border:1px solid rgba(168,85,247,0.3)}
-    .status-DISPUTED{background:rgba(239,68,68,0.12);color:var(--red);border:1px solid rgba(239,68,68,0.3)}
+    /* ===== BOTTOM LINE CARD ===== */
+    .bottom-line{background:linear-gradient(135deg,rgba(232,101,10,0.08),rgba(232,101,10,0.02));border:1px solid rgba(232,101,10,0.2);border-radius:16px;padding:24px 28px;margin-bottom:28px}
+    .bottom-line-label{font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--accent);margin-bottom:8px}
+    .bottom-line h2{font-size:22px;font-weight:700;color:var(--text);line-height:1.3;margin-bottom:12px}
+    .bottom-line p{font-size:15px;color:var(--text2);line-height:1.65}
 
-    /* Two-Column Layout */
-    .dashboard-grid{display:grid;grid-template-columns:1fr 380px;gap:20px;align-items:start}
-    .dashboard-main{min-width:0}
-    .dashboard-sidebar{position:sticky;top:80px}
+    /* ===== TRUST METER ===== */
+    .trust-meter{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px 24px;margin-bottom:24px}
+    .trust-meter-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+    .trust-meter-title{font-size:13px;font-weight:600;color:var(--text2)}
+    .trust-meter-score{font-size:28px;font-weight:800;font-family:'JetBrains Mono',monospace}
+    .trust-meter-bar{height:6px;background:var(--surface3);border-radius:3px;overflow:hidden;margin-bottom:12px}
+    .trust-meter-fill{height:100%;border-radius:3px;transition:width 0.8s ease}
+    .trust-meter-details{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px}
+    .trust-detail{display:flex;flex-direction:column;gap:2px}
+    .trust-detail-label{font-size:11px;color:var(--text3);display:flex;align-items:center;gap:4px}
+    .trust-detail-value{font-size:14px;font-weight:600;color:var(--text)}
+    .trust-explain{font-size:12px;color:var(--text3);line-height:1.5;margin-top:10px;padding-top:10px;border-top:1px solid var(--border)}
 
-    /* Section Cards */
-    .card{background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:24px;margin-bottom:20px;transition:all 0.3s}
-    .card:hover{border-color:var(--border2)}
-    .card-header{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:16px;cursor:pointer;user-select:none}
-    .card-header-left{display:flex;align-items:center;gap:10px;font-size:15px;font-weight:600;color:var(--text2)}
-    .card-header .icon{font-size:18px}
-    .card-toggle{width:24px;height:24px;border-radius:6px;background:var(--bg3);border:1px solid var(--border);color:var(--text3);display:flex;align-items:center;justify-content:center;font-size:12px;transition:all 0.3s;cursor:pointer;flex-shrink:0}
-    .card-toggle.collapsed{transform:rotate(-90deg)}
-    .card-body{overflow:hidden;transition:max-height 0.4s ease,opacity 0.3s ease}
-    .card-body.collapsed{max-height:0!important;opacity:0;padding:0;margin:0}
+    /* ===== SECTION CARDS ===== */
+    .section{background:var(--surface);border:1px solid var(--border);border-radius:14px;margin-bottom:20px;overflow:hidden}
+    .section-header{display:flex;align-items:center;justify-content:space-between;padding:18px 22px;cursor:pointer;transition:background 0.2s}
+    .section-header:hover{background:rgba(255,255,255,0.02)}
+    .section-icon{font-size:18px;margin-right:10px}
+    .section-title{font-size:15px;font-weight:600;color:var(--text);flex:1}
+    .section-subtitle{font-size:12px;color:var(--text3);margin-left:8px;font-weight:400}
+    .section-toggle{width:24px;height:24px;display:flex;align-items:center;justify-content:center;color:var(--text3);transition:transform 0.2s}
+    .section-toggle.collapsed{transform:rotate(-90deg)}
+    .section-body{padding:0 22px 20px}
+    .section-body.hidden{display:none}
 
-    /* Glass Fang Score Ring */
-    .gf-ring-container{display:flex;align-items:center;gap:24px;padding:12px 0}
-    .gf-ring{width:100px;height:100px;position:relative}
-    .gf-ring svg{transform:rotate(-90deg)}
-    .gf-ring-bg{fill:none;stroke:var(--border);stroke-width:6}
-    .gf-ring-fill{fill:none;stroke:var(--accent);stroke-width:6;stroke-linecap:round;transition:stroke-dashoffset 1.5s ease}
-    .gf-score-text{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:28px;font-weight:700;color:var(--text)}
-    .gf-label{font-size:11px;color:var(--text3);text-align:center;margin-top:4px}
-    .gf-metrics{flex:1;display:grid;grid-template-columns:1fr 1fr;gap:8px}
-    .gf-metric{display:flex;justify-content:space-between;align-items:center;padding:6px 10px;background:var(--bg3);border-radius:8px;font-size:12px}
-    .gf-metric-name{color:var(--text3)}
-    .gf-metric-val{font-weight:600;font-family:'JetBrains Mono',monospace;font-size:11px}
+    /* ===== ACTION CARDS ===== */
+    .action-card{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:16px 18px;margin-bottom:10px}
+    .action-urgency{font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:6px}
+    .action-urgency.high{color:var(--red)}
+    .action-urgency.medium{color:var(--yellow)}
+    .action-urgency.low{color:var(--green)}
+    .action-text{font-size:14px;font-weight:500;color:var(--text);margin-bottom:4px}
+    .action-reason{font-size:13px;color:var(--text3)}
 
-    /* ===== SOURCE HUB - Enhanced Source Display ===== */
-    .source-hub{background:var(--bg2);border:1px solid var(--border);border-radius:16px;overflow:hidden}
-    .source-hub-header{padding:20px 24px 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border)}
-    .source-hub-title{display:flex;align-items:center;gap:10px;font-size:15px;font-weight:600;color:var(--text2)}
-    .source-hub-stats{display:flex;gap:12px}
-    .source-stat{font-size:12px;display:flex;align-items:center;gap:4px;padding:4px 10px;border-radius:8px}
-    .source-stat-verified{background:rgba(34,197,94,0.1);color:var(--green)}
-    .source-stat-search{background:rgba(234,179,8,0.1);color:var(--yellow)}
-    .source-stat-total{background:var(--bg3);color:var(--text3)}
+    /* ===== WHAT MOST PEOPLE MISS ===== */
+    .hidden-signals{background:linear-gradient(135deg,rgba(168,85,247,0.06),rgba(6,182,212,0.04));border:1px solid rgba(168,85,247,0.15);border-radius:14px;padding:22px 24px;margin-bottom:20px}
+    .hidden-signals-label{font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--purple);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+    .signal-card{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:10px;padding:14px 16px;margin-bottom:10px}
+    .signal-card:last-child{margin-bottom:0}
+    .signal-severity{font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:4px}
+    .signal-severity.high{color:var(--red)}
+    .signal-severity.medium{color:var(--yellow)}
+    .signal-title{font-size:14px;font-weight:500;color:var(--text);margin-bottom:4px}
+    .signal-explain{font-size:13px;color:var(--text2);line-height:1.55}
 
-    /* Source Filter Tabs */
-    .source-filters{display:flex;gap:4px;padding:12px 24px;border-bottom:1px solid var(--border);background:var(--bg3);overflow-x:auto}
-    .source-filter{padding:6px 14px;border-radius:8px;font-size:12px;font-weight:500;cursor:pointer;transition:all 0.2s;white-space:nowrap;border:1px solid transparent;color:var(--text3)}
-    .source-filter:hover{color:var(--text2);background:var(--bg2)}
-    .source-filter.active{background:var(--accent-glow);color:var(--accent);border-color:rgba(249,115,22,0.3)}
+    /* ===== NARRATIVE SECTIONS ===== */
+    .narrative{font-size:15px;color:var(--text2);line-height:1.7;margin-bottom:16px}
+    .narrative strong{color:var(--text);font-weight:600}
+    .stat-highlight{font-family:'JetBrains Mono',monospace;color:var(--accent);font-weight:600}
+    .finding-card{border-left:3px solid var(--accent);padding:12px 16px;background:var(--surface2);border-radius:0 10px 10px 0;margin-bottom:10px}
+    .finding-text{font-size:14px;color:var(--text);font-weight:500;margin-bottom:4px}
+    .finding-evidence{font-size:13px;color:var(--text3)}
+    .finding-impact{display:inline-block;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:2px 8px;border-radius:4px;margin-top:6px}
+    .finding-impact.HIGH{background:rgba(239,68,68,0.15);color:var(--red)}
+    .finding-impact.MEDIUM{background:rgba(234,179,8,0.15);color:var(--yellow)}
+    .finding-impact.LOW{background:rgba(34,197,94,0.15);color:var(--green)}
 
-    /* Source Card (expandable) */
-    .source-card{border-bottom:1px solid var(--border);transition:all 0.3s;cursor:pointer}
-    .source-card:last-child{border-bottom:none}
-    .source-card:hover{background:rgba(249,115,22,0.03)}
-    .source-card.expanded{background:var(--bg3)}
-    .source-card-main{display:grid;grid-template-columns:40px 1fr auto;gap:14px;padding:14px 24px;align-items:center}
-    .source-rank{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:700}
-    .rank-tier1{background:rgba(34,197,94,0.12);color:var(--tier1);border:1px solid rgba(34,197,94,0.2)}
-    .rank-tier2{background:rgba(59,130,246,0.12);color:var(--tier2);border:1px solid rgba(59,130,246,0.2)}
-    .rank-tier3{background:rgba(168,85,247,0.12);color:var(--tier3);border:1px solid rgba(168,85,247,0.2)}
-    .rank-tier4{background:rgba(234,179,8,0.12);color:var(--tier4);border:1px solid rgba(234,179,8,0.2)}
-    .rank-tier5{background:var(--bg3);color:var(--tier5);border:1px solid var(--border)}
-    .source-info{min-width:0}
-    .source-title-row{display:flex;align-items:center;gap:8px;margin-bottom:4px}
-    .source-title{font-size:14px;color:var(--text);font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-    .source-title a{color:var(--text);transition:color 0.2s}
-    .source-title a:hover{color:var(--accent)}
-    .source-provenance{font-size:9px;padding:2px 6px;border-radius:4px;font-weight:700;letter-spacing:0.5px;white-space:nowrap;flex-shrink:0}
-    .prov-tier1{background:rgba(34,197,94,0.15);color:var(--tier1)}
-    .prov-tier2{background:rgba(59,130,246,0.15);color:var(--tier2)}
-    .prov-tier3{background:rgba(168,85,247,0.15);color:var(--tier3)}
-    .prov-tier4{background:rgba(234,179,8,0.15);color:var(--tier4)}
-    .prov-tier5{background:var(--bg3);color:var(--tier5)}
-    .source-meta-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-    .source-domain{font-size:11px;color:var(--text3);font-family:'JetBrains Mono',monospace}
-    .source-type-tag{font-size:10px;padding:2px 8px;border-radius:6px;font-weight:600;letter-spacing:0.3px;text-transform:uppercase}
-    .type-primary{background:rgba(249,115,22,0.12);color:var(--accent)}
-    .type-supporting{background:rgba(59,130,246,0.12);color:var(--blue)}
-    .type-official{background:rgba(34,197,94,0.12);color:var(--green)}
-    .type-data{background:rgba(168,85,247,0.12);color:var(--purple)}
-    .type-grounded{background:rgba(6,182,212,0.12);color:var(--cyan)}
-    .source-date{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text3)}
-    .source-badges{display:flex;gap:6px;align-items:center;flex-shrink:0}
-    .source-badge{padding:4px 10px;border-radius:6px;font-size:10px;font-weight:700;white-space:nowrap;display:flex;align-items:center;gap:4px}
-    .badge-verified{background:rgba(34,197,94,0.12);color:var(--green);border:1px solid rgba(34,197,94,0.2)}
-    .badge-search{background:rgba(234,179,8,0.12);color:var(--yellow);border:1px solid rgba(234,179,8,0.2)}
-    .badge-failed{background:rgba(239,68,68,0.12);color:var(--red);border:1px solid rgba(239,68,68,0.2)}
+    /* ===== TIMELINE ===== */
+    .timeline-item{display:flex;gap:16px;padding-bottom:16px;position:relative}
+    .timeline-dot{width:10px;height:10px;border-radius:50%;background:var(--accent);margin-top:6px;flex-shrink:0;position:relative;z-index:1}
+    .timeline-item:not(:last-child) .timeline-dot::after{content:'';position:absolute;top:10px;left:4px;width:2px;height:calc(100% + 6px);background:var(--border)}
+    .timeline-date{font-size:12px;font-family:'JetBrains Mono',monospace;color:var(--accent);margin-bottom:2px}
+    .timeline-event{font-size:14px;color:var(--text);font-weight:500;margin-bottom:2px}
+    .timeline-sig{font-size:13px;color:var(--text3);font-style:italic}
 
-    /* Source Expanded Detail */
-    .source-detail{max-height:0;overflow:hidden;transition:max-height 0.4s ease,padding 0.3s ease;padding:0 24px}
-    .source-card.expanded .source-detail{max-height:400px;padding:0 24px 16px}
-    .source-detail-inner{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding-top:12px;border-top:1px solid var(--border)}
-    .source-detail-block{padding:10px;background:var(--bg2);border-radius:8px}
-    .source-detail-label{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px}
-    .source-detail-value{font-size:13px;color:var(--text)}
-    .source-links{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
-    .source-link-btn{font-size:11px;padding:5px 12px;border-radius:8px;background:var(--accent-glow);color:var(--accent);border:1px solid rgba(249,115,22,0.3);cursor:pointer;transition:all 0.2s;text-decoration:none;display:inline-flex;align-items:center;gap:4px}
-    .source-link-btn:hover{background:var(--accent);color:white}
+    /* ===== PREDICTIONS ===== */
+    .prediction-card{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:16px 18px;margin-bottom:10px}
+    .prediction-text{font-size:14px;color:var(--text);font-weight:500;margin-bottom:8px}
+    .prediction-bar{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+    .prediction-bar-track{flex:1;height:6px;background:var(--surface3);border-radius:3px;overflow:hidden}
+    .prediction-bar-fill{height:100%;border-radius:3px}
+    .prediction-pct{font-size:14px;font-weight:700;font-family:'JetBrains Mono',monospace;min-width:40px}
+    .prediction-meta{font-size:12px;color:var(--text3)}
 
-    /* Behavioral Divergence Panel */
-    .divergence-panel{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
-    .divergence-side{padding:16px;border-radius:12px;position:relative}
-    .divergence-mainstream{background:rgba(113,113,122,0.08);border:1px solid var(--border);border-left:3px solid var(--text3)}
-    .divergence-reality{background:rgba(249,115,22,0.06);border:1px solid rgba(249,115,22,0.2);border-left:3px solid var(--accent)}
-    .divergence-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px}
-    .divergence-text{font-size:13px;line-height:1.6}
-    .divergence-gap{grid-column:1/-1;padding:14px 16px;background:linear-gradient(135deg,rgba(249,115,22,0.06),rgba(168,85,247,0.06));border:1px solid rgba(249,115,22,0.15);border-radius:12px}
-    .divergence-alpha{grid-column:1/-1;padding:14px 16px;background:rgba(34,197,94,0.06);border:1px solid rgba(34,197,94,0.15);border-radius:12px}
+    /* ===== SOURCES ===== */
+    .source-item{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border)}
+    .source-item:last-child{border-bottom:none}
+    .source-info{flex:1;min-width:0}
+    .source-title{font-size:13px;color:var(--text);font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .source-meta{font-size:11px;color:var(--text3);display:flex;align-items:center;gap:8px;margin-top:2px}
+    .source-tier{font-size:10px;font-weight:700;letter-spacing:0.5px;padding:1px 6px;border-radius:3px}
+    .tier-1{background:rgba(34,197,94,0.15);color:var(--green)}
+    .tier-2{background:rgba(59,130,246,0.15);color:var(--blue)}
+    .tier-3{background:rgba(168,85,247,0.15);color:var(--purple)}
+    .tier-4{background:rgba(234,179,8,0.15);color:var(--yellow)}
+    .tier-5{background:rgba(255,255,255,0.05);color:var(--text3)}
+    .source-link{padding:4px 12px;background:var(--surface3);border:1px solid var(--border);border-radius:6px;color:var(--text2);text-decoration:none;font-size:12px;font-weight:500;transition:all 0.2s;flex-shrink:0;margin-left:12px}
+    .source-link:hover{background:var(--accent);color:#fff;border-color:var(--accent)}
+    .source-verified{color:var(--green);font-size:11px;font-weight:600}
+    .source-search{color:var(--yellow);font-size:11px}
 
-    /* Timeline */
-    .timeline{position:relative;padding-left:28px}
-    .timeline::before{content:'';position:absolute;left:8px;top:0;bottom:0;width:2px;background:linear-gradient(to bottom,var(--accent),var(--purple),var(--blue))}
-    .tl-item{position:relative;padding:12px 0 20px;opacity:0;animation:fadeUp 0.4s ease forwards}
-    .tl-item::before{content:'';position:absolute;left:-24px;top:16px;width:12px;height:12px;background:var(--bg);border:2px solid var(--accent);border-radius:50%}
-    .tl-date{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--accent);margin-bottom:4px}
-    .tl-event{font-size:14px;color:var(--text);line-height:1.5}
-    .tl-sig{font-size:13px;color:var(--text3);margin-top:4px;font-style:italic}
+    /* ===== QUERY INTEL ===== */
+    .qi-bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:20px;padding:10px 16px;background:var(--surface);border:1px solid var(--border);border-radius:10px}
+    .qi-label{font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:1px}
+    .qi-tag{padding:3px 10px;border-radius:12px;font-size:11px;font-weight:600;background:var(--surface3);color:var(--text2);border:1px solid var(--border)}
 
-    /* Evidence Web */
-    .evidence-web{background:var(--bg3);border:1px solid var(--border);border-radius:16px;overflow:hidden;position:relative;height:420px}
-    .evidence-web canvas{display:block;width:100%;height:100%}
+    /* ===== RISK BOX ===== */
+    .risk-box{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}
+    .risk-scenario{padding:14px 16px;border-radius:10px;font-size:13px;line-height:1.5}
+    .risk-best{background:rgba(34,197,94,0.06);border:1px solid rgba(34,197,94,0.15);color:var(--text2)}
+    .risk-worst{background:rgba(239,68,68,0.06);border:1px solid rgba(239,68,68,0.15);color:var(--text2)}
+    .risk-scenario-label{font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:4px}
+    .risk-best .risk-scenario-label{color:var(--green)}
+    .risk-worst .risk-scenario-label{color:var(--red)}
 
-    /* Findings */
-    .finding-item{padding:14px 0;border-bottom:1px solid var(--border)}
-    .finding-item:last-child{border-bottom:none}
-    .finding-text{font-size:14px;color:var(--text);line-height:1.5;margin-bottom:6px}
-    .finding-evidence{font-size:13px;color:var(--text2);margin-bottom:4px;padding-left:12px;border-left:2px solid var(--border2)}
-    .finding-impact{font-size:11px;font-weight:700;padding:2px 8px;border-radius:6px;display:inline-block}
-    .impact-HIGH{background:rgba(239,68,68,0.12);color:var(--red)}
-    .impact-MEDIUM{background:rgba(234,179,8,0.12);color:var(--yellow)}
-    .impact-LOW{background:rgba(59,130,246,0.12);color:var(--blue)}
+    /* ===== RELATED ===== */
+    .related-pills{display:flex;flex-wrap:wrap;gap:8px}
+    .related-pill{padding:8px 16px;background:var(--surface2);border:1px solid var(--border);border-radius:20px;color:var(--text2);font-size:13px;cursor:pointer;transition:all 0.2s}
+    .related-pill:hover{border-color:var(--accent);color:var(--text)}
 
-    /* Predictions */
-    .prediction-item{padding:16px 0;border-bottom:1px solid var(--border)}
-    .prediction-item:last-child{border-bottom:none}
-    .pred-header{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:8px}
-    .pred-text{font-size:14px;color:var(--text);line-height:1.5;flex:1}
-    .pred-prob{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;white-space:nowrap;padding:4px 10px;border-radius:8px}
-    .pred-bar{height:4px;background:var(--border);border-radius:2px;margin:8px 0;overflow:hidden}
-    .pred-bar-fill{height:100%;border-radius:2px;transition:width 1.2s ease}
-    .pred-basis{font-size:12px;color:var(--text3);margin-top:6px}
-    .pred-indicators{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
-    .pred-indicator{font-size:11px;padding:3px 8px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--text2)}
-    .confidence-interval{font-size:11px;color:var(--text3);font-family:'JetBrains Mono',monospace}
+    /* ===== SCORING GUIDE OVERLAY ===== */
+    .scoring-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);z-index:200;align-items:center;justify-content:center}
+    .scoring-overlay.active{display:flex}
+    .scoring-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:28px 32px;max-width:500px;width:90%;max-height:80vh;overflow-y:auto}
+    .scoring-card h3{font-size:18px;font-weight:700;color:var(--text);margin-bottom:16px}
+    .scoring-card p{font-size:14px;color:var(--text2);line-height:1.6;margin-bottom:12px}
+    .scoring-close{position:absolute;top:16px;right:16px;background:none;border:none;color:var(--text3);font-size:20px;cursor:pointer}
 
-    /* Pattern Analysis */
-    .pattern-group{margin-bottom:16px}
-    .pattern-label{font-size:12px;font-weight:600;color:var(--accent);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px}
-    .pattern-items{display:flex;flex-direction:column;gap:6px}
-    .pattern-item{font-size:13px;color:var(--text2);padding:8px 12px;background:var(--bg3);border-radius:8px;border-left:3px solid var(--accent)}
-
-    /* Reasoning Chain */
-    .reasoning-chain{position:relative;padding-left:32px}
-    .reasoning-chain::before{content:'';position:absolute;left:12px;top:0;bottom:0;width:2px;background:linear-gradient(to bottom,var(--accent),var(--blue),var(--purple))}
-    .reasoning-step{position:relative;padding:14px 0 18px}
-    .reasoning-step::before{content:attr(data-step);position:absolute;left:-28px;top:16px;width:24px;height:24px;background:var(--accent);border-radius:50%;font-size:11px;font-weight:700;color:white;display:flex;align-items:center;justify-content:center;line-height:24px;text-align:center}
-    .reasoning-thought{font-size:14px;color:var(--text);font-weight:500;margin-bottom:6px}
-    .reasoning-evidence{font-size:13px;color:var(--text2);padding:8px 12px;background:var(--bg3);border-radius:8px;border-left:3px solid var(--blue);margin-bottom:6px}
-    .reasoning-conclusion{font-size:13px;color:var(--accent);font-weight:500}
-
-    /* Executive Actions */
-    .action-item{display:flex;gap:12px;padding:14px 0;border-bottom:1px solid var(--border);align-items:flex-start}
-    .action-item:last-child{border-bottom:none}
-    .action-urgency{font-size:10px;font-weight:700;padding:4px 10px;border-radius:6px;white-space:nowrap;margin-top:2px}
-    .urgency-HIGH{background:rgba(239,68,68,0.15);color:var(--red);border:1px solid rgba(239,68,68,0.3)}
-    .urgency-MEDIUM{background:rgba(234,179,8,0.15);color:var(--yellow);border:1px solid rgba(234,179,8,0.3)}
-    .urgency-LOW{background:rgba(59,130,246,0.15);color:var(--blue);border:1px solid rgba(59,130,246,0.3)}
-    .action-text{font-size:14px;color:var(--text);margin-bottom:4px}
-    .action-rationale{font-size:12px;color:var(--text3)}
-
-    /* Risk Matrix */
-    .risk-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-    .risk-box{padding:16px;background:var(--bg3);border-radius:12px;border-left:3px solid var(--border)}
-    .risk-box-label{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px}
-    .risk-box-value{font-size:14px;color:var(--text);line-height:1.5}
-    .risk-upside{border-left-color:var(--green)}
-    .risk-downside{border-left-color:var(--red)}
-    .risk-primary{border-left-color:var(--yellow)}
-    .risk-mitigation{border-left-color:var(--blue)}
-
-    /* Investment Relevance */
-    .invest-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-    .invest-cell{padding:12px;background:var(--bg3);border-radius:8px}
-    .invest-cell-label{font-size:11px;color:var(--text3);margin-bottom:4px}
-    .invest-cell-value{font-weight:600}
-
-    /* Related Queries */
-    .related-queries{display:flex;flex-wrap:wrap;gap:10px}
-    .related-query{padding:10px 18px;background:var(--bg3);border:1px solid var(--border);border-radius:12px;font-size:13px;color:var(--text2);cursor:pointer;transition:all 0.2s}
-    .related-query:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-glow)}
-
-    /* Provenance Legend (sidebar) */
-    .prov-legend{padding:16px;background:var(--bg3);border-radius:12px;margin-bottom:16px}
-    .prov-legend-item{display:flex;align-items:center;gap:8px;padding:4px 0;font-size:12px;color:var(--text2)}
-    .prov-legend-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
-
-    /* Cluster Health */
-    .cluster-bar{height:6px;background:var(--border);border-radius:3px;overflow:hidden;margin:8px 0}
-    .cluster-bar-fill{height:100%;border-radius:3px;transition:width 1s ease}
-
-    /* Animations */
-    @keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
-    .fade-up{opacity:0;animation:fadeUp 0.5s ease forwards}
-    .fade-up-1{animation-delay:0.1s}
-    .fade-up-2{animation-delay:0.2s}
-    .fade-up-3{animation-delay:0.3s}
-    .fade-up-4{animation-delay:0.4s}
-    .fade-up-5{animation-delay:0.5s}
-
-    /* Responsive */
-    @media(max-width:1024px){
-      .dashboard-grid{grid-template-columns:1fr}
-      .dashboard-sidebar{position:static}
-    }
-    @media(max-width:768px){
-      .hero{padding:50px 16px 30px}
-      .hero h1{font-size:28px}
-      .gf-ring-container{flex-direction:column;align-items:flex-start}
-      .gf-metrics{grid-template-columns:1fr}
-      .meta-bar{gap:8px}
-      .source-card-main{grid-template-columns:32px 1fr}
-      .source-badges{display:none}
-      .divergence-panel{grid-template-columns:1fr}
-      .source-detail-inner{grid-template-columns:1fr}
-      .risk-grid{grid-template-columns:1fr}
-      .invest-grid{grid-template-columns:1fr}
-      .intel-strip{grid-template-columns:repeat(3,1fr)}
+    /* ===== RESPONSIVE ===== */
+    @media(max-width:640px){
+      .dashboard{padding:16px 16px 40px}
+      .bottom-line{padding:18px 20px}
+      .trust-meter-details{grid-template-columns:1fr 1fr}
+      .risk-box{grid-template-columns:1fr}
+      .section-body{padding:0 16px 16px}
     }
 
-    /* Dark Matter Void Engine */
-    .void-engine{background:linear-gradient(135deg,rgba(9,9,11,0.95),rgba(18,18,27,0.9));border:1px solid rgba(168,85,247,0.2);border-radius:16px;overflow:hidden;position:relative}
-    .void-header{padding:20px 24px 12px;display:flex;align-items:center;justify-content:space-between}
-    .void-title{display:flex;align-items:center;gap:10px;font-size:15px;font-weight:600;color:var(--purple)}
-    .void-score-ring{display:flex;align-items:center;gap:16px;padding:0 24px 16px}
-    .void-score{width:80px;height:80px;position:relative}
-    .void-score svg{transform:rotate(-90deg)}
-    .void-score-bg{fill:none;stroke:var(--border);stroke-width:5}
-    .void-score-fill{fill:none;stroke:var(--purple);stroke-width:5;stroke-linecap:round;transition:stroke-dashoffset 1.5s ease}
-    .void-score-text{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:22px;font-weight:700;color:var(--purple)}
-    .void-metrics{flex:1;display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
-    .void-metric{padding:8px 12px;background:rgba(168,85,247,0.06);border:1px solid rgba(168,85,247,0.12);border-radius:8px;text-align:center}
-    .void-metric-label{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px}
-    .void-metric-value{font-size:16px;font-weight:700;font-family:'JetBrains Mono',monospace;margin-top:2px}
-    .void-canvas{height:120px;width:100%;position:relative}
-    .void-canvas canvas{width:100%;height:100%;display:block}
-    .void-signals{padding:12px 24px 16px}
-    .void-signal{display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px solid rgba(168,85,247,0.1)}
-    .void-signal:last-child{border-bottom:none}
-    .void-signal-severity{font-size:9px;font-weight:700;padding:3px 8px;border-radius:4px;white-space:nowrap;margin-top:2px}
-    .sev-HIGH{background:rgba(239,68,68,0.15);color:var(--red)}
-    .sev-MEDIUM{background:rgba(234,179,8,0.15);color:var(--yellow)}
-    .sev-LOW{background:rgba(59,130,246,0.15);color:var(--blue)}
-    .void-signal-content{flex:1}
-    .void-signal-type{font-size:11px;color:var(--purple);font-weight:600;margin-bottom:2px}
-    .void-signal-detail{font-size:12px;color:var(--text2);line-height:1.4}
-    .void-signal-implication{font-size:11px;color:var(--text3);margin-top:3px;font-style:italic}
-
-  
-    /* ===== QUERY INTELLIGENCE PANEL ===== */
-    .query-intel {
-      margin-bottom: 24px;
-      padding: 16px 20px;
-      background: linear-gradient(135deg, rgba(0,200,255,0.05), rgba(120,0,255,0.05));
-      border: 1px solid rgba(0,200,255,0.15);
-      border-radius: 12px;
-    }
-    .query-intel-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 12px;
-    }
-    .query-intel-title {
-      font-size: 13px;
-      font-weight: 600;
-      color: #00c8ff;
-      text-transform: uppercase;
-      letter-spacing: 1.5px;
-    }
-    .query-intel-badges {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-    .qi-badge {
-      padding: 3px 10px;
-      border-radius: 20px;
-      font-size: 11px;
-      font-weight: 600;
-      letter-spacing: 0.5px;
-    }
-    .qi-domain {
-      background: rgba(0,200,255,0.15);
-      color: #00c8ff;
-      border: 1px solid rgba(0,200,255,0.3);
-    }
-    .qi-entity {
-      background: rgba(255,170,0,0.12);
-      color: #ffaa00;
-      border: 1px solid rgba(255,170,0,0.25);
-    }
-    .qi-depth {
-      background: rgba(120,255,0,0.1);
-      color: #78ff00;
-      border: 1px solid rgba(120,255,0,0.25);
-    }
-    .qi-temporal {
-      background: rgba(200,100,255,0.1);
-      color: #c864ff;
-      border: 1px solid rgba(200,100,255,0.25);
-    }
-    .query-intel-details {
-      display: flex;
-      gap: 20px;
-      flex-wrap: wrap;
-      margin-top: 10px;
-    }
-    .qi-detail-group {
-      flex: 1;
-      min-width: 200px;
-    }
-    .qi-detail-label {
-      font-size: 10px;
-      color: #777;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      margin-bottom: 4px;
-    }
-    .qi-detail-value {
-      font-size: 12px;
-      color: #bbb;
-      line-height: 1.5;
-    }
-    .qi-angle {
-      display: inline-block;
-      padding: 2px 8px;
-      margin: 2px 4px 2px 0;
-      background: rgba(255,255,255,0.04);
-      border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 6px;
-      font-size: 11px;
-      color: #999;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-    .qi-angle:hover {
-      background: rgba(0,200,255,0.1);
-      border-color: rgba(0,200,255,0.3);
-      color: #00c8ff;
-    }
-
+    /* ===== ANIMATIONS ===== */
+    @keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+    .fade-up{animation:fadeUp 0.4s ease both}
     </style>
 </head>
 <body>
-  <!-- Header -->
-  <header class="header">
-    <div class="header-inner">
+    <!-- HEADER -->
+    <div class="header">
       <div class="logo">
         <div class="logo-icon">S</div>
-        SubMind
-        <span class="version-badge">v11.0</span>
+        <span class="logo-text">SubMind</span>
+        <span class="logo-version">v11.0</span>
       </div>
       <div class="header-right">
-        <div class="header-stat"><span class="dot"></span> Live Intelligence</div>
-        <div style="font-size:12px;color:var(--text3)">Deep Intelligence Research Engine</div>
+        <span><span class="status-dot"></span>Live Intelligence</span>
+        <span>Deep Intelligence Research Engine</span>
       </div>
     </div>
-  </header>
 
-  <!-- Hero -->
-  <section class="hero" id="hero">
-    <h1>Intelligence That Traces Truth to Its Source</h1>
-    <p>Every claim verified. Every link validated. SubMind traces information from origin to prediction with source-level precision.</p>
-    <div class="search-container">
-      <input type="text" class="search-box" id="searchInput" placeholder="What do you want investigated?" autocomplete="off">
-      <button class="search-btn" id="searchBtn" onclick="runSearch()">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg>
-      </button>
+    <!-- HERO -->
+    <div class="hero" id="hero">
+      <h1>Research Any Topic.<br>Get the Full Picture.</h1>
+      <p>SubMind analyzes dozens of sources, finds what mainstream coverage misses, and tells you exactly what to do with the information.</p>
+      <div class="search-box">
+        <input type="text" id="q" placeholder="What do you want to research?" autocomplete="off">
+        <button onclick="runSearch()" aria-label="Search"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></button>
+      </div>
+      <div class="history-pills" id="history"></div>
     </div>
-    <div class="history-bar" id="historyBar"></div>
-  </section>
 
-  <!-- Loading -->
-  <div class="loading" id="loading">
-    <div class="spinner"></div>
-    <div class="loading-phases" id="loadingPhases"></div>
-  </div>
+    <!-- LOADING -->
+    <div class="loading" id="loading">
+      <div class="spinner"></div>
+      <div class="phase-list" id="phases"></div>
+    </div>
 
-  <!-- Dashboard -->
-  <div class="dashboard" id="dashboard">
-    <div id="briefingContent"></div>
-  </div>
+    <!-- DASHBOARD -->
+    <div class="dashboard" id="dashboard">
+      <div id="briefingContent"></div>
+    </div>
 
-  <script>
-    const API = '/api/predict';
+    <!-- SCORING GUIDE OVERLAY -->
+    <div class="scoring-overlay" id="scoringOverlay" onclick="if(event.target===this)this.classList.remove('active')">
+      <div class="scoring-card" style="position:relative">
+        <button class="scoring-close" onclick="document.getElementById('scoringOverlay').classList.remove('active')">&times;</button>
+        <h3>How SubMind Scores Work</h3>
+        <p><strong>Research Confidence (0-100%)</strong> &mdash; How certain SubMind is about its analysis. Based on source quality, data specificity, evidence chains, and how well different sources agree. Above 80% means strong agreement across high-quality sources. Below 50% means limited or conflicting data.</p>
+        <p><strong>Trust Score (0-100)</strong> &mdash; How much you should trust this specific report. Measures 16 factors including: Are the sources real and verified? Do they come from authoritative domains (.gov, Reuters, Nature)? Is the evidence specific with real numbers and dates? Do the predictions have logical basis? Higher = more trustworthy analysis.</p>
+        <p><strong>Source Tiers:</strong><br>
+        <span style="color:var(--green)">Tier 1 - Primary Documents</span>: Government (.gov), courts, patents, academic papers<br>
+        <span style="color:var(--blue)">Tier 2 - Official Sources</span>: Reuters, AP, BBC, Bloomberg, Nature<br>
+        <span style="color:var(--purple)">Tier 3 - Reputable Analysis</span>: NYT, WaPo, Brookings, universities<br>
+        <span style="color:var(--yellow)">Tier 4 - Industry/Trade</span>: TechCrunch, Ars Technica, Wired<br>
+        <span style="color:var(--text3)">Tier 5 - Secondary</span>: Other sources</p>
+        <p><strong>Hidden Signals</strong> &mdash; Things SubMind found that most news coverage doesn't highlight. These gaps between the mainstream story and what the raw data shows can be early indicators of shifts the market or public hasn't priced in yet.</p>
+        <p><strong>Predictions</strong> &mdash; SubMind's projections based on historical patterns, current signals, and convergence analysis. The percentage is estimated probability, not certainty. Use these as one input for your decisions, not gospel.</p>
+      </div>
+    </div>
 
-    // ===== XSS SANITIZATION =====
-    function esc(str) {
-      if (!str) return '';
-      const div = document.createElement('div');
-      div.appendChild(document.createTextNode(String(str)));
-      return div.innerHTML;
+    <script>
+    // ===== HELPERS =====
+    function esc(s){if(!s)return '';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+    function escUrl(u){if(!u)return '#';try{const url=new URL(u);return['http:','https:'].includes(url.protocol)?url.href:'#'}catch(e){return '#'}}
+    function toggleSection(id){
+      var body=document.getElementById('sec-'+id);
+      var toggle=document.getElementById('tog-'+id);
+      if(body){body.classList.toggle('hidden');if(toggle)toggle.classList.toggle('collapsed')}
     }
-    function escUrl(url) {
-      if (!url) return '#';
-      try { const u = new URL(url); if (!['http:','https:'].includes(u.protocol)) return '#'; return u.href; } catch(e) { return '#'; }
+
+    // ===== SEARCH HISTORY =====
+    var searchHistory = JSON.parse(localStorage.getItem('submind_history')||'[]');
+    function renderHistory(){
+      var el=document.getElementById('history');
+      if(!el)return;
+      el.innerHTML=searchHistory.slice(0,5).map(function(q){
+        return '<div class="history-pill" onclick="document.getElementById(\'q\').value=\''+esc(q).replace(/'/g,'')+'\';runSearch()">'+esc(q.length>35?q.substring(0,35)+'...':q)+'</div>';
+      }).join('');
     }
+    renderHistory();
 
     // ===== LOADING PHASES =====
-    const phases = [
-      {id:'search', label:'Gathering sources from multiple providers...', icon:'\ud83d\udd0d'},
-      {id:'briefing', label:'Generating intelligence briefing...', icon:'\ud83e\udde0'},
-      {id:'merge', label:'Merging & deduplicating sources...', icon:'\ud83d\udd17'},
-      {id:'verify', label:'Verifying every source URL...', icon:'\u2713'},
-      {id:'glassfang', label:'Glass Fang validation scan...', icon:'\ud83d\udee1\ufe0f'},
-      {id:'nemesis', label:'Nemesis adversarial check...', icon:'\u2694\ufe0f'}
+    var phases = [
+      {icon:'\ud83d\udd0d',text:'Searching multiple intelligence sources...'},
+      {icon:'\ud83e\udde0',text:'Generating deep analysis...'},
+      {icon:'\ud83d\udd17',text:'Verifying every source link...'},
+      {icon:'\ud83d\udee1\ufe0f',text:'Cross-checking for accuracy...'},
+      {icon:'\u2705',text:'Building your briefing...'}
     ];
 
-    // ===== CARD COLLAPSE TOGGLE =====
-    function toggleCard(id) {
-      const body = document.getElementById('card-body-' + id);
-      const toggle = document.getElementById('card-toggle-' + id);
-      if (body && toggle) {
-        body.classList.toggle('collapsed');
-        toggle.classList.toggle('collapsed');
-      }
-    }
-
-    // ===== SOURCE FILTER =====
-    function filterSources(type) {
-      document.querySelectorAll('.source-filter').forEach(f => f.classList.remove('active'));
-      event.target.classList.add('active');
-      document.querySelectorAll('.source-card').forEach(card => {
-        if (type === 'all') { card.style.display = ''; return; }
-        const t = card.dataset.sourceType || '';
-        card.style.display = (type === 'verified' && card.dataset.verified === 'true') ||
-                             (type === 'search' && card.dataset.verified === 'false') ||
-                             (type === t) ? '' : 'none';
-      });
-    }
-
-    // ===== SOURCE EXPAND/COLLAPSE =====
-    function toggleSource(idx) {
-      const card = document.getElementById('source-' + idx);
-      if (card) card.classList.toggle('expanded');
-    }
-
-    // ===== EXTRACT DOMAIN =====
-    function getDomain(url) {
-      try { return new URL(url).hostname.replace('www.',''); } catch(e) { return url || 'unknown'; }
-    }
-
-    // ===== PROVENANCE TIER COLOR =====
-    function tierColor(tier) {
-      const map = {TIER_1:'var(--tier1)',TIER_2:'var(--tier2)',TIER_3:'var(--tier3)',TIER_4:'var(--tier4)',TIER_5:'var(--tier5)'};
-      return map[tier] || 'var(--text3)';
-    }
-    function tierClass(tier) {
-      const map = {TIER_1:'tier1',TIER_2:'tier2',TIER_3:'tier3',TIER_4:'tier4',TIER_5:'tier5'};
-      return map[tier] || 'tier5';
-    }
-
     // ===== RUN SEARCH =====
-    function runSearch() {
-      const q = document.getElementById('searchInput').value.trim();
-      if (!q) return;
-      const hero = document.getElementById('hero');
-      const loading = document.getElementById('loading');
-      const dashboard = document.getElementById('dashboard');
-      const btn = document.getElementById('searchBtn');
-      hero.classList.add('collapsed');
+    async function runSearch(){
+      var q=document.getElementById('q').value.trim();
+      if(!q)return;
+      var hero=document.getElementById('hero');
+      var loading=document.getElementById('loading');
+      var dashboard=document.getElementById('dashboard');
+
+      hero.style.display='none';
       loading.classList.add('active');
       dashboard.classList.remove('active');
-      btn.disabled = true;
 
-      const phasesEl = document.getElementById('loadingPhases');
-      phasesEl.innerHTML = phases.map(p => '<div class="phase" id="phase-' + p.id + '"><span class="phase-icon">' + p.icon + '</span>' + p.label + '</div>').join('');
-      let phaseIdx = 0;
-      const phaseInterval = setInterval(() => {
-        if (phaseIdx < phases.length) {
-          const el = document.getElementById('phase-' + phases[phaseIdx].id);
-          if (el) {
-            if (phaseIdx > 0) { const prev = document.getElementById('phase-' + phases[phaseIdx-1].id); if (prev) { prev.classList.remove('active'); prev.classList.add('done'); } }
-            el.classList.add('active');
-          }
-          phaseIdx++;
+      // Update history
+      searchHistory = searchHistory.filter(function(x){return x!==q});
+      searchHistory.unshift(q);
+      searchHistory = searchHistory.slice(0,10);
+      localStorage.setItem('submind_history',JSON.stringify(searchHistory));
+      renderHistory();
+
+      // Animate phases
+      var phaseEl = document.getElementById('phases');
+      phaseEl.innerHTML = '';
+      for(var i=0;i<phases.length;i++){
+        var div = document.createElement('div');
+        div.className = 'phase-item';
+        div.id = 'phase-'+i;
+        div.innerHTML = phases[i].icon+' '+phases[i].text;
+        phaseEl.appendChild(div);
+      }
+      var pIdx=0;
+      var pTimer=setInterval(function(){
+        if(pIdx<phases.length){
+          var el=document.getElementById('phase-'+pIdx);
+          if(el){el.classList.add('active');el.innerHTML='<span class="check">\u2713</span> '+phases[pIdx].text}
+          pIdx++;
         }
-      }, 1200);
+      },1500);
 
-      fetch(API, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({query: q}) })
-      .then(r => r.json())
-      .then(data => {
-        clearInterval(phaseInterval);
+      try{
+        var res = await fetch('/api/predict',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({query:q})});
+        clearInterval(pTimer);
+        if(!res.ok){
+          var errText = await res.text();
+          throw new Error(errText);
+        }
+        var data = await res.json();
+        if(!data.success||!data.briefing){throw new Error('Analysis failed - please try again')}
         loading.classList.remove('active');
-        btn.disabled = false;
-        if (data.error) {
-          dashboard.classList.add('active');
-          document.getElementById('briefingContent').innerHTML = '<div class="card"><p style="color:var(--red)">Error: ' + esc(data.error) + '</p></div>';
-          return;
-        }
         renderBriefing(data);
         dashboard.classList.add('active');
-      })
-      .catch(err => {
-        clearInterval(phaseInterval);
+      }catch(err){
+        clearInterval(pTimer);
         loading.classList.remove('active');
-        btn.disabled = false;
         dashboard.classList.add('active');
-        document.getElementById('briefingContent').innerHTML = '<div class="card"><p style="color:var(--red)">Connection error: ' + esc(err.message) + '</p></div>';
-      });
-    }
-    document.getElementById('searchInput').addEventListener('keydown', function(e) { if (e.key === 'Enter') runSearch(); });
-
-    // ===== RENDER BRIEFING =====
-    function renderBriefing(data) {
-      const b = data.briefing || {};
-      const gf = data.validation?.glass_fang || {};
-      const nem = data.validation?.nemesis || {};
-      const meta = data.meta || {};
-      const intel = data.intelligence || {};
-      const vStats = meta.source_verification || {};
-      const sources = b.sources || [];
-    const bd = b.behavioral_divergence || {};
-      const divData = intel.behavioral_divergence || {};
-      const clusters = intel.source_clusters || {};
-      const provSummary = intel.provenance_summary || {};
-      const el = document.getElementById('briefingContent');
-
-      const verifiedCount = sources.filter(s => s.verified).length;
-      const searchCount = sources.filter(s => s.link_type === 'search').length;
-
-      let html = '';
-
-    // ===== QUERY INTELLIGENCE PANEL =====
-    const qi = data.intelligence && data.intelligence.query_intelligence;
-    if (qi) {
-      const domainColors = {
-        finance: '#00c8ff', technology: '#78ff00', geopolitical: '#ff4444',
-        climate_energy: '#44ff88', biotech_health: '#ff88ff', crypto: '#ffaa00',
-        regulatory: '#8888ff', aerospace: '#00ffcc', general: '#888'
-      };
-      const domainColor = domainColors[qi.classification.primary_domain] || '#888';
-      
-      html += '<div class="query-intel">'
-        + '<div class="query-intel-header">'
-        + '<span class="query-intel-title">Query Intelligence</span>'
-        + '<div class="query-intel-badges">'
-        + '<span class="qi-badge qi-domain" style="border-color:' + domainColor + ';color:' + domainColor + '">' + esc(qi.classification.primary_domain.toUpperCase()) + '</span>'
-        + (qi.entities.length > 0 ? qi.entities.map(function(e) { return '<span class="qi-badge qi-entity">' + esc(e.name) + '</span>'; }).join('') : '')
-        + '<span class="qi-badge qi-depth">' + esc(qi.classification.research_depth.toUpperCase()) + '</span>'
-        + '<span class="qi-badge qi-temporal">' + esc(qi.classification.temporal_context.toUpperCase()) + '</span>'
-        + '</div></div>'
-        + (qi.search_angles.length > 0 ? '<div class="qi-detail-group"><div class="qi-detail-label">Search Angles</div><div class="qi-detail-value">'
-          + qi.search_angles.map(function(a) { return '<span class="qi-angle">' + esc(a) + '</span>'; }).join('')
-          + '</div></div>' : '')
-        + (qi.expansions.length > 0 ? '<div class="qi-detail-group" style="margin-top:8px"><div class="qi-detail-label">Detected Abbreviations</div><div class="qi-detail-value">'
-          + qi.expansions.map(function(x) { return '<span style="color:#aaa">' + esc(x.abbreviation) + '</span> <span style="color:#666">&rarr;</span> <span style="color:#888">' + esc(x.expanded) + '</span>'; }).join(' &nbsp; ')
-          + '</div></div>' : '')
-        + '</div>';
+        document.getElementById('briefingContent').innerHTML='<div class="bottom-line"><div class="bottom-line-label">Error</div><p>'+esc(err.message)+'</p></div>';
+      }
     }
 
-      // ===== TITLE & SUMMARY =====
-      html += '<h2 class="fade-up" style="font-size:26px;font-weight:800;letter-spacing:-0.5px;margin-bottom:6px">' + esc(b.title || data.query) + '</h2>';
-      html += '<p class="fade-up fade-up-1" style="font-size:15px;color:var(--text2);margin-bottom:20px;line-height:1.6">' + esc(b.summary || '') + '</p>';
+    // Enter key handler
+    document.getElementById('q').addEventListener('keydown',function(e){if(e.key==='Enter')runSearch()});
 
-      // ===== INTEL SUMMARY STRIP =====
-      html += '<div class="intel-strip fade-up fade-up-2">';
-      if (b.status) html += '<div class="intel-cell"><div class="intel-cell-label">Status</div><div class="intel-cell-value"><span class="status-badge status-' + esc(b.status) + '">' + esc(b.status) + '</span></div></div>';
-      html += '<div class="intel-cell"><div class="intel-cell-label">Confidence</div><div class="intel-cell-value" style="color:' + ((b.confidence||0) >= 80 ? 'var(--green)' : (b.confidence||0) >= 60 ? 'var(--yellow)' : 'var(--red)') + '">' + (b.confidence || 0) + '%</div></div>';
-      html += '<div class="intel-cell"><div class="intel-cell-label">Glass Fang</div><div class="intel-cell-value" style="color:' + ((gf.score||0) >= 80 ? 'var(--green)' : (gf.score||0) >= 60 ? 'var(--yellow)' : 'var(--red)') + '">' + (gf.score || 0) + '</div><div class="intel-cell-sub">/ 100</div></div>';
-      html += '<div class="intel-cell"><div class="intel-cell-label">Sources</div><div class="intel-cell-value">' + sources.length + '</div><div class="intel-cell-sub">' + verifiedCount + ' verified</div></div>';
-      html += '<div class="intel-cell"><div class="intel-cell-label">Nemesis</div><div class="intel-cell-value" style="color:' + (nem.severity === 'HIGH' ? 'var(--red)' : nem.severity === 'MEDIUM' ? 'var(--yellow)' : 'var(--green)') + '">' + (nem.count || 0) + '</div><div class="intel-cell-sub">' + (nem.severity || 'LOW') + '</div></div>';
-      html += '<div class="intel-cell"><div class="intel-cell-label">Pipeline</div><div class="intel-cell-value">' + (meta.elapsed_seconds || '?') + 's</div></div>';
-      if (divData.divergence_level) html += '<div class="intel-cell"><div class="intel-cell-label">Divergence</div><div class="intel-cell-value" style="color:' + (divData.divergence_level === 'CRITICAL' ? 'var(--red)' : divData.divergence_level === 'ELEVATED' ? 'var(--yellow)' : 'var(--green)') + '">' + esc(divData.divergence_level) + '</div></div>';
-      if (data.meta?.cache === 'HIT') html += '<div class="intel-cell"><div class="intel-cell-label">Cache</div><div class="intel-cell-value" style="color:var(--green)">\u26A1 HIT</div></div>';
+    // ===== RENDER BRIEFING (Human-First Design) =====
+    function renderBriefing(data){
+      var b = data.briefing || {};
+      var gf = (data.validation && data.validation.glass_fang) || {};
+      var nem = (data.validation && data.validation.nemesis) || {};
+      var meta = data.meta || {};
+      var intel = data.intelligence || {};
+      var qi = intel.query_intelligence;
+      var bd = b.behavioral_divergence || {};
+      var divData = intel.behavioral_divergence || {};
+      var sources = b.sources || [];
+      var el = document.getElementById('briefingContent');
+
+      var trustScore = gf.score || 0;
+      var trustColor = trustScore >= 75 ? 'var(--green)' : trustScore >= 50 ? 'var(--yellow)' : 'var(--red)';
+      var trustLabel = trustScore >= 80 ? 'High confidence analysis' : trustScore >= 60 ? 'Moderate confidence - some gaps' : 'Limited data - treat with caution';
+      var confidence = b.confidence || 0;
+      var confColor = confidence >= 75 ? 'var(--green)' : confidence >= 50 ? 'var(--yellow)' : 'var(--red)';
+
+      var verifiedCount = sources.filter(function(s){return s.verified}).length;
+      var totalSources = sources.length;
+
+      var html = '';
+
+      // ===== QUERY INTELLIGENCE BAR =====
+      if(qi){
+        html += '<div class="qi-bar fade-up">';
+        html += '<span class="qi-label">Analyzed as:</span>';
+        html += '<span class="qi-tag" style="color:var(--cyan)">' + esc(qi.classification.primary_domain.toUpperCase()) + '</span>';
+        if(qi.entities.length>0) qi.entities.forEach(function(e){html+='<span class="qi-tag" style="color:var(--accent)">'+esc(e.name)+'</span>'});
+        if(qi.expansions.length>0) qi.expansions.forEach(function(x){html+='<span class="qi-tag">'+esc(x.abbreviation)+' = '+esc(x.expanded)+'</span>'});
+        html += '</div>';
+      }
+
+      // ===== THE BOTTOM LINE (Most Important - Top of Page) =====
+      html += '<div class="bottom-line fade-up">';
+      html += '<div class="bottom-line-label">The Bottom Line</div>';
+      html += '<h2>' + esc(b.title || data.query) + '</h2>';
+      html += '<p>' + esc(b.summary || '') + '</p>';
       html += '</div>';
 
-      // ===== BEHAVIORAL DIVERGENCE (if available) =====
-      if (bd.mainstream_narrative || bd.raw_data_reality) {
-        html += '<div class="card fade-up fade-up-2">';
-        html += '<div class="card-header" onclick="toggleCard(\'divergence\')"><div class="card-header-left"><span class="icon">\ud83d\udd2c</span>Behavioral Divergence Analysis</div><div class="card-toggle" id="card-toggle-divergence">\u25BC</div></div>';
-        html += '<div class="card-body" id="card-body-divergence">';
-        html += '<div class="divergence-panel">';
-        if (bd.mainstream_narrative) html += '<div class="divergence-side divergence-mainstream"><div class="divergence-label" style="color:var(--text3)">\ud83d\udcf0 Mainstream Narrative</div><div class="divergence-text" style="color:var(--text2)">' + esc(bd.mainstream_narrative) + '</div></div>';
-        if (bd.raw_data_reality) html += '<div class="divergence-side divergence-reality"><div class="divergence-label" style="color:var(--accent)">\ud83d\udcca Raw Data Reality</div><div class="divergence-text" style="color:var(--text)">' + esc(bd.raw_data_reality) + '</div></div>';
-        if (bd.divergence_gap) html += '<div class="divergence-gap"><div class="divergence-label" style="color:var(--purple)">\u26a0\ufe0f Divergence Gap</div><div class="divergence-text" style="color:var(--text2)">' + esc(bd.divergence_gap) + '</div></div>';
-        if (bd.alpha_signal) html += '<div class="divergence-alpha"><div class="divergence-label" style="color:var(--green)">\ud83c\udfaf Alpha Signal</div><div class="divergence-text" style="color:var(--green)">' + esc(bd.alpha_signal) + '</div></div>';
-        html += '</div></div></div>';
+      // ===== HOW TRUSTWORTHY IS THIS? =====
+      html += '<div class="trust-meter fade-up">';
+      html += '<div class="trust-meter-header">';
+      html += '<div><span class="trust-meter-title">How reliable is this report?</span>';
+      html += '<span class="tip-icon" onclick="document.getElementById(\'scoringOverlay\').classList.add(\'active\')">?</span></div>';
+      html += '<span class="trust-meter-score" style="color:'+trustColor+'">' + trustScore + '<span style="font-size:14px;color:var(--text3)">/100</span></span>';
+      html += '</div>';
+      html += '<div class="trust-meter-bar"><div class="trust-meter-fill" style="width:'+trustScore+'%;background:'+trustColor+'"></div></div>';
+      html += '<div class="trust-meter-details">';
+      html += '<div class="trust-detail"><span class="trust-detail-label">Sources found</span><span class="trust-detail-value">'+totalSources+'</span></div>';
+      html += '<div class="trust-detail"><span class="trust-detail-label">Verified links <span class="tip-icon" style="font-size:9px">?</span><span class="tooltip">SubMind checked every source URL. Verified means the link is live and points to real content. Unverified links are replaced with search fallbacks.</span></span><span class="trust-detail-value" style="color:var(--green)">'+verifiedCount+'</span></div>';
+      html += '<div class="trust-detail"><span class="trust-detail-label">Research confidence</span><span class="trust-detail-value" style="color:'+confColor+'">'+confidence+'%</span></div>';
+      html += '<div class="trust-detail"><span class="trust-detail-label">Analysis time</span><span class="trust-detail-value">'+(meta.elapsed_seconds||0)+'s</span></div>';
+      html += '</div>';
+      html += '<div class="trust-explain">'+esc(trustLabel)+'. Based on '+totalSources+' sources across '+(intel.source_clusters?intel.source_clusters.total_clusters:0)+' different domains. '+(verifiedCount>0?verifiedCount+' links verified as live.':'No links could be directly verified.')+'</div>';
+      html += '</div>';
+
+      // ===== WHAT YOU SHOULD DO (Executive Actions) =====
+      var actions = b.executive_actions || [];
+      if(actions.length > 0){
+        html += '<div class="section fade-up"><div class="section-header" onclick="toggleSection(\'actions\')">';
+        html += '<span class="section-icon">\u26a1</span><span class="section-title">What You Should Do</span>';
+        html += '<span class="section-subtitle">'+actions.length+' recommended actions</span>';
+        html += '<span class="section-toggle" id="tog-actions">\u25bc</span></div>';
+        html += '<div class="section-body" id="sec-actions">';
+        actions.forEach(function(a){
+          var urgClass = (a.urgency||'').toLowerCase();
+          html += '<div class="action-card">';
+          html += '<div class="action-urgency '+urgClass+'">'+(a.urgency||'MEDIUM')+' PRIORITY</div>';
+          html += '<div class="action-text">'+esc(a.action)+'</div>';
+          html += '<div class="action-reason">'+esc(a.rationale||'')+'</div>';
+          html += '</div>';
+        });
+        html += '</div></div>';
       }
 
-      
-      // ===== DARK MATTER VOID ENGINE =====
-      if (divData.divergences && divData.divergences.length > 0) {
-        const dmScore = divData.dark_matter_score || 0;
-        const dmLevel = divData.divergence_level || 'BASELINE';
-        const dmCirc = 2 * Math.PI * 32;
-        const dmOffset = dmCirc - (dmCirc * dmScore / 100);
-        const dmColor = dmScore >= 60 ? 'var(--red)' : dmScore >= 30 ? 'var(--yellow)' : 'var(--purple)';
+      // ===== WHAT MOST PEOPLE MISS (Hidden Signals / Behavioral Divergence) =====
+      var divSignals = divData.divergences || [];
+      if(divSignals.length > 0 || bd.mainstream_narrative){
+        html += '<div class="hidden-signals fade-up">';
+        html += '<div class="hidden-signals-label"><span>\ud83d\udd2e</span> What Most People Miss</div>';
+        
+        if(bd.mainstream_narrative && bd.raw_data_reality){
+          html += '<div class="signal-card">';
+          html += '<div class="signal-severity medium">THE GAP</div>';
+          html += '<div class="signal-title">The mainstream story vs. what the data actually shows</div>';
+          html += '<div class="signal-explain"><strong>What most people think:</strong> '+esc(bd.mainstream_narrative)+'</div>';
+          html += '<div class="signal-explain" style="margin-top:8px"><strong>What the data shows:</strong> '+esc(bd.raw_data_reality)+'</div>';
+          if(bd.alpha_signal){html += '<div class="signal-explain" style="margin-top:8px;color:var(--accent)"><strong>The insight:</strong> '+esc(bd.alpha_signal)+'</div>'}
+          html += '</div>';
+        }
 
-        html += '<div class="void-engine card fade-up fade-up-3">';
-        html += '<div class="void-header"><div class="void-title"><span>\u2B50</span>Dark Matter Void Engine</div><div style="font-size:11px;color:var(--text3)">' + divData.divergences.length + ' void signals detected</div></div>';
+        divSignals.forEach(function(sig){
+          html += '<div class="signal-card">';
+          html += '<div class="signal-severity '+(sig.severity||'medium').toLowerCase()+'">'+(sig.severity||'NOTICE')+'</div>';
+          html += '<div class="signal-title">'+esc(sig.signal)+'</div>';
+          html += '<div class="signal-explain">'+esc(sig.implication||sig.detail||'')+'</div>';
+          html += '</div>';
+        });
+        html += '</div>';
+      }
 
-        // Score + Metrics
-        html += '<div class="void-score-ring">';
-        html += '<div class="void-score"><svg width="80" height="80" viewBox="0 0 80 80"><circle class="void-score-bg" cx="40" cy="40" r="32"/><circle class="void-score-fill" cx="40" cy="40" r="32" style="stroke:' + dmColor + ';stroke-dasharray:' + dmCirc + ';stroke-dashoffset:' + dmOffset + '"/></svg><div class="void-score-text">' + dmScore + '</div></div>';
-        html += '<div class="void-metrics">';
-        html += '<div class="void-metric"><div class="void-metric-label">Level</div><div class="void-metric-value" style="color:' + (dmLevel === 'CRITICAL' ? 'var(--red)' : dmLevel === 'ELEVATED' ? 'var(--yellow)' : 'var(--purple)') + ';font-size:13px">' + esc(dmLevel) + '</div></div>';
-        html += '<div class="void-metric"><div class="void-metric-label">Signals</div><div class="void-metric-value" style="color:var(--purple)">' + divData.divergences.length + '</div></div>';
-        html += '<div class="void-metric"><div class="void-metric-label">High Severity</div><div class="void-metric-value" style="color:var(--red)">' + divData.divergences.filter(d => d.severity === 'HIGH').length + '</div></div>';
+      // ===== KEY FINDINGS (What SubMind Found) =====
+      var findings = b.key_findings || [];
+      if(findings.length > 0){
+        html += '<div class="section fade-up"><div class="section-header" onclick="toggleSection(\'findings\')">';
+        html += '<span class="section-icon">\ud83d\udccc</span><span class="section-title">Key Findings</span>';
+        html += '<span class="section-subtitle">'+findings.length+' findings with evidence</span>';
+        html += '<span class="section-toggle" id="tog-findings">\u25bc</span></div>';
+        html += '<div class="section-body" id="sec-findings">';
+        findings.forEach(function(f){
+          html += '<div class="finding-card">';
+          html += '<div class="finding-text">'+esc(f.finding)+'</div>';
+          if(f.evidence) html += '<div class="finding-evidence">'+esc(f.evidence)+'</div>';
+          if(f.impact) html += '<span class="finding-impact '+esc(f.impact)+'">'+esc(f.impact)+' IMPACT</span>';
+          html += '</div>';
+        });
         html += '</div></div>';
+      }
 
-        // Void Visualization Canvas
-        html += '<div class="void-canvas"><canvas id="voidCanvas"></canvas></div>';
+      // ===== PREDICTIONS (What SubMind Thinks Will Happen) =====
+      var preds = b.predictions || [];
+      if(preds.length > 0){
+        html += '<div class="section fade-up"><div class="section-header" onclick="toggleSection(\'preds\')">';
+        html += '<span class="section-icon">\ud83d\udd2e</span><span class="section-title">Predictions</span>';
+        html += '<span class="section-subtitle">Based on pattern analysis</span>';
+        html += '<span class="section-toggle" id="tog-preds">\u25bc</span></div>';
+        html += '<div class="section-body" id="sec-preds">';
+        html += '<p style="font-size:12px;color:var(--text3);margin-bottom:12px">These are SubMind\u2019s projections based on historical patterns and current data. Treat as informed estimates, not certainties.</p>';
+        preds.forEach(function(p){
+          var prob = p.probability || 50;
+          var pColor = prob >= 70 ? 'var(--green)' : prob >= 40 ? 'var(--yellow)' : 'var(--red)';
+          html += '<div class="prediction-card">';
+          html += '<div class="prediction-text">'+esc(p.prediction)+'</div>';
+          html += '<div class="prediction-bar">';
+          html += '<div class="prediction-bar-track"><div class="prediction-bar-fill" style="width:'+prob+'%;background:'+pColor+'"></div></div>';
+          html += '<span class="prediction-pct" style="color:'+pColor+'">'+prob+'%</span>';
+          html += '</div>';
+          var metaParts = [];
+          if(p.timeframe) metaParts.push('By '+p.timeframe);
+          if(p.confidence_interval) metaParts.push(p.confidence_interval);
+          if(p.basis) metaParts.push(p.basis);
+          html += '<div class="prediction-meta">'+esc(metaParts.join(' \u2022 '))+'</div>';
+          html += '</div>';
+        });
+        html += '</div></div>';
+      }
 
-        // Individual Void Signals
-        html += '<div class="void-signals">';
-        for (const d of divData.divergences) {
-          html += '<div class="void-signal">';
-          html += '<span class="void-signal-severity sev-' + esc(d.severity || 'MEDIUM') + '">' + esc(d.severity || 'MEDIUM') + '</span>';
-          html += '<div class="void-signal-content">';
-          html += '<div class="void-signal-type">' + esc((d.type || '').replace(/_/g, ' ')) + '</div>';
-          html += '<div class="void-signal-detail">' + esc(d.signal || d.detail || '') + '</div>';
-          if (d.implication) html += '<div class="void-signal-implication">\u2192 ' + esc(d.implication) + '</div>';
+      // ===== TIMELINE (How We Got Here) =====
+      var timeline = b.timeline || [];
+      if(timeline.length > 0){
+        html += '<div class="section fade-up"><div class="section-header" onclick="toggleSection(\'timeline\')">';
+        html += '<span class="section-icon">\ud83d\udcc5</span><span class="section-title">How We Got Here</span>';
+        html += '<span class="section-subtitle">'+timeline.length+' key events</span>';
+        html += '<span class="section-toggle" id="tog-timeline">\u25bc</span></div>';
+        html += '<div class="section-body" id="sec-timeline">';
+        timeline.forEach(function(t){
+          html += '<div class="timeline-item">';
+          html += '<div class="timeline-dot"></div>';
+          html += '<div>';
+          html += '<div class="timeline-date">'+(t.date||'Unknown date')+'</div>';
+          html += '<div class="timeline-event">'+esc(t.event)+'</div>';
+          if(t.significance) html += '<div class="timeline-sig">'+esc(t.significance)+'</div>';
           html += '</div></div>';
-        }
+        });
         html += '</div></div>';
       }
 
-// ===== GLASS FANG VALIDATION CARD =====
-      const circumference = 2 * Math.PI * 42;
-      const offset = circumference - (circumference * (gf.score || 0) / 100);
-      const scoreColor = (gf.score || 0) >= 80 ? 'var(--green)' : (gf.score || 0) >= 60 ? 'var(--yellow)' : 'var(--red)';
-
-      html += '<div class="card fade-up fade-up-3">';
-      html += '<div class="card-header" onclick="toggleCard(\'gf\')"><div class="card-header-left"><span class="icon">\ud83d\udee1\ufe0f</span>Glass Fang Validation (' + (gf.metric_count || 16) + ' metrics)</div><div class="card-toggle" id="card-toggle-gf">\u25BC</div></div>';
-      html += '<div class="card-body" id="card-body-gf">';
-      html += '<div class="gf-ring-container">';
-      html += '<div class="gf-ring"><svg width="100" height="100" viewBox="0 0 100 100"><circle class="gf-ring-bg" cx="50" cy="50" r="42"/><circle class="gf-ring-fill" cx="50" cy="50" r="42" style="stroke:' + scoreColor + ';stroke-dasharray:' + circumference + ';stroke-dashoffset:' + offset + '"/></svg><div class="gf-score-text">' + (gf.score || 0) + '</div><div class="gf-label">Glass Fang</div></div>';
-      html += '<div class="gf-metrics">';
-      const metricLabels = {source_depth:'Source Depth',source_diversity:'Diversity',temporal_coverage:'Temporal',specificity:'Specificity',prediction_quality:'Predictions',evidence_chain:'Evidence Chain',cross_reference:'Cross-Ref',pattern_depth:'Patterns',investment_relevance:'Investment',timeline_depth:'Timeline',confidence_calibration:'Calibration',source_verification:'URL Verified',provenance_quality:'Provenance',cluster_health:'Cluster Health',reasoning_quality:'Reasoning',divergence_detection:'Divergence'};
-      if (gf.metrics) {
-        for (const [k,v] of Object.entries(gf.metrics)) {
-          const label = metricLabels[k] || k;
-          const color = v >= 80 ? 'var(--green)' : v >= 50 ? 'var(--yellow)' : 'var(--red)';
-          html += '<div class="gf-metric"><span class="gf-metric-name">' + label + '</span><span class="gf-metric-val" style="color:' + color + '">' + v + '</span></div>';
-        }
-      }
-      html += '</div></div></div></div>';
-
-      // ===== KEY FINDINGS =====
-      if (b.key_findings && b.key_findings.length) {
-        html += '<div class="card fade-up fade-up-3">';
-        html += '<div class="card-header" onclick="toggleCard(\'findings\')"><div class="card-header-left"><span class="icon">\ud83d\udd0d</span>Key Findings (' + b.key_findings.length + ')</div><div class="card-toggle" id="card-toggle-findings">\u25BC</div></div>';
-        html += '<div class="card-body" id="card-body-findings">';
-        for (const f of b.key_findings) {
-          html += '<div class="finding-item">';
-          html += '<div class="finding-text">' + esc(f.finding || '') + '</div>';
-          if (f.evidence) html += '<div class="finding-evidence">' + esc(f.evidence) + '</div>';
-          if (f.impact) html += '<span class="finding-impact impact-' + esc(f.impact) + '">' + esc(f.impact) + '</span>';
-          if (f.sources && f.sources.length) {
-            html += '<div style="margin-top:6px;display:flex;gap:4px;flex-wrap:wrap">';
-            for (const s of f.sources) { html += '<a href="' + escUrl(s) + '" target="_blank" rel="noopener" class="source-link-btn">\ud83d\udd17 ' + esc(getDomain(s)) + '</a>'; }
-            html += '</div>';
-          }
-          html += '</div>';
-        }
+      // ===== REASONING (How SubMind Reached These Conclusions) =====
+      var reasoning = b.reasoning_chain || [];
+      if(reasoning.length > 0){
+        html += '<div class="section fade-up"><div class="section-header" onclick="toggleSection(\'reasoning\')">';
+        html += '<span class="section-icon">\ud83e\udde0</span><span class="section-title">How SubMind Reached These Conclusions</span>';
+        html += '<span class="section-subtitle">'+reasoning.length+' reasoning steps</span>';
+        html += '<span class="section-toggle collapsed" id="tog-reasoning">\u25bc</span></div>';
+        html += '<div class="section-body hidden" id="sec-reasoning">';
+        reasoning.forEach(function(r,i){
+          html += '<div style="display:flex;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)">';
+          html += '<div style="width:28px;height:28px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0">'+(i+1)+'</div>';
+          html += '<div>';
+          html += '<div style="font-size:14px;font-weight:500;color:var(--text)">'+esc(r.thought||r.step)+'</div>';
+          if(r.evidence) html += '<div style="font-size:13px;color:var(--text3);margin-top:2px">Evidence: '+esc(r.evidence)+'</div>';
+          if(r.conclusion) html += '<div style="font-size:13px;color:var(--accent);margin-top:2px">\u2192 '+esc(r.conclusion)+'</div>';
+          html += '</div></div>';
+        });
         html += '</div></div>';
       }
 
-      // ===== INTELLIGENCE TIMELINE =====
-      if (b.timeline && b.timeline.length) {
-        html += '<div class="card fade-up fade-up-4">';
-        html += '<div class="card-header" onclick="toggleCard(\'timeline\')"><div class="card-header-left"><span class="icon">\ud83d\udcc5</span>Intelligence Timeline (' + b.timeline.length + ' events)</div><div class="card-toggle" id="card-toggle-timeline">\u25BC</div></div>';
-        html += '<div class="card-body" id="card-body-timeline">';
-        html += '<div class="timeline">';
-        b.timeline.forEach((t, i) => {
-          html += '<div class="tl-item" style="animation-delay:' + (i * 0.1) + 's">';
-          html += '<div class="tl-date">' + esc(t.date || '') + '</div>';
-          html += '<div class="tl-event">' + esc(t.event || '') + '</div>';
-          if (t.significance) html += '<div class="tl-sig">' + esc(t.significance) + '</div>';
-          if (t.sources && t.sources.length) {
-            html += '<div style="margin-top:4px;display:flex;gap:4px;flex-wrap:wrap">';
-            for (const s of t.sources) { html += '<a href="' + escUrl(s) + '" target="_blank" rel="noopener" class="source-link-btn" style="font-size:10px;padding:3px 8px">\ud83d\udd17 ' + esc(getDomain(s)) + '</a>'; }
-            html += '</div>';
-          }
+      // ===== RISK ASSESSMENT =====
+      var risk = b.risk_matrix || {};
+      if(risk.primary_risk){
+        html += '<div class="section fade-up"><div class="section-header" onclick="toggleSection(\'risk\')">';
+        html += '<span class="section-icon">\u26a0\ufe0f</span><span class="section-title">Risk Assessment</span>';
+        html += '<span class="section-toggle collapsed" id="tog-risk">\u25bc</span></div>';
+        html += '<div class="section-body hidden" id="sec-risk">';
+        html += '<div style="font-size:14px;color:var(--text);margin-bottom:8px"><strong>Primary risk:</strong> '+esc(risk.primary_risk)+'</div>';
+        if(risk.risk_probability) html += '<div style="font-size:13px;color:var(--text3);margin-bottom:8px">Estimated probability: <span style="color:var(--yellow);font-weight:600">'+risk.risk_probability+'%</span></div>';
+        if(risk.mitigation) html += '<div style="font-size:13px;color:var(--text2);margin-bottom:12px"><strong>How to mitigate:</strong> '+esc(risk.mitigation)+'</div>';
+        html += '<div class="risk-box">';
+        if(risk.upside_scenario){
+          html += '<div class="risk-scenario risk-best"><div class="risk-scenario-label">Best case</div>'+esc(risk.upside_scenario)+'</div>';
+        }
+        if(risk.downside_scenario){
+          html += '<div class="risk-scenario risk-worst"><div class="risk-scenario-label">Worst case</div>'+esc(risk.downside_scenario)+'</div>';
+        }
+        html += '</div>';
+        html += '</div></div>';
+      }
+
+      // ===== SOURCES (Where This Came From) =====
+      if(sources.length > 0){
+        html += '<div class="section fade-up"><div class="section-header" onclick="toggleSection(\'sources\')">';
+        html += '<span class="section-icon">\ud83d\udcda</span><span class="section-title">Sources</span>';
+        html += '<span class="section-subtitle">'+totalSources+' sources \u2022 '+verifiedCount+' verified</span>';
+        html += '<span class="section-toggle collapsed" id="tog-sources">\u25bc</span></div>';
+        html += '<div class="section-body hidden" id="sec-sources">';
+        html += '<p style="font-size:12px;color:var(--text3);margin-bottom:12px">SubMind verified each link. Green = confirmed live. Yellow = redirected to search. Tier indicates source authority level. <span style="cursor:pointer;color:var(--accent)" onclick="document.getElementById(\'scoringOverlay\').classList.add(\'active\')">Learn about tiers \u2192</span></p>';
+        sources.forEach(function(s){
+          var prov = s.provenance || {};
+          var tierNum = (prov.tier||'TIER_5').replace('TIER_','');
+          var tierClass = 'tier-'+tierNum;
+          html += '<div class="source-item">';
+          html += '<div class="source-info">';
+          html += '<div class="source-title">'+esc(s.title||'Untitled')+'</div>';
+          html += '<div class="source-meta">';
+          html += '<span class="source-tier '+tierClass+'">'+(prov.label||'Secondary')+'</span>';
+          if(s.date) html += '<span>'+esc(s.date)+'</span>';
+          if(s.verified) html += '<span class="source-verified">\u2713 Verified</span>';
+          else html += '<span class="source-search">\u2192 Search link</span>';
+          html += '</div></div>';
+          html += '<a href="'+escUrl(s.url)+'" target="_blank" rel="noopener" class="source-link">'+(s.verified?'Open':'Search')+'</a>';
           html += '</div>';
+        });
+        html += '</div></div>';
+      }
+
+      // ===== RELATED RESEARCH =====
+      var related = b.related_queries || [];
+      if(related.length > 0){
+        html += '<div class="section fade-up"><div class="section-header" onclick="toggleSection(\'related\')">';
+        html += '<span class="section-icon">\ud83d\udd00</span><span class="section-title">Dig Deeper</span>';
+        html += '<span class="section-toggle" id="tog-related">\u25bc</span></div>';
+        html += '<div class="section-body" id="sec-related">';
+        html += '<div class="related-pills">';
+        related.forEach(function(r){
+          html += '<div class="related-pill" onclick="document.getElementById(\'q\').value=\''+esc(r).replace(/'/g,'')+'\';window.scrollTo(0,0);runSearch()">'+esc(r)+'</div>';
         });
         html += '</div></div></div>';
       }
 
-      // ===== PREDICTIONS =====
-      if (b.predictions && b.predictions.length) {
-        html += '<div class="card fade-up fade-up-4">';
-        html += '<div class="card-header" onclick="toggleCard(\'preds\')"><div class="card-header-left"><span class="icon">\ud83d\udd2e</span>SubMind Predictions (' + b.predictions.length + ')</div><div class="card-toggle" id="card-toggle-preds">\u25BC</div></div>';
-        html += '<div class="card-body" id="card-body-preds">';
-        for (const p of b.predictions) {
-          const prob = p.probability || 50;
-          const pColor = prob >= 75 ? 'var(--green)' : prob >= 50 ? 'var(--yellow)' : 'var(--red)';
-          html += '<div class="prediction-item">';
-          html += '<div class="pred-header"><div class="pred-text">' + esc(p.prediction || '') + '</div>';
-          html += '<span class="pred-prob" style="background:' + pColor + '22;color:' + pColor + '">' + prob + '%</span></div>';
-          html += '<div class="pred-bar"><div class="pred-bar-fill" style="width:' + prob + '%;background:' + pColor + '"></div></div>';
-          if (p.timeframe) html += '<div class="pred-basis" style="color:var(--text2)">\u23f3 ' + esc(p.timeframe) + '</div>';
-          if (p.basis) html += '<div class="pred-basis">' + esc(p.basis) + '</div>';
-          if (p.confidence_interval) html += '<div class="confidence-interval">' + esc(p.confidence_interval) + '</div>';
-          if (p.indicators && p.indicators.length) {
-            html += '<div class="pred-indicators">';
-            for (const ind of p.indicators) { html += '<span class="pred-indicator">\ud83d\udccc ' + esc(ind) + '</span>'; }
-            html += '</div>';
-          }
-          html += '</div>';
-        }
-        html += '</div></div>';
-      }
-
-      // ===== PATTERN ANALYSIS =====
-      if (b.pattern_analysis) {
-        const pa = b.pattern_analysis;
-        html += '<div class="card fade-up fade-up-5">';
-        html += '<div class="card-header" onclick="toggleCard(\'patterns\')"><div class="card-header-left"><span class="icon">\ud83e\udde9</span>Pattern Analysis</div><div class="card-toggle" id="card-toggle-patterns">\u25BC</div></div>';
-        html += '<div class="card-body" id="card-body-patterns">';
-        const groups = [
-          {key:'historical_patterns', label:'Historical Patterns', color:'var(--purple)'},
-          {key:'current_signals', label:'Current Signals', color:'var(--accent)'},
-          {key:'convergence_points', label:'Convergence Points', color:'var(--green)'}
-        ];
-        for (const g of groups) {
-          if (pa[g.key] && pa[g.key].length) {
-            html += '<div class="pattern-group">';
-            html += '<div class="pattern-label" style="color:' + g.color + '">' + g.label + '</div>';
-            html += '<div class="pattern-items">';
-            for (const item of pa[g.key]) { html += '<div class="pattern-item" style="border-left-color:' + g.color + '">' + esc(item) + '</div>'; }
-            html += '</div></div>';
-          }
-        }
-        html += '</div></div>';
-      }
-
-      // ===== REASONING CHAIN =====
-      if (b.reasoning_chain && b.reasoning_chain.length) {
-        html += '<div class="card fade-up fade-up-4">';
-        html += '<div class="card-header" onclick="toggleCard(\'reasoning\')"><div class="card-header-left"><span class="icon">\ud83e\udde0</span>SubMind Reasoning Chain (' + b.reasoning_chain.length + ' steps)</div><div class="card-toggle" id="card-toggle-reasoning">\u25BC</div></div>';
-        html += '<div class="card-body" id="card-body-reasoning">';
-        html += '<div class="reasoning-chain">';
-        for (const r of b.reasoning_chain) {
-          html += '<div class="reasoning-step" data-step="' + esc(String(r.step || '')) + '">';
-          html += '<div class="reasoning-thought">' + esc(r.thought || '') + '</div>';
-          if (r.evidence) html += '<div class="reasoning-evidence">' + esc(r.evidence) + '</div>';
-          if (r.conclusion) html += '<div class="reasoning-conclusion">\u2192 ' + esc(r.conclusion) + '</div>';
-          html += '</div>';
-        }
-        html += '</div></div></div>';
-      }
-
-      // ===== EVIDENCE WEB =====
-      html += '<div class="card fade-up fade-up-5">';
-      html += '<div class="card-header" onclick="toggleCard(\'evidence\')"><div class="card-header-left"><span class="icon">\ud83c\udf10</span>Evidence Web</div><div class="card-toggle" id="card-toggle-evidence">\u25BC</div></div>';
-      html += '<div class="card-body" id="card-body-evidence">';
-      html += '<div class="evidence-web"><canvas id="evidenceCanvas"></canvas></div>';
-      html += '</div></div>';
-
-      // ===== SOURCE HUB - Fully Enhanced =====
-      html += '<div class="source-hub fade-up fade-up-5">';
-      html += '<div class="source-hub-header">';
-      html += '<div class="source-hub-title"><span class="icon">\ud83d\udcda</span>Intelligence Sources (' + sources.length + ')</div>';
-      html += '<div class="source-hub-stats">';
-      html += '<span class="source-stat source-stat-verified">\u2713 ' + verifiedCount + ' verified</span>';
-      if (searchCount > 0) html += '<span class="source-stat source-stat-search">\ud83d\udd0d ' + searchCount + ' search</span>';
-      html += '<span class="source-stat source-stat-total">' + sources.length + ' total</span>';
-      html += '</div></div>';
-
-      // Source Filter Tabs
-      html += '<div class="source-filters">';
-      html += '<div class="source-filter active" onclick="filterSources(\'all\')">All Sources</div>';
-      html += '<div class="source-filter" onclick="filterSources(\'verified\')">\u2713 Verified Only</div>';
-      html += '<div class="source-filter" onclick="filterSources(\'search\')">\ud83d\udd0d Search Links</div>';
-      const uniqueTypes = [...new Set(sources.map(s => (s.type || s.merge_priority || 'supporting')))];
-      for (const t of uniqueTypes.slice(0, 4)) { html += '<div class="source-filter" onclick="filterSources(\'' + esc(t) + '\')">' + esc(t.replace(/_/g, ' ')) + '</div>'; }
-      html += '</div>';
-
-      // Source Cards
-      for (let i = 0; i < sources.length; i++) {
-        const s = sources[i];
-        const isVerified = s.verified === true;
-        const sType = s.type || s.merge_priority || 'supporting';
-        const prov = s.provenance || {};
-        const provTier = prov.tier || 'TIER_5';
-        const provLabel = prov.label || 'Secondary';
-        const domain = getDomain(s.url);
-
-        html += '<div class="source-card" id="source-' + i + '" data-source-type="' + esc(sType) + '" data-verified="' + isVerified + '" onclick="toggleSource(' + i + ')">';
-
-        // Main row
-        html += '<div class="source-card-main">';
-        // Rank badge with provenance tier color
-        html += '<div class="source-rank rank-' + tierClass(provTier) + '">' + (i + 1) + '</div>';
-
-        // Source info
-        html += '<div class="source-info">';
-        html += '<div class="source-title-row">';
-        html += '<div class="source-title"><a href="' + escUrl(s.url || '#') + '" target="_blank" rel="noopener" onclick="event.stopPropagation()">' + esc(s.title || 'Source') + '</a></div>';
-        html += '<span class="source-provenance prov-' + tierClass(provTier) + '">' + esc(provLabel) + '</span>';
-        html += '</div>';
-        html += '<div class="source-meta-row">';
-        html += '<span class="source-domain">' + esc(domain) + '</span>';
-        html += '<span class="source-type-tag type-' + esc(sType.split('_')[0]) + '">' + esc(sType.replace(/_/g, ' ')) + '</span>';
-        if (s.date) html += '<span class="source-date">' + esc(s.date) + '</span>';
-        if (isVerified) html += '<span style="font-size:11px;color:var(--green);font-weight:600">\u2713 Verified</span>';
-        else html += '<span style="font-size:11px;color:var(--yellow)">\ud83d\udd0d Search</span>';
-        html += '</div>';
-        html += '</div>';
-
-        // Right badges
-        html += '<div class="source-badges">';
-        if (isVerified) html += '<span class="source-badge badge-verified">\u2713 DIRECT</span>';
-        else html += '<span class="source-badge badge-search">\ud83d\udd0d SEARCH</span>';
-        html += '</div>';
-        html += '</div>'; // end source-card-main
-
-        // ===== EXPANDED DETAIL PANEL =====
-        html += '<div class="source-detail">';
-        html += '<div class="source-detail-inner">';
-
-        // Provenance Detail
-        html += '<div class="source-detail-block"><div class="source-detail-label">Provenance Tier</div><div class="source-detail-value" style="color:' + tierColor(provTier) + '">' + esc(provTier) + ' - ' + esc(provLabel) + '</div><div style="font-size:11px;color:var(--text3);margin-top:2px">Trust Weight: ' + ((prov.weight || 0.4) * 100).toFixed(0) + '%</div></div>';
-
-        // Verification Status
-        html += '<div class="source-detail-block"><div class="source-detail-label">Verification</div><div class="source-detail-value">' + (isVerified ? '<span style="color:var(--green)">\u2713 Direct link verified (HTTP ' + (s.http_status || 200) + ')</span>' : '<span style="color:var(--yellow)">\ud83d\udd0d Redirected to search fallback</span>') + '</div>';
-        if (s.fallback_reason) html += '<div style="font-size:11px;color:var(--text3);margin-top:2px">' + esc(s.fallback_reason) + '</div>';
-        html += '</div>';
-
-        // Source Type
-        html += '<div class="source-detail-block"><div class="source-detail-label">Source Type</div><div class="source-detail-value">' + esc(sType.replace(/_/g, ' ')) + '</div></div>';
-
-        // Credibility
-        html += '<div class="source-detail-block"><div class="source-detail-label">Credibility</div><div class="source-detail-value">' + esc(s.credibility || 'MEDIUM') + '</div></div>';
-
-        html += '</div>'; // end source-detail-inner
-
-        // Action buttons
-        html += '<div class="source-links">';
-        html += '<a href="' + escUrl(s.url || '#') + '" target="_blank" rel="noopener" class="source-link-btn" onclick="event.stopPropagation()">\ud83d\udd17 Open Source</a>';
-        if (s.original_url) html += '<a href="' + escUrl(s.original_url) + '" target="_blank" rel="noopener" class="source-link-btn" onclick="event.stopPropagation()">\ud83d\udcce Original URL</a>';
-        html += '<a href="https://web.archive.org/web/*/' + encodeURIComponent(s.url || s.original_url || '') + '" target="_blank" rel="noopener" class="source-link-btn" onclick="event.stopPropagation()">\ud83c\udfdb Archive</a>';
-        html += '<a href="https://www.google.com/search?q=' + encodeURIComponent(esc(s.title || '')) + '" target="_blank" rel="noopener" class="source-link-btn" onclick="event.stopPropagation()">\ud83d\udd0e Google It</a>';
-        html += '</div>';
-
-        html += '</div>'; // end source-detail
-        html += '</div>'; // end source-card
-      }
-      html += '</div>'; // end source-hub
-
-      // ===== INVESTMENT RELEVANCE =====
-      if (b.investment_relevance) {
-        const ir = b.investment_relevance;
-        html += '<div class="card fade-up fade-up-5" style="margin-top:20px">';
-        html += '<div class="card-header" onclick="toggleCard(\'invest\')"><div class="card-header-left"><span class="icon">\ud83d\udcc8</span>Investment Relevance</div><div class="card-toggle" id="card-toggle-invest">\u25BC</div></div>';
-        html += '<div class="card-body" id="card-body-invest">';
-        html += '<div class="invest-grid">';
-        if (ir.risk_level) html += '<div class="invest-cell"><div class="invest-cell-label">Risk Level</div><div class="invest-cell-value" style="color:' + (ir.risk_level==='HIGH'?'var(--red)':ir.risk_level==='MEDIUM'?'var(--yellow)':'var(--green)') + '">' + esc(ir.risk_level) + '</div></div>';
-        if (ir.opportunity_window) html += '<div class="invest-cell"><div class="invest-cell-label">Opportunity Window</div><div class="invest-cell-value">' + esc(ir.opportunity_window) + '</div></div>';
-        html += '</div>';
-        if (ir.sectors_affected && ir.sectors_affected.length) {
-          html += '<div style="margin-top:12px;display:flex;flex-wrap:wrap;gap:6px">';
-          for (const s of ir.sectors_affected) { html += '<span style="font-size:12px;padding:4px 10px;background:var(--accent-glow);color:var(--accent);border-radius:6px">' + esc(s) + '</span>'; }
-          html += '</div>';
-        }
-        if (ir.key_metrics && ir.key_metrics.length) {
-          html += '<div style="margin-top:12px">';
-          for (const m of ir.key_metrics) { html += '<div style="font-size:13px;color:var(--text2);padding:6px 0;border-bottom:1px solid var(--border)">\u2022 ' + esc(m) + '</div>'; }
-          html += '</div>';
-        }
-        html += '</div></div>';
-      }
-
-      // ===== EXECUTIVE ACTIONS =====
-      if (b.executive_actions && b.executive_actions.length) {
-        html += '<div class="card fade-up fade-up-5">';
-        html += '<div class="card-header" onclick="toggleCard(\'actions\')"><div class="card-header-left"><span class="icon">\u26A1</span>Executive Actions (' + b.executive_actions.length + ')</div><div class="card-toggle" id="card-toggle-actions">\u25BC</div></div>';
-        html += '<div class="card-body" id="card-body-actions">';
-        for (const a of b.executive_actions) {
-          html += '<div class="action-item">';
-          html += '<span class="action-urgency urgency-' + esc(a.urgency || 'MEDIUM') + '">' + esc(a.urgency || 'MEDIUM') + '</span>';
-          html += '<div><div class="action-text">' + esc(a.action || '') + '</div>';
-          if (a.rationale) html += '<div class="action-rationale">' + esc(a.rationale) + '</div>';
-          html += '</div></div>';
-        }
-        html += '</div></div>';
-      }
-
-      // ===== RISK MATRIX =====
-      if (b.risk_matrix) {
-        const rm = b.risk_matrix;
-        html += '<div class="card fade-up fade-up-5">';
-        html += '<div class="card-header" onclick="toggleCard(\'risk\')"><div class="card-header-left"><span class="icon">\u26a0\ufe0f</span>Risk Matrix</div><div class="card-toggle" id="card-toggle-risk">\u25BC</div></div>';
-        html += '<div class="card-body" id="card-body-risk">';
-        html += '<div class="risk-grid">';
-        if (rm.primary_risk) html += '<div class="risk-box risk-primary"><div class="risk-box-label">Primary Risk (' + (rm.risk_probability || '?') + '% probability)</div><div class="risk-box-value">' + esc(rm.primary_risk) + '</div></div>';
-        if (rm.mitigation) html += '<div class="risk-box risk-mitigation"><div class="risk-box-label">Mitigation Strategy</div><div class="risk-box-value">' + esc(rm.mitigation) + '</div></div>';
-        if (rm.upside_scenario) html += '<div class="risk-box risk-upside"><div class="risk-box-label">\u2191 Upside Scenario</div><div class="risk-box-value">' + esc(rm.upside_scenario) + '</div></div>';
-        if (rm.downside_scenario) html += '<div class="risk-box risk-downside"><div class="risk-box-label">\u2193 Downside Scenario</div><div class="risk-box-value">' + esc(rm.downside_scenario) + '</div></div>';
-        html += '</div></div></div>';
-      }
-
-      // ===== METHODOLOGY =====
-      if (b.methodology_note) {
-        html += '<div class="card fade-up fade-up-5" style="border-color:var(--border2)">';
-        html += '<div class="card-header" onclick="toggleCard(\'method\')"><div class="card-header-left"><span class="icon">\u2699\ufe0f</span>Methodology</div><div class="card-toggle" id="card-toggle-method">\u25BC</div></div>';
-        html += '<div class="card-body" id="card-body-method">';
-        html += '<p style="font-size:13px;color:var(--text3);line-height:1.6">' + esc(b.methodology_note) + '</p>';
-        html += '</div></div>';
-      }
-
-      // ===== RELATED QUERIES =====
-      if (b.related_queries && b.related_queries.length) {
-        html += '<div class="card fade-up fade-up-5">';
-        html += '<div class="card-header"><div class="card-header-left"><span class="icon">\ud83d\udd0d</span>Continue Investigating</div></div>';
-        html += '<div class="related-queries">';
-        for (const rq of b.related_queries) {
-          html += '<div class="related-query" onclick="document.getElementById(\'searchInput\').value=\'' + esc(rq).replace(/'/g, "\\'") + '\';runSearch()">' + esc(rq) + '</div>';
-        }
-        html += '</div></div>';
-      }
-
       // ===== PIPELINE FOOTER =====
-      html += '<div style="text-align:center;padding:24px;font-size:11px;color:var(--text3)">';
-      html += 'SubMind v' + esc(meta.version || '11.0') + ' | Pipeline: ' + esc((meta.pipeline || []).join(' \u2192 ')) + ' | Briefing by ' + esc(meta.providers?.briefing || 'unknown');
-      if (provSummary) html += ' | Provenance: T1:' + (provSummary.tier_1||0) + ' T2:' + (provSummary.tier_2||0) + ' T3:' + (provSummary.tier_3||0) + ' T4:' + (provSummary.tier_4||0) + ' T5:' + (provSummary.tier_5||0);
+      html += '<div style="text-align:center;padding:24px 0;font-size:11px;color:var(--text3)">';
+      html += 'SubMind v'+(meta.version||'11.0')+' \u2022 '+(meta.elapsed_seconds||0)+'s \u2022 '+(meta.pipeline?meta.pipeline.length:0)+' pipeline stages \u2022 Trust score '+trustScore+'/100';
       html += '</div>';
 
       el.innerHTML = html;
-      setTimeout(() => { initEvidenceWeb(sources); initVoidCanvas(divData); }, 300);
     }
-
-    // ===== EVIDENCE WEB: Force-directed source graph with provenance tiers =====
-    function initEvidenceWeb(sources) {
-      const canvas = document.getElementById('evidenceCanvas');
-      if (!canvas || !sources || !sources.length) return;
-      const container = canvas.parentElement;
-      const W = container.clientWidth;
-      const H = container.clientHeight;
-      canvas.width = W * 2;
-      canvas.height = H * 2;
-      const ctx = canvas.getContext('2d');
-      ctx.scale(2, 2);
-
-      const tierColors = {TIER_1:'#22c55e',TIER_2:'#3b82f6',TIER_3:'#a855f7',TIER_4:'#eab308',TIER_5:'#71717a'};
-
-      const nodes = sources.slice(0, 18).map((s, i) => {
-        const angle = (i / Math.min(sources.length, 18)) * Math.PI * 2;
-        const radius = Math.min(W, H) * 0.3;
-        const prov = s.provenance || {};
-        return {
-          x: W/2 + Math.cos(angle) * radius + (Math.random()-0.5) * 40,
-          y: H/2 + Math.sin(angle) * radius + (Math.random()-0.5) * 40,
-          vx: 0, vy: 0,
-          title: (s.title || 'Source').substring(0, 30),
-          verified: s.verified,
-          type: s.type || 'supporting',
-          url: s.url || '',
-          tier: prov.tier || 'TIER_5',
-          tierLabel: prov.label || 'Secondary',
-          radius: s.verified ? (prov.tier === 'TIER_1' ? 26 : prov.tier === 'TIER_2' ? 24 : 20) : 17
-        };
-      });
-
-      nodes.unshift({ x: W/2, y: H/2, vx: 0, vy: 0, title: 'SUBMIND', verified: true, type: 'center', radius: 30, isCenter: true, tier: 'CENTER' });
-
-      const edges = [];
-      for (let i = 1; i < nodes.length; i++) {
-        edges.push({from: 0, to: i, strength: 0.3});
-        if (i > 1 && Math.random() > 0.4) edges.push({from: i, to: Math.max(1, i - 1 - Math.floor(Math.random() * 3)), strength: 0.15});
-      }
-
-      let mouseX = 0, mouseY = 0, hoveredNode = null;
-      canvas.addEventListener('mousemove', (e) => {
-        const rect = canvas.getBoundingClientRect();
-        mouseX = e.clientX - rect.left; mouseY = e.clientY - rect.top;
-        hoveredNode = null;
-        for (const n of nodes) { if (Math.sqrt((n.x - mouseX)**2 + (n.y - mouseY)**2) < n.radius + 5) { hoveredNode = n; break; } }
-        canvas.style.cursor = hoveredNode ? 'pointer' : 'default';
-      });
-      canvas.addEventListener('click', () => { if (hoveredNode && hoveredNode.url && !hoveredNode.isCenter) window.open(hoveredNode.url, '_blank'); });
-
-      let frame = 0;
-      function simulate() {
-        frame++;
-        for (let i = 0; i < nodes.length; i++) {
-          const n = nodes[i];
-          if (n.isCenter) { n.x = W/2; n.y = H/2; continue; }
-          for (let j = 0; j < nodes.length; j++) {
-            if (i === j) continue;
-            const dx = n.x - nodes[j].x, dy = n.y - nodes[j].y;
-            const dist = Math.sqrt(dx*dx + dy*dy) || 1;
-            const force = 800 / (dist * dist);
-            n.vx += (dx / dist) * force; n.vy += (dy / dist) * force;
-          }
-          n.vx += (W/2 - n.x) * 0.001; n.vy += (H/2 - n.y) * 0.001;
-        }
-        for (const e of edges) {
-          const a = nodes[e.from], b = nodes[e.to];
-          const dx = b.x - a.x, dy = b.y - a.y;
-          const dist = Math.sqrt(dx*dx + dy*dy) || 1;
-          const force = (dist - 100) * 0.008 * e.strength;
-          if (!a.isCenter) { a.vx += (dx/dist)*force; a.vy += (dy/dist)*force; }
-          if (!b.isCenter) { b.vx -= (dx/dist)*force; b.vy -= (dy/dist)*force; }
-        }
-        for (const n of nodes) {
-          if (n.isCenter) continue;
-          n.vx *= 0.92; n.vy *= 0.92;
-          n.x += n.vx; n.y += n.vy;
-          n.x = Math.max(n.radius, Math.min(W - n.radius, n.x));
-          n.y = Math.max(n.radius, Math.min(H - n.radius, n.y));
-        }
-
-        ctx.clearRect(0, 0, W, H);
-
-        // Edges
-        for (const e of edges) {
-          const a = nodes[e.from], b = nodes[e.to];
-          const tColor = tierColors[b.tier] || '#71717a';
-          ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y);
-          ctx.strokeStyle = tColor + '33';
-          ctx.lineWidth = b.verified ? 1.5 : 0.8; ctx.stroke();
-          const t = (frame * 0.005 + e.from * 0.3) % 1;
-          ctx.beginPath(); ctx.arc(a.x + (b.x-a.x)*t, a.y + (b.y-a.y)*t, 2, 0, Math.PI*2);
-          ctx.fillStyle = tColor + '99'; ctx.fill();
-        }
-
-        // Nodes
-        for (const n of nodes) {
-          const isHovered = n === hoveredNode;
-          const tColor = n.isCenter ? '#f97316' : (tierColors[n.tier] || '#71717a');
-
-          if (n.isCenter || isHovered) {
-            ctx.beginPath(); ctx.arc(n.x, n.y, n.radius + 8, 0, Math.PI*2);
-            ctx.fillStyle = tColor + '22'; ctx.fill();
-          }
-
-          ctx.beginPath(); ctx.arc(n.x, n.y, n.radius, 0, Math.PI*2);
-          ctx.fillStyle = n.isCenter ? '#f97316' : tColor + '20';
-          ctx.fill();
-          if (!n.isCenter) { ctx.strokeStyle = tColor; ctx.lineWidth = n.verified ? 2 : 1; ctx.stroke(); }
-
-          ctx.fillStyle = n.isCenter ? '#fff' : (isHovered ? '#fafafa' : '#a1a1aa');
-          ctx.font = (n.isCenter ? 'bold 12px' : '10px') + ' Inter, system-ui';
-          ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-          const maxC = isHovered ? 30 : 16;
-          ctx.fillText(n.isCenter ? 'SUBMIND' : (n.title.length > maxC ? n.title.substring(0, maxC) + '..' : n.title), n.x, n.y);
-
-          if (!n.isCenter && n.verified) { ctx.fillStyle = '#22c55e'; ctx.font = 'bold 10px system-ui'; ctx.fillText('\u2713', n.x + n.radius - 4, n.y - n.radius + 4); }
-        }
-
-        // Tooltip
-        if (hoveredNode && !hoveredNode.isCenter) {
-          const n = hoveredNode;
-          const tipW = 260, tipH = 62;
-          const tipX = Math.min(n.x + 15, W - tipW - 10);
-          const tipY = Math.max(n.y - tipH - 10, 10);
-          ctx.fillStyle = 'rgba(24,24,27,0.95)';
-          const tColor = tierColors[n.tier] || '#71717a';
-          ctx.strokeStyle = tColor + '66'; ctx.lineWidth = 1;
-          ctx.beginPath(); ctx.roundRect(tipX, tipY, tipW, tipH, 8); ctx.fill(); ctx.stroke();
-          ctx.fillStyle = '#fafafa'; ctx.font = '12px Inter, system-ui'; ctx.textAlign = 'left';
-          ctx.fillText(n.title, tipX + 10, tipY + 18);
-          ctx.fillStyle = tColor; ctx.font = '10px Inter, system-ui';
-          ctx.fillText(n.tierLabel + ' | ' + (n.verified ? '\u2713 Verified' : '\ud83d\udd0d Search'), tipX + 10, tipY + 36);
-          ctx.fillStyle = '#71717a'; ctx.font = '9px JetBrains Mono, monospace';
-          try { ctx.fillText(new URL(n.url).hostname, tipX + 10, tipY + 52); } catch(e) {}
-        }
-
-        // Legend
-        ctx.font = '10px Inter, system-ui'; ctx.textAlign = 'left';
-        let ly = 16;
-        for (const [tier, color] of Object.entries(tierColors)) {
-          ctx.fillStyle = color; ctx.beginPath(); ctx.arc(14, ly, 4, 0, Math.PI*2); ctx.fill();
-          ctx.fillStyle = '#71717a'; ctx.fillText(tier.replace('_', ' '), 24, ly + 3);
-          ly += 16;
-        }
-
-        requestAnimationFrame(simulate);
-      }
-      simulate();
-    }
-
-    
-    // ===== VOID ENGINE VISUALIZATION =====
-    function initVoidCanvas(divergenceData) {
-      const canvas = document.getElementById('voidCanvas');
-      if (!canvas || !divergenceData) return;
-      const container = canvas.parentElement;
-      const W = container.clientWidth;
-      const H = container.clientHeight;
-      canvas.width = W * 2;
-      canvas.height = H * 2;
-      const ctx = canvas.getContext('2d');
-      ctx.scale(2, 2);
-
-      const signals = divergenceData.divergences || [];
-      const score = divergenceData.dark_matter_score || 0;
-      let frame = 0;
-
-      function draw() {
-        frame++;
-        ctx.clearRect(0, 0, W, H);
-
-        // Background void gradient
-        const grad = ctx.createRadialGradient(W/2, H/2, 0, W/2, H/2, W/2);
-        grad.addColorStop(0, 'rgba(168,85,247,' + (0.04 + Math.sin(frame * 0.01) * 0.02) + ')');
-        grad.addColorStop(0.5, 'rgba(168,85,247,0.01)');
-        grad.addColorStop(1, 'transparent');
-        ctx.fillStyle = grad;
-        ctx.fillRect(0, 0, W, H);
-
-        // Scanning line
-        const scanX = (frame * 1.5) % W;
-        ctx.beginPath();
-        ctx.moveTo(scanX, 0); ctx.lineTo(scanX, H);
-        ctx.strokeStyle = 'rgba(168,85,247,0.3)';
-        ctx.lineWidth = 1;
-        ctx.stroke();
-
-        // Signal waveform
-        ctx.beginPath();
-        ctx.moveTo(0, H/2);
-        for (let x = 0; x < W; x++) {
-          const baseWave = Math.sin(x * 0.02 + frame * 0.02) * 10;
-          const noiseWave = Math.sin(x * 0.05 + frame * 0.03) * 5;
-          // Spikes at signal positions
-          let spike = 0;
-          for (let s = 0; s < signals.length; s++) {
-            const sPos = ((s + 1) / (signals.length + 1)) * W;
-            const dist = Math.abs(x - sPos);
-            if (dist < 30) {
-              const severity = signals[s].severity === 'HIGH' ? 25 : signals[s].severity === 'MEDIUM' ? 15 : 8;
-              spike += severity * Math.exp(-dist * dist / 200) * (1 + Math.sin(frame * 0.05 + s) * 0.3);
-            }
-          }
-          const y = H/2 + baseWave + noiseWave - spike;
-          ctx.lineTo(x, y);
-        }
-        ctx.strokeStyle = 'rgba(168,85,247,0.6)';
-        ctx.lineWidth = 1.5;
-        ctx.stroke();
-
-        // Fill below waveform
-        ctx.lineTo(W, H); ctx.lineTo(0, H); ctx.closePath();
-        ctx.fillStyle = 'rgba(168,85,247,0.05)';
-        ctx.fill();
-
-        // Signal markers
-        for (let s = 0; s < signals.length; s++) {
-          const sPos = ((s + 1) / (signals.length + 1)) * W;
-          const sig = signals[s];
-          const color = sig.severity === 'HIGH' ? '#ef4444' : sig.severity === 'MEDIUM' ? '#eab308' : '#a855f7';
-
-          // Pulsing dot
-          const pulseR = 4 + Math.sin(frame * 0.05 + s * 2) * 2;
-          ctx.beginPath(); ctx.arc(sPos, H/2 - 15, pulseR, 0, Math.PI * 2);
-          ctx.fillStyle = color + '44'; ctx.fill();
-          ctx.beginPath(); ctx.arc(sPos, H/2 - 15, 3, 0, Math.PI * 2);
-          ctx.fillStyle = color; ctx.fill();
-
-          // Vertical indicator
-          ctx.beginPath(); ctx.moveTo(sPos, H/2 - 8); ctx.lineTo(sPos, H/2 + 8);
-          ctx.strokeStyle = color + '66'; ctx.lineWidth = 1; ctx.stroke();
-        }
-
-        // Score bar at bottom
-        const barY = H - 6;
-        ctx.fillStyle = 'rgba(46,46,51,0.5)';
-        ctx.fillRect(0, barY, W, 4);
-        const barWidth = (score / 100) * W;
-        const barColor = score >= 60 ? '#ef4444' : score >= 30 ? '#eab308' : '#a855f7';
-        ctx.fillStyle = barColor + '88';
-        ctx.fillRect(0, barY, barWidth, 4);
-
-        requestAnimationFrame(draw);
-      }
-      draw();
-    }
-
-// ===== QUERY HISTORY =====
-    function saveQuery(q) {
-      try {
-        let hist = JSON.parse(localStorage.getItem('submind_history') || '[]');
-        hist = hist.filter(h => h.query !== q);
-        hist.unshift({ query: q, time: Date.now() });
-        hist = hist.slice(0, 10);
-        localStorage.setItem('submind_history', JSON.stringify(hist));
-        renderHistory();
-      } catch(e) {}
-    }
-    function renderHistory() {
-      try {
-        const hist = JSON.parse(localStorage.getItem('submind_history') || '[]');
-        const bar = document.getElementById('historyBar');
-        if (!bar || !hist.length) return;
-        bar.innerHTML = hist.slice(0, 5).map(h =>
-          '<div class="history-chip" onclick="document.getElementById(\'searchInput\').value=\'' + h.query.replace(/'/g, "\\'") + '\';runSearch()" title="' + esc(h.query) + '">' + esc(h.query) + '</div>'
-        ).join('');
-      } catch(e) {}
-    }
-    const origRunSearch = runSearch;
-    runSearch = function() {
-      const q = document.getElementById('searchInput').value.trim();
-      if (q) saveQuery(q);
-      origRunSearch();
-    };
-    renderHistory();
-  </script>
+    </script>
 </body>
 </html>
