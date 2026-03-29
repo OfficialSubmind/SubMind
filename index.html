@@ -298,7 +298,73 @@
         .entity-badge { display:inline-block; background:rgba(78,205,196,0.15); color:#4ecdc4; font-size:0.7rem; padding:3px 8px; border-radius:4px; margin:2px; font-weight:500; }
         .entity-badge.unverified { background:rgba(255,68,68,0.15); color:#ff6b6b; }
 
-        </style>
+        
+        /* Reality Gate */
+        .reality-gate-banner {
+            padding: 16px 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            border-left: 4px solid;
+        }
+        .reality-gate-banner.verified {
+            background: rgba(34, 197, 94, 0.08);
+            border-color: #22c55e;
+        }
+        .reality-gate-banner.low-confidence {
+            background: rgba(245, 158, 11, 0.12);
+            border-color: #f59e0b;
+        }
+        .reality-gate-banner.unverified {
+            background: rgba(239, 68, 68, 0.15);
+            border-color: #ef4444;
+        }
+        .reality-gate-banner .gate-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        .reality-gate-banner .gate-verdict {
+            font-weight: 700;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .reality-gate-banner.verified .gate-verdict { color: #22c55e; }
+        .reality-gate-banner.low-confidence .gate-verdict { color: #f59e0b; }
+        .reality-gate-banner.unverified .gate-verdict { color: #ef4444; }
+        .reality-gate-banner .gate-score {
+            font-size: 13px;
+            color: rgba(255,255,255,0.6);
+        }
+        .reality-gate-banner .gate-message {
+            font-size: 13px;
+            color: rgba(255,255,255,0.7);
+            line-height: 1.5;
+        }
+        .reality-gate-banner .gate-flags {
+            margin-top: 10px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+        .reality-gate-banner .gate-flag {
+            background: rgba(255,255,255,0.08);
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            color: rgba(255,255,255,0.5);
+        }
+        .reality-gate-banner.unverified .gate-flag {
+            background: rgba(239, 68, 68, 0.2);
+            color: #fca5a5;
+        }
+        .reality-gate-banner.low-confidence .gate-flag {
+            background: rgba(245, 158, 11, 0.15);
+            color: #fcd34d;
+        }
+
+</style>
 </head>
 <body>
     <!-- HEADER -->
@@ -483,6 +549,7 @@
       var divData = intel.behavioral_divergence || {};
       var sources = b.sources || [];
     var contradictions = (intel.contradictions) || {};
+        const realityGate = data.intelligence?.reality_gate || null;
     var strategicIntel = (intel.strategic_intel) || {};
     var confCal = (intel.confidence_calibration) || {};
     var plainLang = b.plain_language_summary || {};
@@ -502,6 +569,30 @@
 
       // ===== QUERY INTELLIGENCE BAR =====
       if(qi){
+
+        // ---- Reality Gate Banner ----
+        if (realityGate && realityGate.verdict !== 'VERIFIED') {
+          const gateClass = realityGate.verdict === 'UNVERIFIED' ? 'unverified' : 'low-confidence';
+          const gateIcon = realityGate.verdict === 'UNVERIFIED' ? '🚫' : '⚠️';
+          const gateLabel = realityGate.verdict === 'UNVERIFIED' ? 'EVIDENCE NOT FOUND' : 'LIMITED EVIDENCE';
+          html += '<div class="reality-gate-banner ' + gateClass + '">';
+          html += '<div class="gate-header">';
+          html += '<span class="gate-verdict">' + gateIcon + ' REALITY GATE: ' + gateLabel + '</span>';
+          html += '<span class="gate-score">Reality Score: ' + (realityGate.reality_score || 0) + '/100</span>';
+          html += '</div>';
+          if (realityGate.recommendation) {
+            html += '<div class="gate-message">' + realityGate.recommendation + '</div>';
+          }
+          if (realityGate.flags && realityGate.flags.length > 0) {
+            html += '<div class="gate-flags">';
+            realityGate.flags.forEach(function(flag) {
+              html += '<span class="gate-flag">' + flag.split(':')[0] + '</span>';
+            });
+            html += '</div>';
+          }
+          html += '</div>';
+        }
+
         html += '<div class="qi-bar fade-up">';
         html += '<span class="qi-label">Analyzed as:</span>';
         html += '<span class="qi-tag" style="color:var(--cyan)">' + esc(qi.classification.primary_domain.toUpperCase()) + '</span>';
