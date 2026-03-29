@@ -163,8 +163,7 @@ function buildSearchFallback(source) {
       ? 'https://www.google.com/search?q=' + encodeURIComponent(q) + '&tbm=nws'
       : 'https://www.google.com/search?q=' + encodeURIComponent(q);
     return base;
-  }`;
-}
+  }
 
 async function verifyAndFixSources(sources) {
   if (!sources || !sources.length) return { sources: [], stats: { total: 0, verified: 0, fixed: 0, failed: 0 } };
