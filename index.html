@@ -345,6 +345,7 @@
       el.innerHTML=searchHistory.slice(0,5).map(function(q){
         return '<div class="history-pill" onclick="document.getElementById(\'q\').value=\''+esc(q).replace(/'/g,'')+'\';runSearch()">'+esc(q.length>35?q.substring(0,35)+'...':q)+'</div>';
       }).join('');
+    }
     // ===== LOADING PHASES =====
     var phases = [
       {icon:'\ud83d\udd0d',text:'Searching multiple intelligence sources...'},
