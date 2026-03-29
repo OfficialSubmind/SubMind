@@ -173,14 +173,14 @@ async function verifyAndFixSources(sources) {
   const results = await Promise.allSettled(
     sources.map(async (src) => {
       if (!src.url || src.url.includes('google.com/search')) {
-        return { ...src, verified: false, link_type: 'search' };
+        return { ...src, verified: false, verification_status: 'failed', link_type: 'search' };
       }
       const check = await verifyUrl(src.url);
       if (check.valid) {
-        return { ...src, verified: true, link_type: 'direct', http_status: check.status };
+        return { ...src, verified: true, verification_status: 'verified', link_type: 'direct', http_status: check.status };
       }
       const fallbackUrl = buildSearchFallback(src);
-      return { ...src, original_url: src.url, url: fallbackUrl, verified: false, link_type: 'search', http_status: check.status, fallback_reason: `Original URL returned ${check.status || 'unreachable'}` };
+      return { ...src, original_url: src.url, url: fallbackUrl, verified: false, verification_status: 'fixed', link_type: 'search', http_status: check.status, fallback_reason: `Original URL returned ${check.status || 'unreachable'}` };
     })
   );
   const verified = [];
@@ -1263,7 +1263,7 @@ function tagSyntheticSources(sources, verificationStats) {
   let syntheticCount = 0;
   let confirmedCount = 0;
   const tagged = sources.map(s => {
-    const isVerified = s.verification_status === 'verified' || s.verification_status === 'fixed';
+    const isVerified = s.verified === true || !!s.original_url;
     if (isVerified) {
       confirmedCount++;
       return { ...s, provenance_tag: s.provenance_tag || 'RETRIEVED', synthetic: false };
@@ -1682,6 +1682,7 @@ export default async function handler(req, res) {
     console.log('[Layer 2] Checking source existence & tagging synthetics...');
     const { sources: existenceTaggedSources, existence_check: sourceExistence } = tagSyntheticSources(verifiedSources, verificationStats);
     console.log('[Layer 2] Confirmed:', sourceExistence.confirmed, '| Synthetic:', sourceExistence.synthetic, '| Rate:', sourceExistence.existence_rate + '%', '| Pass:', sourceExistence.pass);
+    console.log('[Layer 2] First source props:', JSON.stringify({verified: verifiedSources[0]?.verified, vs: verifiedSources[0]?.verification_status, url: verifiedSources[0]?.url?.substring(0,40)}));
     
     // ===== LAYER 3: CONFIDENCE FLOOR ENFORCEMENT =====
     console.log('[Layer 3] Enforcing confidence floor...');
