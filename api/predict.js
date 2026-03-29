@@ -261,7 +261,7 @@ async function openaiEnrichedContext(query) {
 }
 
 // ===== SECONDARY SOURCE DISCOVERY (Gemini Deep Links) =====
-  async function geminiDeepSourceSearch(queryIntel.enriched) {
+  async function geminiDeepSourceSearch(query) {
     // Second Gemini call focused purely on finding real, direct article URLs
     for (let i = 0; i < GEMINI_KEYS.length; i++) {
       try {
@@ -979,7 +979,7 @@ export default async function handler(req, res) {
     const [geminiResult, openaiResult, deepResult] = await Promise.allSettled([
       geminiGroundedSearch(query),
       openaiEnrichedContext(query),
-      geminiDeepSourceSearch(query)
+      geminiDeepSourceSearch(queryIntel.enriched)
     ]);
 
     const gemini = geminiResult.status === 'fulfilled' ? geminiResult.value : { sources: [], context: '' };
