@@ -1654,8 +1654,6 @@ export default async function handler(req, res) {
       gatedContext = 'REALITY GATE CAUTION: Evidence quality is low for this query. Reality Score: ' + realityCheck.reality_score + '/100. Flags: ' + realityCheck.flags.join('; ') + '. Clearly distinguish between verified facts and speculation in your briefing.\n\n' + enrichedContext;
     } else {
       gatedContext = enrichedContext;
-    } else if (realityCheck.verdict === 'LOW_CONFIDENCE') {
-      gatedContext = 'REALITY GATE CAUTION: Evidence quality is low for this query. Reality Score: ' + realityCheck.reality_score + '/100. Flags: ' + realityCheck.flags.join('; ') + '. Clearly distinguish between verified facts and speculation in your briefing.\n\n' + combinedContext;
     }
 
     console.log('[Phase 2] Generating intelligence briefing...');
