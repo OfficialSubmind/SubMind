@@ -539,7 +539,7 @@ Requirements:
 12. Investment relevance with specific sectors, risk level, and opportunity windows
 13. USER STRATEGIES: Provide at least 3 concrete strategies a regular person can use this information for. Think: how would an investor, researcher, business owner, or curious citizen USE this intelligence?
 14. PLAIN LANGUAGE SUMMARY: Include a one_sentence summary, what_changed, why_it_matters, and what_to_watch - all in language a high school student could understand
-15. Do NOT just summarize search results - synthesize, find patterns, detect contradictions, and produce ORIGINAL analytical insights``
+15. Do NOT just summarize search results - synthesize, find patterns, detect contradictions, and produce ORIGINAL analytical insights`
         }],
         temperature: 0.3,
         max_tokens: 8000
