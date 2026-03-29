@@ -778,7 +778,6 @@
     if(strategicIntel.overall_stance) html += ' \u2022 Stance: '+strategicIntel.overall_stance;
     html += '</div>';
 
-      html += 'SubMind v'+(meta.version||'11.0')+' \u2022 '+(meta.elapsed_seconds||0)+'s \u2022 '+(meta.pipeline?meta.pipeline.length:0)+' pipeline stages \u2022 Trust score '+trustScore+'/100';
       html += '</div>';
 
       el.innerHTML = html;
