@@ -1638,19 +1638,24 @@ export default async function handler(req, res) {
     // ---- Phase 1.5: REALITY GATE ----
     const allSourcesForGate = [...(gemini.sources || []), ...(deep.sources || [])];
     const realityCheck = realityGate(query, allSourcesForGate, combinedContext);
+    let gatedContext;
     console.log('[Reality Gate] Score:', realityCheck.reality_score, '| Verdict:', realityCheck.verdict, '| Flags:', realityCheck.flags.length);
     
     // If reality gate fails hard, inject warning into the context
     const enrichedContext = queryIntel.entities.length > 0 
       ? combinedContext + '\n\nKEY ENTITIES: ' + queryIntel.entities.map(e => e.name + ' (' + e.type + ')').join(', ') 
         + '\nDOMAIN: ' + queryIntel.classification.primary_domain
-        + '\nSEARCH ANGLES: ' + queryIntel.search_angles.join('; ')
-      : combinedContext;
-    let gatedContext = enrichedContext;
+        + '\nSEARCH ANGLES: ' + queryIntel.search_angles.join(';
+
+    // Apply Reality Gate to context
     if (realityCheck.verdict === 'UNVERIFIED') {
       gatedContext = 'CRITICAL REALITY GATE WARNING: SubMind found NO credible external evidence supporting this query. Reality Score: ' + realityCheck.reality_score + '/100. Flags: ' + realityCheck.flags.join('; ') + '. You MUST acknowledge this lack of evidence prominently in your briefing. Do NOT present unverified claims as facts. State clearly what could NOT be verified.\n\n' + enrichedContext;
     } else if (realityCheck.verdict === 'LOW_CONFIDENCE') {
       gatedContext = 'REALITY GATE CAUTION: Evidence quality is low for this query. Reality Score: ' + realityCheck.reality_score + '/100. Flags: ' + realityCheck.flags.join('; ') + '. Clearly distinguish between verified facts and speculation in your briefing.\n\n' + enrichedContext;
+    } else {
+      gatedContext = enrichedContext;
+    } else if (realityCheck.verdict === 'LOW_CONFIDENCE') {
+      gatedContext = 'REALITY GATE CAUTION: Evidence quality is low for this query. Reality Score: ' + realityCheck.reality_score + '/100. Flags: ' + realityCheck.flags.join('; ') + '. Clearly distinguish between verified facts and speculation in your briefing.\n\n' + combinedContext;
     }
 
     console.log('[Phase 2] Generating intelligence briefing...');
