@@ -345,28 +345,6 @@
       el.innerHTML=searchHistory.slice(0,5).map(function(q){
         return '<div class="history-pill" onclick="document.getElementById(\'q\').value=\''+esc(q).replace(/'/g,'')+'\';runSearch()">'+esc(q.length>35?q.substring(0,35)+'...':q)+'</div>';
       }).join('');
-    // Confidence Calibration Details
-    if(confCal.adjustments && confCal.adjustments.length > 0){
-      html += '<div class="confidence-calibration">';
-      html += '<div class="conf-cal-header">';
-      html += '<span class="conf-cal-label">Confidence Calibration</span>';
-      var deltaStr = confCal.delta > 0 ? '+' + confCal.delta : String(confCal.delta || 0);
-      var deltaColor = confCal.delta > 0 ? 'var(--green)' : confCal.delta < 0 ? 'var(--red)' : 'var(--text3)';
-      html += '<span class="conf-cal-delta" style="color:' + deltaColor + '">Raw ' + (confCal.raw_confidence||0) + '% \u2192 Calibrated ' + (confCal.calibrated_confidence||0) + '% (' + deltaStr + ')</span>';
-      html += '</div>';
-      html += '<div class="conf-cal-bar"><div class="conf-cal-marker"><div class="conf-cal-fill" style="width:' + (confCal.calibrated_confidence||0) + '%;background:' + confColor + '"></div></div></div>';
-      confCal.adjustments.forEach(function(adj){
-        var adjClass = adj.adjustment > 0 ? 'conf-adj-pos' : adj.adjustment < 0 ? 'conf-adj-neg' : '';
-        var adjSign = adj.adjustment > 0 ? '+' : '';
-        html += '<div class="conf-adj ' + adjClass + '">' + adjSign + adj.adjustment + ' ' + esc(adj.factor) + ' \u2014 ' + esc(adj.reason) + '</div>';
-      });
-      if(confCal.explanation) html += '<div class="conf-cal-explain" style="margin-top:6px">' + esc(confCal.explanation) + '</div>';
-      html += '</div>';
-    }
-
-    }
-    renderHistory();
-
     // ===== LOADING PHASES =====
     var phases = [
       {icon:'\ud83d\udd0d',text:'Searching multiple intelligence sources...'},
@@ -484,7 +462,27 @@
       html += '</div>';
 
       
-    // ===== PLAIN LANGUAGE SUMMARY =====
+    
+    // Confidence Calibration Details
+    if(confCal.adjustments && confCal.adjustments.length > 0){
+      html += '<div class="confidence-calibration">';
+      html += '<div class="conf-cal-header">';
+      html += '<span class="conf-cal-label">Confidence Calibration</span>';
+      var deltaStr = confCal.delta > 0 ? '+' + confCal.delta : String(confCal.delta || 0);
+      var deltaColor = confCal.delta > 0 ? 'var(--green)' : confCal.delta < 0 ? 'var(--red)' : 'var(--text3)';
+      html += '<span class="conf-cal-delta" style="color:' + deltaColor + '">Raw ' + (confCal.raw_confidence||0) + '% \u2192 Calibrated ' + (confCal.calibrated_confidence||0) + '% (' + deltaStr + ')</span>';
+      html += '</div>';
+      html += '<div class="conf-cal-bar"><div class="conf-cal-marker"><div class="conf-cal-fill" style="width:' + (confCal.calibrated_confidence||0) + '%;background:' + confColor + '"></div></div></div>';
+      confCal.adjustments.forEach(function(adj){
+        var adjClass = adj.adjustment > 0 ? 'conf-adj-pos' : adj.adjustment < 0 ? 'conf-adj-neg' : '';
+        var adjSign = adj.adjustment > 0 ? '+' : '';
+        html += '<div class="conf-adj ' + adjClass + '">' + adjSign + adj.adjustment + ' ' + esc(adj.factor) + ' \u2014 ' + esc(adj.reason) + '</div>';
+      });
+      if(confCal.explanation) html += '<div class="conf-cal-explain" style="margin-top:6px">' + esc(confCal.explanation) + '</div>';
+      html += '</div>';
+    }
+
+// ===== PLAIN LANGUAGE SUMMARY =====
     if(plainLang.one_sentence){
       html += '<div class="plain-summary fade-up">';
       html += '<div class="plain-summary-sentence">' + esc(plainLang.one_sentence) + '</div>';
