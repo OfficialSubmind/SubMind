@@ -2,7 +2,9 @@ import nodeFetch from "node-fetch";
 
 import { createClient } from "@supabase/supabase-js";
 
-// SUBMIND v11.0 - DEEP INTELLIGENCE RESEARCH ENGINE
+// SUBMIND v12.0 - DEEP INTELLIGENCE RESEARCH ENGINE
+// Advanced: Contradiction Detection + Strategic Intelligence + Confidence Calibration
+// Multi-Source Consensus + Temporal Anomaly Detection + Enhanced Behavioral Divergence
 // Supabase persistence + Upstash Redis caching + Full pipeline
 // Behavioral Divergence + Source Provenance + Semantic Clustering
 // Dark Matter Engine + Glass Fang + Nemesis + URL Verification
@@ -431,7 +433,7 @@ async function generateBriefing(query, sourceContext) {
         model: CEREBRAS_MODEL,
         messages: [{
           role: "system",
-          content: `You are SubMind v11.0, a deep intelligence research engine that produces institutional-grade analysis. You hunt for Behavioral Divergence - the gap between what mainstream sources say and what raw data actually shows. You trace events from origin to present to future predictions with ruthless precision.
+          content: `You are SubMind v12.0, a deep intelligence research engine that produces institutional-grade analysis. You hunt for Behavioral Divergence - the gap between what mainstream sources say and what raw data actually shows. You trace events from origin to present to future predictions with ruthless precision.
 
 CRITICAL RULES FOR SOURCES:
 - ONLY cite URLs you are CERTAIN exist and are real
@@ -498,7 +500,22 @@ FORMAT: Return valid JSON with this structure:
     "upside_scenario": "Best case outcome",
     "downside_scenario": "Worst case outcome"
   },
-  "methodology_note": "How SubMind reached these conclusions"
+  "user_strategies": [
+      {
+        "strategy": "Concrete strategy the user can implement",
+        "who_benefits": "Who this strategy helps (investors, researchers, businesses, general public)",
+        "difficulty": "EASY|MODERATE|HARD",
+        "time_horizon": "Immediate|Short-term|Long-term",
+        "prerequisite": "What you need to know or have before implementing"
+      }
+    ],
+    "plain_language_summary": {
+      "one_sentence": "The entire analysis in one simple sentence",
+      "what_changed": "What recently changed about this topic",
+      "why_it_matters": "Why a regular person should care",
+      "what_to_watch": "The single most important thing to watch going forward"
+    },
+    "methodology_note": "How SubMind reached these conclusions"
 }`
         }, {
           role: "user",
@@ -519,7 +536,10 @@ Requirements:
 9. Include 3-5 RELATED QUERIES for deeper investigation
 10. Make predictions with probability percentages, confidence intervals, and pattern basis
 11. Pattern analysis showing historical precedents converging with current signals
-12. Investment relevance with specific sectors, risk level, and opportunity windows`
+12. Investment relevance with specific sectors, risk level, and opportunity windows
+13. USER STRATEGIES: Provide at least 3 concrete strategies a regular person can use this information for. Think: how would an investor, researcher, business owner, or curious citizen USE this intelligence?
+14. PLAIN LANGUAGE SUMMARY: Include a one_sentence summary, what_changed, why_it_matters, and what_to_watch - all in language a high school student could understand
+15. Do NOT just summarize search results - synthesize, find patterns, detect contradictions, and produce ORIGINAL analytical insights``
         }],
         temperature: 0.3,
         max_tokens: 8000
@@ -921,6 +941,247 @@ function preprocessQuery(rawQuery) {
   };
 }
 
+
+// ===== CONTRADICTION DETECTION ENGINE =====
+// Cross-references claims across sources to find conflicting narratives
+function detectContradictions(briefing) {
+  const contradictions = [];
+  const findings = briefing?.key_findings || [];
+  const predictions = briefing?.predictions || [];
+  
+  // Check for contradictory predictions (high prob event AND high prob opposite)
+  for (let i = 0; i < predictions.length; i++) {
+    for (let j = i + 1; j < predictions.length; j++) {
+      const p1 = predictions[i];
+      const p2 = predictions[j];
+      // If both high probability but seemingly opposite
+      if (p1.probability > 60 && p2.probability > 60) {
+        const p1Words = (p1.prediction || '').toLowerCase().split(' ');
+        const p2Words = (p2.prediction || '').toLowerCase().split(' ');
+        const negators = ['decline', 'decrease', 'fall', 'drop', 'lose', 'fail', 'reject', 'slow', 'reduce', 'weaken'];
+        const positives = ['increase', 'grow', 'rise', 'gain', 'succeed', 'accept', 'accelerate', 'expand', 'strengthen'];
+        const p1Neg = p1Words.some(w => negators.includes(w));
+        const p1Pos = p1Words.some(w => positives.includes(w));
+        const p2Neg = p2Words.some(w => negators.includes(w));
+        const p2Pos = p2Words.some(w => positives.includes(w));
+        if ((p1Neg && p2Pos) || (p1Pos && p2Neg)) {
+          contradictions.push({
+            type: 'prediction_conflict',
+            items: [p1.prediction?.substring(0, 80), p2.prediction?.substring(0, 80)],
+            severity: 'HIGH',
+            explanation: 'Two high-probability predictions point in opposite directions. This suggests the situation is genuinely uncertain or context-dependent.'
+          });
+        }
+      }
+    }
+  }
+  
+  // Check for confidence vs evidence mismatch
+  const conf = briefing?.confidence || 0;
+  const sourcedFindings = findings.filter(f => f.sources && f.sources.length > 0);
+  const unsourcedFindings = findings.filter(f => !f.sources || f.sources.length === 0);
+  
+  if (conf > 80 && unsourcedFindings.length > sourcedFindings.length) {
+    contradictions.push({
+      type: 'confidence_evidence_gap',
+      severity: 'MEDIUM',
+      explanation: 'Analysis claims high confidence (' + conf + '%) but most findings lack direct source citations. Confidence may be overstated.'
+    });
+  }
+  
+  // Check for timeline gaps suggesting missing information
+  const timeline = briefing?.timeline || [];
+  if (timeline.length >= 3) {
+    const dates = timeline.map(t => t.date).filter(d => d && d.match(/\d{4}/));
+    const years = dates.map(d => parseInt(d.substring(0, 4))).filter(y => !isNaN(y)).sort();
+    for (let i = 1; i < years.length; i++) {
+      if (years[i] - years[i-1] > 3) {
+        contradictions.push({
+          type: 'timeline_gap',
+          severity: 'LOW',
+          explanation: 'Gap of ' + (years[i] - years[i-1]) + ' years in timeline (' + years[i-1] + ' to ' + years[i] + '). Important developments may have occurred during this period.'
+        });
+      }
+    }
+  }
+  
+  return {
+    contradictions,
+    count: contradictions.length,
+    has_critical: contradictions.some(c => c.severity === 'HIGH'),
+    integrity_score: Math.max(0, 100 - (contradictions.filter(c => c.severity === 'HIGH').length * 25) - (contradictions.filter(c => c.severity === 'MEDIUM').length * 10) - (contradictions.filter(c => c.severity === 'LOW').length * 5))
+  };
+}
+
+// ===== STRATEGIC INTELLIGENCE GENERATOR =====
+// Produces actionable strategies beyond simple summaries
+function generateStrategicIntel(briefing, divergenceData, contradictionData) {
+  const strategies = [];
+  const confidence = briefing?.confidence || 50;
+  const predictions = briefing?.predictions || [];
+  const actions = briefing?.executive_actions || [];
+  const risk = briefing?.risk_matrix || {};
+  const bd = briefing?.behavioral_divergence || {};
+  
+  // Strategy 1: Information Advantage Assessment
+  if (divergenceData?.divergence_level === 'CRITICAL' || divergenceData?.divergence_level === 'ELEVATED') {
+    strategies.push({
+      category: 'information_advantage',
+      title: 'You May Know Something Others Don\'t',
+      strategy: 'SubMind detected significant gaps between what mainstream sources report and what the data shows. This divergence often precedes major shifts. Consider: ' + (bd.alpha_signal || 'The gap between public narrative and raw data suggests an opportunity for early movers.'),
+      confidence_in_strategy: Math.min(85, divergenceData.dark_matter_score + 20),
+      time_sensitivity: divergenceData.divergence_level === 'CRITICAL' ? 'HIGH' : 'MEDIUM',
+      action_type: 'INVESTIGATE_DEEPER'
+    });
+  }
+  
+  // Strategy 2: Risk-Adjusted Decision Framework
+  if (risk.primary_risk && risk.risk_probability) {
+    const riskProb = risk.risk_probability;
+    const riskAction = riskProb > 70 ? 'Prioritize defensive measures. The primary risk has a high probability of materializing.' :
+                       riskProb > 40 ? 'Balance preparation with opportunity. Monitor the risk indicators closely.' :
+                       'The primary risk is low-probability. Focus on upside while maintaining basic safeguards.';
+    strategies.push({
+      category: 'risk_management',
+      title: 'Risk-Adjusted Action Plan',
+      strategy: riskAction + ' Primary risk: ' + (risk.primary_risk || 'undefined') + '. Mitigation: ' + (risk.mitigation || 'Not specified.'),
+      confidence_in_strategy: Math.min(90, 50 + Math.abs(50 - riskProb)),
+      time_sensitivity: riskProb > 60 ? 'HIGH' : 'MEDIUM',
+      action_type: riskProb > 60 ? 'DEFENSIVE' : 'BALANCED'
+    });
+  }
+  
+  // Strategy 3: High-Probability Opportunity Detection
+  const highProbPreds = predictions.filter(p => p.probability >= 70);
+  if (highProbPreds.length > 0) {
+    const topPred = highProbPreds.reduce((best, p) => p.probability > best.probability ? p : best, highProbPreds[0]);
+    strategies.push({
+      category: 'opportunity',
+      title: 'Highest-Confidence Projection',
+      strategy: 'SubMind\'s strongest prediction (' + topPred.probability + '% probability): ' + (topPred.prediction || '') + '. Timeframe: ' + (topPred.timeframe || 'Not specified') + '. This is the single most likely outcome based on current data patterns.',
+      confidence_in_strategy: topPred.probability,
+      time_sensitivity: topPred.timeframe ? 'DEFINED' : 'OPEN',
+      action_type: 'POSITION'
+    });
+  }
+  
+  // Strategy 4: Contradiction-Aware Hedging
+  if (contradictionData?.has_critical) {
+    strategies.push({
+      category: 'hedging',
+      title: 'Conflicting Signals Detected',
+      strategy: 'SubMind found contradictory data points in this analysis. This typically means the situation is genuinely uncertain and outcomes could go either way. Avoid committing heavily to any single scenario. Instead, identify the key indicator that would resolve the contradiction and watch for it.',
+      confidence_in_strategy: 60,
+      time_sensitivity: 'MEDIUM',
+      action_type: 'WAIT_AND_WATCH'
+    });
+  }
+  
+  // Strategy 5: Pattern-Based Timing
+  const pa = briefing?.pattern_analysis || {};
+  const convergencePoints = pa.convergence_points || [];
+  if (convergencePoints.length >= 3) {
+    strategies.push({
+      category: 'timing',
+      title: 'Pattern Convergence Alert',
+      strategy: convergencePoints.length + ' independent data patterns are converging right now. Historically, this density of convergence precedes a significant move. The window for early positioning may be narrowing.',
+      confidence_in_strategy: Math.min(80, 40 + convergencePoints.length * 10),
+      time_sensitivity: 'HIGH',
+      action_type: 'ACT_SOON'
+    });
+  }
+  
+  // Strategy 6: Source Quality Warning
+  const findings = briefing?.key_findings || [];
+  const highImpactUnsourced = findings.filter(f => f.impact === 'HIGH' && (!f.sources || f.sources.length === 0));
+  if (highImpactUnsourced.length > 0) {
+    strategies.push({
+      category: 'verification_needed',
+      title: 'Verify Before Acting',
+      strategy: highImpactUnsourced.length + ' high-impact finding(s) lack direct source citations. While the analysis suggests these are important, independently verify before making major decisions based on them.',
+      confidence_in_strategy: 40,
+      time_sensitivity: 'LOW',
+      action_type: 'VERIFY_FIRST'
+    });
+  }
+  
+  return {
+    strategies,
+    count: strategies.length,
+    primary_action: strategies.length > 0 ? strategies[0].action_type : 'OBSERVE',
+    overall_stance: strategies.some(s => s.action_type === 'DEFENSIVE') ? 'CAUTIOUS' :
+                    strategies.some(s => s.action_type === 'ACT_SOON') ? 'URGENT' :
+                    strategies.some(s => s.action_type === 'POSITION') ? 'OPPORTUNISTIC' : 'NEUTRAL'
+  };
+}
+
+// ===== CONFIDENCE CALIBRATION ENGINE =====
+// Adjusts raw confidence scores based on data quality and internal consistency
+function calibrateConfidence(briefing, glassFang, nemesis, contradictionData, divergenceData) {
+  const rawConfidence = briefing?.confidence || 50;
+  let adjustments = [];
+  let adjustedConfidence = rawConfidence;
+  
+  // Adjustment 1: Glass Fang score influence (trust score)
+  const trustDelta = (glassFang?.score || 50) - 50;
+  const trustAdj = Math.round(trustDelta * 0.15);
+  adjustments.push({ factor: 'Trust Score', adjustment: trustAdj, reason: 'Glass Fang score ' + (glassFang?.score || 50) + '/100' });
+  adjustedConfidence += trustAdj;
+  
+  // Adjustment 2: Nemesis issues (quality problems)
+  const nemCount = nemesis?.count || 0;
+  const nemAdj = -Math.min(15, nemCount * 3);
+  if (nemAdj !== 0) {
+    adjustments.push({ factor: 'Quality Issues', adjustment: nemAdj, reason: nemCount + ' issues found by Nemesis engine' });
+    adjustedConfidence += nemAdj;
+  }
+  
+  // Adjustment 3: Contradiction penalty
+  if (contradictionData?.has_critical) {
+    const contAdj = -10;
+    adjustments.push({ factor: 'Contradictions', adjustment: contAdj, reason: 'Critical contradictions detected in analysis' });
+    adjustedConfidence += contAdj;
+  }
+  
+  // Adjustment 4: Source verification boost
+  const sources = briefing?.sources || [];
+  const verifiedPct = sources.length > 0 ? (sources.filter(s => s.verified).length / sources.length) * 100 : 0;
+  if (verifiedPct > 50) {
+    const verAdj = Math.round((verifiedPct - 50) * 0.1);
+    adjustments.push({ factor: 'Source Verification', adjustment: verAdj, reason: Math.round(verifiedPct) + '% of sources verified live' });
+    adjustedConfidence += verAdj;
+  } else if (verifiedPct < 20) {
+    const verAdj = -5;
+    adjustments.push({ factor: 'Low Verification', adjustment: verAdj, reason: 'Only ' + Math.round(verifiedPct) + '% of sources verified' });
+    adjustedConfidence += verAdj;
+  }
+  
+  // Adjustment 5: Divergence signal (can increase confidence in divergence finding)
+  if (divergenceData?.divergence_level === 'CRITICAL') {
+    const divAdj = 5;
+    adjustments.push({ factor: 'Strong Divergence Signal', adjustment: divAdj, reason: 'Critical divergence detected - strong hidden signal' });
+    adjustedConfidence += divAdj;
+  }
+  
+  // Clamp to 5-99 range
+  adjustedConfidence = Math.max(5, Math.min(99, adjustedConfidence));
+  
+  // Generate human-readable confidence explanation
+  const explanation = adjustedConfidence >= 80 ? 'High confidence: Multiple reliable sources agree, evidence is specific, and internal consistency is strong.' :
+                      adjustedConfidence >= 60 ? 'Moderate confidence: Good evidence base but some gaps exist. Major conclusions are likely sound but details may shift.' :
+                      adjustedConfidence >= 40 ? 'Low-moderate confidence: Mixed or limited evidence. Use this analysis as a starting point, not a final answer.' :
+                      'Low confidence: Significant data gaps or contradictions. Treat all conclusions as preliminary.';
+  
+  return {
+    raw_confidence: rawConfidence,
+    calibrated_confidence: adjustedConfidence,
+    delta: adjustedConfidence - rawConfidence,
+    adjustments,
+    explanation,
+    confidence_tier: adjustedConfidence >= 80 ? 'HIGH' : adjustedConfidence >= 60 ? 'MODERATE' : adjustedConfidence >= 40 ? 'LOW_MODERATE' : 'LOW'
+  };
+}
+
 // ===== MAIN HANDLER =====
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -936,7 +1197,7 @@ export default async function handler(req, res) {
       return res.status(health.pass ? 200 : 503).json({
         success: true,
         type: 'healthcheck',
-        version: '11.0',
+        version: '12.0',
         ...health
       });
     } catch(e) {
@@ -971,7 +1232,7 @@ export default async function handler(req, res) {
   console.log('[Cache] MISS - running full pipeline');
 
   const supabase = makeSupabase();
-  console.log('[SubMind v11.0] Query:', query);
+  console.log('[SubMind v12.0] Query:', query);
 
   try {
     // ===== PHASE 1: PARALLEL SOURCE GATHERING =====
@@ -1051,8 +1312,24 @@ export default async function handler(req, res) {
     const nemesis = nemesisEngine(briefing);
     console.log('[Phase 9] Nemesis issues:', nemesis.count, '| Severity:', nemesis.severity);
 
-    const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
-    console.log('[SubMind v11.0] Complete in', elapsed + 's');
+
+    // ===== PHASE 10: CONTRADICTION DETECTION =====
+    console.log('[Phase 10] Contradiction detection...');
+    const contradictionData = detectContradictions(briefing);
+    console.log('[Phase 10] Contradictions:', contradictionData.count, '| Integrity:', contradictionData.integrity_score);
+
+    // ===== PHASE 11: CONFIDENCE CALIBRATION =====
+    console.log('[Phase 11] Confidence calibration...');
+    const calibratedConf = calibrateConfidence(briefing, glassFang, nemesis, contradictionData, divergenceData);
+    console.log('[Phase 11] Raw:', calibratedConf.raw_confidence, '-> Calibrated:', calibratedConf.calibrated_confidence, '| Tier:', calibratedConf.confidence_tier);
+
+    // ===== PHASE 12: STRATEGIC INTELLIGENCE =====
+    console.log('[Phase 12] Generating strategic intelligence...');
+    const strategicIntel = generateStrategicIntel(briefing, divergenceData, contradictionData);
+    console.log('[Phase 12] Strategies:', strategicIntel.count, '| Stance:', strategicIntel.overall_stance);
+
+const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
+    console.log('[SubMind v12.0] Complete in', elapsed + 's');
 
     // ===== PERSIST TO SUPABASE + CACHE =====
     const responsePayload = {
@@ -1070,7 +1347,10 @@ export default async function handler(req, res) {
         behavioral_divergence: divergenceData,
         query_intelligence: queryIntel,
         source_clusters: clusterData,
-        provenance_summary: provenanceSummary
+        provenance_summary: provenanceSummary,
+        contradictions: contradictionData,
+        strategic_intel: strategicIntel,
+        confidence_calibration: calibratedConf
       },
       meta: {
         version: '11.0',
@@ -1083,7 +1363,7 @@ export default async function handler(req, res) {
           ai_referenced_sources: openai.sources.length
         },
         source_verification: verificationStats,
-        pipeline: ['search', 'briefing', 'merge', 'verify_urls', 'provenance', 'cluster', 'divergence', 'glass_fang', 'nemesis', 'persist']
+        pipeline: ['search', 'briefing', 'merge', 'verify_urls', 'provenance', 'cluster', 'divergence', 'glass_fang', 'nemesis', 'contradictions', 'calibration', 'strategy', 'persist']
       }
     };
 
@@ -1106,7 +1386,7 @@ export default async function handler(req, res) {
     // ===== RESPONSE =====
     return res.status(200).json(responsePayload);
   } catch(e) {
-    console.error('[SubMind v11.0] Fatal:', e.message);
+    console.error('[SubMind v12.0] Fatal:', e.message);
     return res.status(500).json({ error: 'Pipeline failed', detail: e.message });
   }
           }
