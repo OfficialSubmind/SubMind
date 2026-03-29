@@ -434,7 +434,7 @@ async function generateBriefing(query, sourceContext) {
         model: CEREBRAS_MODEL,
         messages: [{
           role: "system",
-          content: `You are SubMind v12.0, a deep intelligence research engine that produces institutional-grade analysis. You hunt for Behavioral Divergence - the gap between what mainstream sources say and what raw data actually shows. You trace events from origin to present to future predictions with ruthless precision.
+          content: `You are SubMind v13.0, a deep intelligence research engine that produces institutional-grade analysis. You hunt for Behavioral Divergence - the gap between what mainstream sources say and what raw data actually shows. You trace events from origin to present to future predictions with ruthless precision.
 
 CRITICAL RULES FOR SOURCES:
 - ONLY cite URLs you are CERTAIN exist and are real
@@ -540,7 +540,8 @@ Requirements:
 12. Investment relevance with specific sectors, risk level, and opportunity windows
 13. USER STRATEGIES: Provide at least 3 concrete strategies a regular person can use this information for. Think: how would an investor, researcher, business owner, or curious citizen USE this intelligence?
 14. PLAIN LANGUAGE SUMMARY: Include a one_sentence summary, what_changed, why_it_matters, and what_to_watch - all in language a high school student could understand
-15. Do NOT just summarize search results - synthesize, find patterns, detect contradictions, and produce ORIGINAL analytical insights`
+15. Do NOT just summarize search results - synthesize, find patterns, detect contradictions, and produce ORIGINAL analytical insights
+16. REALITY GATE COMPLIANCE: If the source context contains a REALITY GATE WARNING or CAUTION, you MUST prominently acknowledge the lack of evidence. Never present unverified information as fact. If evidence is weak or absent, say so clearly: "SubMind could not independently verify this claim" and explain what evidence IS and IS NOT available. Your credibility depends on honesty about what you don't know.`
         }],
         temperature: 0.3,
         max_tokens: 8000
@@ -1799,7 +1800,7 @@ const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
           ai_referenced_sources: openai.sources.length
         },
         source_verification: verificationStats,
-        pipeline: ['preprocess', 'entity_verify', 'search', 'briefing', 'merge', 'verify_urls', 'existence_check', 'confidence_floor', 'provenance', 'cluster', 'divergence', 'glass_fang', 'nemesis', 'contradictions', 'calibration', 'strategic_intel', 'input_provenance']
+        pipeline: ['preprocess', 'entity_verify', 'search', 'reality_gate', 'briefing', 'merge', 'verify_urls', 'existence_check', 'confidence_floor', 'provenance', 'cluster', 'divergence', 'glass_fang', 'nemesis', 'contradictions', 'calibration', 'strategic_intel', 'input_provenance']
       }
     };
 
