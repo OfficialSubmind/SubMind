@@ -1641,6 +1641,11 @@ export default async function handler(req, res) {
     console.log('[Reality Gate] Score:', realityCheck.reality_score, '| Verdict:', realityCheck.verdict, '| Flags:', realityCheck.flags.length);
     
     // If reality gate fails hard, inject warning into the context
+    const enrichedContext = queryIntel.entities.length > 0 
+      ? combinedContext + '\n\nKEY ENTITIES: ' + queryIntel.entities.map(e => e.name + ' (' + e.type + ')').join(', ') 
+        + '\nDOMAIN: ' + queryIntel.classification.primary_domain
+        + '\nSEARCH ANGLES: ' + queryIntel.search_angles.join('; ')
+      : combinedContext;
     let gatedContext = enrichedContext;
     if (realityCheck.verdict === 'UNVERIFIED') {
       gatedContext = 'CRITICAL REALITY GATE WARNING: SubMind found NO credible external evidence supporting this query. Reality Score: ' + realityCheck.reality_score + '/100. Flags: ' + realityCheck.flags.join('; ') + '. You MUST acknowledge this lack of evidence prominently in your briefing. Do NOT present unverified claims as facts. State clearly what could NOT be verified.\n\n' + enrichedContext;
@@ -1649,11 +1654,7 @@ export default async function handler(req, res) {
     }
 
     console.log('[Phase 2] Generating intelligence briefing...');
-    const enrichedContext = queryIntel.entities.length > 0 
-      ? combinedContext + '\n\nKEY ENTITIES: ' + queryIntel.entities.map(e => e.name + ' (' + e.type + ')').join(', ') 
-        + '\nDOMAIN: ' + queryIntel.classification.primary_domain
-        + '\nSEARCH ANGLES: ' + queryIntel.search_angles.join('; ')
-      : combinedContext;
+    
     const { briefing, provider: briefingProvider, raw_length } = await generateBriefing(query, gatedContext);
 
     if (!briefing) {
