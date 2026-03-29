@@ -1682,7 +1682,6 @@ export default async function handler(req, res) {
     console.log('[Layer 2] Checking source existence & tagging synthetics...');
     const { sources: existenceTaggedSources, existence_check: sourceExistence } = tagSyntheticSources(verifiedSources, verificationStats);
     console.log('[Layer 2] Confirmed:', sourceExistence.confirmed, '| Synthetic:', sourceExistence.synthetic, '| Rate:', sourceExistence.existence_rate + '%', '| Pass:', sourceExistence.pass);
-    console.log('[Layer 2] First source props:', JSON.stringify({verified: verifiedSources[0]?.verified, vs: verifiedSources[0]?.verification_status, url: verifiedSources[0]?.url?.substring(0,40)}));
     
     // ===== LAYER 3: CONFIDENCE FLOOR ENFORCEMENT =====
     console.log('[Layer 3] Enforcing confidence floor...');
