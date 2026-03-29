@@ -311,6 +311,35 @@
       .invest-grid{grid-template-columns:1fr}
       .intel-strip{grid-template-columns:repeat(3,1fr)}
     }
+
+    /* Dark Matter Void Engine */
+    .void-engine{background:linear-gradient(135deg,rgba(9,9,11,0.95),rgba(18,18,27,0.9));border:1px solid rgba(168,85,247,0.2);border-radius:16px;overflow:hidden;position:relative}
+    .void-header{padding:20px 24px 12px;display:flex;align-items:center;justify-content:space-between}
+    .void-title{display:flex;align-items:center;gap:10px;font-size:15px;font-weight:600;color:var(--purple)}
+    .void-score-ring{display:flex;align-items:center;gap:16px;padding:0 24px 16px}
+    .void-score{width:80px;height:80px;position:relative}
+    .void-score svg{transform:rotate(-90deg)}
+    .void-score-bg{fill:none;stroke:var(--border);stroke-width:5}
+    .void-score-fill{fill:none;stroke:var(--purple);stroke-width:5;stroke-linecap:round;transition:stroke-dashoffset 1.5s ease}
+    .void-score-text{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:22px;font-weight:700;color:var(--purple)}
+    .void-metrics{flex:1;display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+    .void-metric{padding:8px 12px;background:rgba(168,85,247,0.06);border:1px solid rgba(168,85,247,0.12);border-radius:8px;text-align:center}
+    .void-metric-label{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px}
+    .void-metric-value{font-size:16px;font-weight:700;font-family:'JetBrains Mono',monospace;margin-top:2px}
+    .void-canvas{height:120px;width:100%;position:relative}
+    .void-canvas canvas{width:100%;height:100%;display:block}
+    .void-signals{padding:12px 24px 16px}
+    .void-signal{display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px solid rgba(168,85,247,0.1)}
+    .void-signal:last-child{border-bottom:none}
+    .void-signal-severity{font-size:9px;font-weight:700;padding:3px 8px;border-radius:4px;white-space:nowrap;margin-top:2px}
+    .sev-HIGH{background:rgba(239,68,68,0.15);color:var(--red)}
+    .sev-MEDIUM{background:rgba(234,179,8,0.15);color:var(--yellow)}
+    .sev-LOW{background:rgba(59,130,246,0.15);color:var(--blue)}
+    .void-signal-content{flex:1}
+    .void-signal-type{font-size:11px;color:var(--purple);font-weight:600;margin-bottom:2px}
+    .void-signal-detail{font-size:12px;color:var(--text2);line-height:1.4}
+    .void-signal-implication{font-size:11px;color:var(--text3);margin-top:3px;font-style:italic}
+
   </style>
 </head>
 <body>
@@ -522,7 +551,45 @@
         html += '</div></div></div>';
       }
 
-      // ===== GLASS FANG VALIDATION CARD =====
+      
+      // ===== DARK MATTER VOID ENGINE =====
+      if (divData.divergences && divData.divergences.length > 0) {
+        const dmScore = divData.dark_matter_score || 0;
+        const dmLevel = divData.divergence_level || 'BASELINE';
+        const dmCirc = 2 * Math.PI * 32;
+        const dmOffset = dmCirc - (dmCirc * dmScore / 100);
+        const dmColor = dmScore >= 60 ? 'var(--red)' : dmScore >= 30 ? 'var(--yellow)' : 'var(--purple)';
+
+        html += '<div class="void-engine card fade-up fade-up-3">';
+        html += '<div class="void-header"><div class="void-title"><span>\u2B50</span>Dark Matter Void Engine</div><div style="font-size:11px;color:var(--text3)">' + divData.divergences.length + ' void signals detected</div></div>';
+
+        // Score + Metrics
+        html += '<div class="void-score-ring">';
+        html += '<div class="void-score"><svg width="80" height="80" viewBox="0 0 80 80"><circle class="void-score-bg" cx="40" cy="40" r="32"/><circle class="void-score-fill" cx="40" cy="40" r="32" style="stroke:' + dmColor + ';stroke-dasharray:' + dmCirc + ';stroke-dashoffset:' + dmOffset + '"/></svg><div class="void-score-text">' + dmScore + '</div></div>';
+        html += '<div class="void-metrics">';
+        html += '<div class="void-metric"><div class="void-metric-label">Level</div><div class="void-metric-value" style="color:' + (dmLevel === 'CRITICAL' ? 'var(--red)' : dmLevel === 'ELEVATED' ? 'var(--yellow)' : 'var(--purple)') + ';font-size:13px">' + esc(dmLevel) + '</div></div>';
+        html += '<div class="void-metric"><div class="void-metric-label">Signals</div><div class="void-metric-value" style="color:var(--purple)">' + divData.divergences.length + '</div></div>';
+        html += '<div class="void-metric"><div class="void-metric-label">High Severity</div><div class="void-metric-value" style="color:var(--red)">' + divData.divergences.filter(d => d.severity === 'HIGH').length + '</div></div>';
+        html += '</div></div>';
+
+        // Void Visualization Canvas
+        html += '<div class="void-canvas"><canvas id="voidCanvas"></canvas></div>';
+
+        // Individual Void Signals
+        html += '<div class="void-signals">';
+        for (const d of divData.divergences) {
+          html += '<div class="void-signal">';
+          html += '<span class="void-signal-severity sev-' + esc(d.severity || 'MEDIUM') + '">' + esc(d.severity || 'MEDIUM') + '</span>';
+          html += '<div class="void-signal-content">';
+          html += '<div class="void-signal-type">' + esc((d.type || '').replace(/_/g, ' ')) + '</div>';
+          html += '<div class="void-signal-detail">' + esc(d.signal || d.detail || '') + '</div>';
+          if (d.implication) html += '<div class="void-signal-implication">\u2192 ' + esc(d.implication) + '</div>';
+          html += '</div></div>';
+        }
+        html += '</div></div>';
+      }
+
+// ===== GLASS FANG VALIDATION CARD =====
       const circumference = 2 * Math.PI * 42;
       const offset = circumference - (circumference * (gf.score || 0) / 100);
       const scoreColor = (gf.score || 0) >= 80 ? 'var(--green)' : (gf.score || 0) >= 60 ? 'var(--yellow)' : 'var(--red)';
@@ -825,7 +892,7 @@
       html += '</div>';
 
       el.innerHTML = html;
-      setTimeout(() => initEvidenceWeb(sources), 300);
+      setTimeout(() => { initEvidenceWeb(sources); initVoidCanvas(divData); }, 300);
     }
 
     // ===== EVIDENCE WEB: Force-directed source graph with provenance tiers =====
@@ -979,7 +1046,104 @@
       simulate();
     }
 
-    // ===== QUERY HISTORY =====
+    
+    // ===== VOID ENGINE VISUALIZATION =====
+    function initVoidCanvas(divergenceData) {
+      const canvas = document.getElementById('voidCanvas');
+      if (!canvas || !divergenceData) return;
+      const container = canvas.parentElement;
+      const W = container.clientWidth;
+      const H = container.clientHeight;
+      canvas.width = W * 2;
+      canvas.height = H * 2;
+      const ctx = canvas.getContext('2d');
+      ctx.scale(2, 2);
+
+      const signals = divergenceData.divergences || [];
+      const score = divergenceData.dark_matter_score || 0;
+      let frame = 0;
+
+      function draw() {
+        frame++;
+        ctx.clearRect(0, 0, W, H);
+
+        // Background void gradient
+        const grad = ctx.createRadialGradient(W/2, H/2, 0, W/2, H/2, W/2);
+        grad.addColorStop(0, 'rgba(168,85,247,' + (0.04 + Math.sin(frame * 0.01) * 0.02) + ')');
+        grad.addColorStop(0.5, 'rgba(168,85,247,0.01)');
+        grad.addColorStop(1, 'transparent');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, W, H);
+
+        // Scanning line
+        const scanX = (frame * 1.5) % W;
+        ctx.beginPath();
+        ctx.moveTo(scanX, 0); ctx.lineTo(scanX, H);
+        ctx.strokeStyle = 'rgba(168,85,247,0.3)';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+
+        // Signal waveform
+        ctx.beginPath();
+        ctx.moveTo(0, H/2);
+        for (let x = 0; x < W; x++) {
+          const baseWave = Math.sin(x * 0.02 + frame * 0.02) * 10;
+          const noiseWave = Math.sin(x * 0.05 + frame * 0.03) * 5;
+          // Spikes at signal positions
+          let spike = 0;
+          for (let s = 0; s < signals.length; s++) {
+            const sPos = ((s + 1) / (signals.length + 1)) * W;
+            const dist = Math.abs(x - sPos);
+            if (dist < 30) {
+              const severity = signals[s].severity === 'HIGH' ? 25 : signals[s].severity === 'MEDIUM' ? 15 : 8;
+              spike += severity * Math.exp(-dist * dist / 200) * (1 + Math.sin(frame * 0.05 + s) * 0.3);
+            }
+          }
+          const y = H/2 + baseWave + noiseWave - spike;
+          ctx.lineTo(x, y);
+        }
+        ctx.strokeStyle = 'rgba(168,85,247,0.6)';
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+
+        // Fill below waveform
+        ctx.lineTo(W, H); ctx.lineTo(0, H); ctx.closePath();
+        ctx.fillStyle = 'rgba(168,85,247,0.05)';
+        ctx.fill();
+
+        // Signal markers
+        for (let s = 0; s < signals.length; s++) {
+          const sPos = ((s + 1) / (signals.length + 1)) * W;
+          const sig = signals[s];
+          const color = sig.severity === 'HIGH' ? '#ef4444' : sig.severity === 'MEDIUM' ? '#eab308' : '#a855f7';
+
+          // Pulsing dot
+          const pulseR = 4 + Math.sin(frame * 0.05 + s * 2) * 2;
+          ctx.beginPath(); ctx.arc(sPos, H/2 - 15, pulseR, 0, Math.PI * 2);
+          ctx.fillStyle = color + '44'; ctx.fill();
+          ctx.beginPath(); ctx.arc(sPos, H/2 - 15, 3, 0, Math.PI * 2);
+          ctx.fillStyle = color; ctx.fill();
+
+          // Vertical indicator
+          ctx.beginPath(); ctx.moveTo(sPos, H/2 - 8); ctx.lineTo(sPos, H/2 + 8);
+          ctx.strokeStyle = color + '66'; ctx.lineWidth = 1; ctx.stroke();
+        }
+
+        // Score bar at bottom
+        const barY = H - 6;
+        ctx.fillStyle = 'rgba(46,46,51,0.5)';
+        ctx.fillRect(0, barY, W, 4);
+        const barWidth = (score / 100) * W;
+        const barColor = score >= 60 ? '#ef4444' : score >= 30 ? '#eab308' : '#a855f7';
+        ctx.fillStyle = barColor + '88';
+        ctx.fillRect(0, barY, barWidth, 4);
+
+        requestAnimationFrame(draw);
+      }
+      draw();
+    }
+
+// ===== QUERY HISTORY =====
     function saveQuery(q) {
       try {
         let hist = JSON.parse(localStorage.getItem('submind_history') || '[]');
