@@ -261,7 +261,7 @@ async function openaiEnrichedContext(query) {
 }
 
 // ===== SECONDARY SOURCE DISCOVERY (Gemini Deep Links) =====
-  async function geminiDeepSourceSearch(query) {
+  async function geminiDeepSourceSearch(queryIntel.enriched) {
     // Second Gemini call focused purely on finding real, direct article URLs
     for (let i = 0; i < GEMINI_KEYS.length; i++) {
       try {
@@ -787,6 +787,140 @@ async function selfTestPipeline() {
   return results;
 }
 
+// ===== QUERY PREPROCESSING ENGINE =====
+// Expands, classifies, and enriches queries before pipeline execution
+
+const QUERY_EXPANSIONS = {
+  // Common abbreviations
+  'AI': 'artificial intelligence',
+  'ML': 'machine learning',
+  'LLM': 'large language model',
+  'AGI': 'artificial general intelligence',
+  'GPU': 'graphics processing unit',
+  'EV': 'electric vehicle',
+  'IPO': 'initial public offering',
+  'M&A': 'mergers and acquisitions',
+  'GDP': 'gross domestic product',
+  'CPI': 'consumer price index',
+  'Fed': 'Federal Reserve',
+  'SEC': 'Securities and Exchange Commission',
+  'FDA': 'Food and Drug Administration',
+  'EPA': 'Environmental Protection Agency',
+  'NATO': 'North Atlantic Treaty Organization',
+  'OPEC': 'Organization of Petroleum Exporting Countries',
+  'TSMC': 'Taiwan Semiconductor Manufacturing Company',
+  'FAANG': 'Facebook Apple Amazon Netflix Google',
+  'ETF': 'exchange traded fund',
+  'ESG': 'environmental social governance',
+  'DeFi': 'decentralized finance',
+  'NFT': 'non-fungible token',
+  'IoT': 'Internet of Things',
+  'SaaS': 'software as a service',
+  'CRISPR': 'CRISPR gene editing',
+  'mRNA': 'messenger RNA',
+  'SPAC': 'special purpose acquisition company',
+  'PE': 'private equity',
+  'VC': 'venture capital',
+  'R&D': 'research and development'
+};
+
+const DOMAIN_CLASSIFIERS = [
+  { pattern: /\b(stock|market|invest|trading|bull|bear|earnings|revenue|valuation|IPO|dividend|S&P|NASDAQ|dow jones|portfolio|hedge fund)\b/i, domain: 'finance' },
+  { pattern: /\b(AI|artificial intelligence|machine learning|neural|GPT|LLM|deep learning|model|transformer|compute|GPU|chip|semiconductor|quantum)\b/i, domain: 'technology' },
+  { pattern: /\b(war|sanctions|tariff|trade war|geopolit|diplomac|NATO|missile|military|defense|conflict|treaty|alliance)\b/i, domain: 'geopolitical' },
+  { pattern: /\b(climate|carbon|renewable|solar|wind|emission|green|sustainability|ESG|energy transition|EV|battery)\b/i, domain: 'climate_energy' },
+  { pattern: /\b(FDA|drug|pharma|biotech|clinical trial|vaccine|mRNA|CRISPR|gene|therapy|healthcare|hospital)\b/i, domain: 'biotech_health' },
+  { pattern: /\b(crypto|bitcoin|ethereum|blockchain|DeFi|token|mining|web3|digital currency|stablecoin)\b/i, domain: 'crypto' },
+  { pattern: /\b(regulation|law|court|ruling|antitrust|compliance|legislation|congress|senate|policy|executive order)\b/i, domain: 'regulatory' },
+  { pattern: /\b(space|rocket|satellite|orbit|Mars|lunar|SpaceX|NASA|launch|constellation)\b/i, domain: 'aerospace' }
+];
+
+const TEMPORAL_BOOSTERS = {
+  finance: 'latest quarterly earnings financial results market data',
+  technology: 'latest development announcement release update',
+  geopolitical: 'latest diplomatic summit sanctions response',
+  climate_energy: 'latest policy targets deployment data',
+  biotech_health: 'latest clinical results FDA approval trial data',
+  crypto: 'latest on-chain data market cap regulatory',
+  regulatory: 'latest ruling legislation hearing decision',
+  aerospace: 'latest launch mission contract milestone'
+};
+
+function preprocessQuery(rawQuery) {
+  const startMs = Date.now();
+  const trimmed = rawQuery.trim();
+  
+  // 1. Classify query domain
+  const domains = [];
+  for (const clf of DOMAIN_CLASSIFIERS) {
+    if (clf.pattern.test(trimmed)) domains.push(clf.domain);
+  }
+  const primaryDomain = domains[0] || 'general';
+  
+  // 2. Detect and expand abbreviations (for context enrichment, not query replacement)
+  const expansions = [];
+  for (const [abbr, full] of Object.entries(QUERY_EXPANSIONS)) {
+    const regex = new RegExp('\\b' + abbr.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\b', 'g');
+    if (regex.test(trimmed)) {
+      expansions.push({ abbreviation: abbr, expanded: full });
+    }
+  }
+  
+  // 3. Extract named entities (companies, people, organizations)
+  const entities = [];
+  const companyPatterns = /\b(Google|Microsoft|Apple|Amazon|Meta|Tesla|Nvidia|OpenAI|Anthropic|Intel|AMD|TSMC|Samsung|IBM|SpaceX|xAI|Mistral|Palantir|Databricks|Snowflake|CrowdStrike|Coinbase|Binance)\b/gi;
+  let match;
+  while ((match = companyPatterns.exec(trimmed)) !== null) {
+    entities.push({ name: match[1], type: 'company' });
+  }
+  
+  // 4. Detect temporal references
+  const hasYear = /\b20[2-3]\d\b/.test(trimmed);
+  const hasQuarter = /Q[1-4]\s*20[2-3]\d/i.test(trimmed);
+  const hasRecent = /\b(latest|recent|current|today|now|new|upcoming|next)\b/i.test(trimmed);
+  const temporalContext = hasYear || hasQuarter ? 'specific' : hasRecent ? 'recent' : 'open';
+  
+  // 5. Build enriched search query (used for source discovery, not main briefing)
+  let enrichedQuery = trimmed;
+  
+  // Add temporal booster if query is open-ended
+  if (temporalContext === 'open' && TEMPORAL_BOOSTERS[primaryDomain]) {
+    enrichedQuery = trimmed + ' ' + TEMPORAL_BOOSTERS[primaryDomain].split(' ').slice(0, 3).join(' ');
+  }
+  
+  // 6. Generate related search angles for deep source discovery
+  const searchAngles = [];
+  if (entities.length > 0) {
+    const entityNames = entities.map(e => e.name);
+    searchAngles.push(trimmed + ' official announcement');
+    searchAngles.push(entityNames.join(' ') + ' investor relations press release');
+    if (primaryDomain === 'finance') searchAngles.push(entityNames.join(' ') + ' SEC filing 10-K');
+    if (primaryDomain === 'technology') searchAngles.push(entityNames.join(' ') + ' research paper arxiv');
+    if (primaryDomain === 'regulatory') searchAngles.push(entityNames.join(' ') + ' court ruling decision');
+  }
+  searchAngles.push(trimmed + ' analysis report');
+  searchAngles.push(trimmed + ' data statistics');
+  
+  // 7. Determine research depth hints
+  const complexity = (entities.length >= 2 ? 1 : 0) + (domains.length >= 2 ? 1 : 0) + (trimmed.split(' ').length >= 6 ? 1 : 0);
+  const researchDepth = complexity >= 2 ? 'deep' : complexity >= 1 ? 'standard' : 'broad';
+  
+  return {
+    original: trimmed,
+    enriched: enrichedQuery,
+    classification: {
+      primary_domain: primaryDomain,
+      all_domains: domains,
+      research_depth: researchDepth,
+      temporal_context: temporalContext
+    },
+    entities,
+    expansions,
+    search_angles: searchAngles.slice(0, 5),
+    preprocessing_ms: Date.now() - startMs
+  };
+}
+
 // ===== MAIN HANDLER =====
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -814,6 +948,13 @@ export default async function handler(req, res) {
 
   const { query } = req.body;
   if (!query) return res.status(400).json({ error: 'Query required' });
+
+    // ===== QUERY PREPROCESSING =====
+  const queryIntel = preprocessQuery(query);
+  console.log('[Preprocessor] Domain:', queryIntel.classification.primary_domain,
+    '| Entities:', queryIntel.entities.length,
+    '| Depth:', queryIntel.classification.research_depth,
+    '| Temporal:', queryIntel.classification.temporal_context);
 
   const startTime = Date.now();
   const cacheKey = 'submind:q:' + query.toLowerCase().trim().replace(/\s+/g, '_').substring(0, 200);
@@ -850,7 +991,12 @@ export default async function handler(req, res) {
 
     // ===== PHASE 2: INTELLIGENCE BRIEFING =====
     console.log('[Phase 2] Generating intelligence briefing...');
-    const { briefing, provider: briefingProvider, raw_length } = await generateBriefing(query, combinedContext);
+    const enrichedContext = queryIntel.entities.length > 0 
+      ? combinedContext + '\n\nKEY ENTITIES: ' + queryIntel.entities.map(e => e.name + ' (' + e.type + ')').join(', ') 
+        + '\nDOMAIN: ' + queryIntel.classification.primary_domain
+        + '\nSEARCH ANGLES: ' + queryIntel.search_angles.join('; ')
+      : combinedContext;
+    const { briefing, provider: briefingProvider, raw_length } = await generateBriefing(query, enrichedContext);
 
     if (!briefing) {
       return res.status(500).json({
@@ -922,6 +1068,7 @@ export default async function handler(req, res) {
       },
       intelligence: {
         behavioral_divergence: divergenceData,
+        query_intelligence: queryIntel,
         source_clusters: clusterData,
         provenance_summary: provenanceSummary
       },
