@@ -523,7 +523,7 @@
                 const se = data.source_existence || {};
                 const cf = data.confidence_floor || {};
                 
-                resultsDiv.innerHTML = '<div class="blocked-report">' +
+                document.getElementById('briefingContent').innerHTML = '<div class="blocked-report">' +
                     '<div class="blocked-icon">\u26A0\uFE0F</div>' +
                     '<div class="synthetic-banner"><h3>SYNTHETIC DATA DETECTED</h3>' +
                     '<p>SubMind only analyzes what it can independently corroborate. User input is a query, not a dataset.</p></div>' +
