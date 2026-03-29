@@ -267,7 +267,38 @@
 .stance-OPPORTUNISTIC{background:rgba(34,197,94,0.12);color:var(--green)}
 .stance-NEUTRAL{background:rgba(59,130,246,0.12);color:var(--blue)}
 
-</style>
+
+        /* ===== v13.0 VERIFICATION LAYERS ===== */
+        .blocked-report { text-align:center; padding:60px 20px; }
+        .blocked-report .blocked-icon { font-size:4rem; margin-bottom:20px; }
+        .blocked-report h2 { color:#ff4444; font-size:1.5rem; margin-bottom:15px; text-transform:uppercase; letter-spacing:2px; }
+        .blocked-report .blocked-message { color:#aaa; font-size:1rem; line-height:1.6; max-width:600px; margin:0 auto 30px; }
+        .blocked-report .blocked-reason { background:rgba(255,68,68,0.1); border:1px solid rgba(255,68,68,0.3); border-radius:8px; padding:15px; margin:20px auto; max-width:500px; }
+        .blocked-report .blocked-reason code { color:#ff6b6b; font-size:0.85rem; }
+        
+        .synthetic-banner { background:linear-gradient(135deg, #ff4444 0%, #cc0000 100%); padding:15px 20px; border-radius:8px; margin-bottom:20px; text-align:center; }
+        .synthetic-banner h3 { color:white; font-size:1.1rem; margin-bottom:5px; letter-spacing:1px; }
+        .synthetic-banner p { color:rgba(255,255,255,0.85); font-size:0.85rem; }
+        
+        .verification-layers { display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:10px; margin:15px 0; }
+        .verification-layer { background:rgba(255,255,255,0.03); border-radius:8px; padding:12px; border-left:3px solid #333; }
+        .verification-layer.passed { border-left-color:#4ecdc4; }
+        .verification-layer.failed { border-left-color:#ff4444; }
+        .verification-layer .layer-name { font-size:0.7rem; text-transform:uppercase; letter-spacing:1px; color:#888; margin-bottom:4px; }
+        .verification-layer .layer-status { font-size:0.9rem; font-weight:600; }
+        .verification-layer.passed .layer-status { color:#4ecdc4; }
+        .verification-layer.failed .layer-status { color:#ff4444; }
+        .verification-layer .layer-detail { font-size:0.75rem; color:#666; margin-top:4px; }
+        
+        .provenance-tag { display:inline-block; font-size:0.6rem; padding:2px 6px; border-radius:3px; font-weight:600; letter-spacing:0.5px; margin-left:5px; }
+        .provenance-tag.synthetic { background:rgba(255,68,68,0.2); color:#ff6b6b; }
+        .provenance-tag.corroborated { background:rgba(78,205,196,0.2); color:#4ecdc4; }
+        .provenance-tag.user-asserted { background:rgba(255,165,0,0.2); color:#ffa500; }
+        
+        .entity-badge { display:inline-block; background:rgba(78,205,196,0.15); color:#4ecdc4; font-size:0.7rem; padding:3px 8px; border-radius:4px; margin:2px; font-weight:500; }
+        .entity-badge.unverified { background:rgba(255,68,68,0.15); color:#ff6b6b; }
+
+        </style>
 </head>
 <body>
     <!-- HEADER -->
@@ -275,7 +306,7 @@
       <div class="logo">
         <div class="logo-icon">S</div>
         <span class="logo-text">SubMind</span>
-        <span class="logo-version">v12.0</span>
+        <span class="logo-version">v13.0</span>
       </div>
       <div class="header-right">
         <span><span class="status-dot"></span>Live Intelligence</span>
@@ -418,6 +449,30 @@
 
     // ===== RENDER BRIEFING (Human-First Design) =====
     function renderBriefing(data){
+            // ===== v13.0 BLOCKED REPORT CHECK =====
+            if (data.blocked || data.synthetic_data_detected) {
+                const reason = data.block_reason || 'UNKNOWN';
+                const message = data.message || 'SubMind detected unverifiable data and blocked this report.';
+                const ev = data.entity_verification || {};
+                const se = data.source_existence || {};
+                const cf = data.confidence_floor || {};
+                
+                resultsDiv.innerHTML = '<div class="blocked-report">' +
+                    '<div class="blocked-icon">\u26A0\uFE0F</div>' +
+                    '<div class="synthetic-banner"><h3>SYNTHETIC DATA DETECTED</h3>' +
+                    '<p>SubMind only analyzes what it can independently corroborate. User input is a query, not a dataset.</p></div>' +
+                    '<h2>' + reason.replace(/_/g, ' ') + '</h2>' +
+                    '<p class="blocked-message">' + message + '</p>' +
+                    '<div class="blocked-reason"><code>Block Layer: ' + (data.meta && data.meta.blocked_at ? data.meta.blocked_at : reason) + '</code></div>' +
+                    (ev.unverifiable && ev.unverifiable.length > 0 ? '<div style="margin:15px auto;max-width:400px"><p style="color:#888;font-size:0.8rem;margin-bottom:8px">Unverifiable Entities:</p>' + ev.unverifiable.map(function(e) { return '<span class="entity-badge unverified">' + e + '</span>'; }).join(' ') + '</div>' : '') +
+                    '<div class="verification-layers" style="max-width:500px;margin:20px auto">' +
+                    '<div class="verification-layer ' + (ev.pass !== false ? 'passed' : 'failed') + '"><div class="layer-name">Entity Verification</div><div class="layer-status">' + (ev.pass !== false ? 'PASSED' : 'FAILED') + '</div><div class="layer-detail">' + (ev.verified ? ev.verified.length : 0) + ' verified / ' + (ev.unverifiable ? ev.unverifiable.length : 0) + ' unverifiable</div></div>' +
+                    '<div class="verification-layer ' + (se.pass !== false ? 'passed' : 'failed') + '"><div class="layer-name">Source Existence</div><div class="layer-status">' + (se.pass !== false ? 'PASSED' : 'FAILED') + '</div><div class="layer-detail">' + (se.existence_rate || 0) + '% confirmed (min 30%)</div></div>' +
+                    '</div>' +
+                    '</div>';
+                return;
+            }
+
       var b = data.briefing || {};
       var gf = (data.validation && data.validation.glass_fang) || {};
       var nem = (data.validation && data.validation.nemesis) || {};
@@ -483,7 +538,21 @@
       html += '</div>';
     }
 
-// ===== PLAIN LANGUAGE SUMMARY =====
+
+            // ===== v13.0 VERIFICATION STATUS =====
+            const ev = (data.intelligence || {}).entity_verification || {};
+            const se = (data.intelligence || {}).source_existence || {};
+            const cf = (data.intelligence || {}).confidence_floor || {};
+            const ip = (data.intelligence || {}).input_provenance || {};
+            
+            html += '<div class="verification-layers">';
+            html += '<div class="verification-layer ' + (ev.pass !== false ? 'passed' : 'failed') + '"><div class="layer-name">Layer 1: Entity Verification</div><div class="layer-status">' + (ev.pass !== false ? '\u2713 PASSED' : '\u2717 FAILED') + '</div><div class="layer-detail">' + (ev.verified ? ev.verified.length : 0) + ' verified entities</div></div>';
+            html += '<div class="verification-layer ' + (se.pass !== false ? 'passed' : 'failed') + '"><div class="layer-name">Layer 2: Source Existence</div><div class="layer-status">' + (se.pass !== false ? '\u2713 PASSED' : '\u2717 FAILED') + '</div><div class="layer-detail">' + (se.existence_rate || 0) + '% sources confirmed</div></div>';
+            html += '<div class="verification-layer ' + (cf.blocked === false || !cf.blocked ? 'passed' : 'failed') + '"><div class="layer-name">Layer 3: Confidence Floor</div><div class="layer-status">' + (!cf.blocked ? '\u2713 PASSED' : '\u2717 BLOCKED') + '</div><div class="layer-detail">' + (cf.enforcement ? cf.enforcement.overall : 'ALLOWED') + '</div></div>';
+            html += '<div class="verification-layer passed"><div class="layer-name">Layer 4: Input Provenance</div><div class="layer-status">' + (ip.provenance_summary ? ip.provenance_summary.corroborated + ' corroborated' : 'Active') + '</div><div class="layer-detail">' + (ip.provenance_summary ? ip.provenance_summary.user_asserted + ' user-asserted' : '0 flagged') + '</div></div>';
+            html += '</div>';
+
+            // ===== PLAIN LANGUAGE SUMMARY =====
     if(plainLang.one_sentence){
       html += '<div class="plain-summary fade-up">';
       html += '<div class="plain-summary-sentence">' + esc(plainLang.one_sentence) + '</div>';
