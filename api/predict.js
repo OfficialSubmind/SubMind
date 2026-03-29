@@ -2,7 +2,7 @@ import nodeFetch from "node-fetch";
 
 import { createClient } from "@supabase/supabase-js";
 
-// SUBMIND v10.1 - DEEP INTELLIGENCE RESEARCH ENGINE
+// SUBMIND v11.0 - DEEP INTELLIGENCE RESEARCH ENGINE
 // Supabase persistence + Upstash Redis caching + Full pipeline
 // Behavioral Divergence + Source Provenance + Semantic Clustering
 // Dark Matter Engine + Glass Fang + Nemesis + URL Verification
@@ -60,7 +60,7 @@ async function savePrediction(supabase, query, responseData) {
       source_count: meta.providers?.source_count || 0,
       verified_source_count: meta.source_verification?.verified || 0,
       provenance_summary: intel.provenance_summary || {},
-      version: meta.version || '10.1',
+      version: meta.version || '11.0',
       created_at: new Date().toISOString()
     };
     const { data, error } = await supabase.from('predictions').insert(row).select('id').single();
@@ -131,7 +131,7 @@ async function verifyUrl(url, timeoutMs = 4000) {
     const timer = setTimeout(() => controller.abort(), timeoutMs);
     const res = await nodeFetch(url, {
       method: 'HEAD', signal: controller.signal, redirect: 'follow',
-      headers: { 'User-Agent': 'SubMind/10.1 LinkVerifier' }
+      headers: { 'User-Agent': 'SubMind/11.0 LinkVerifier' }
     });
     clearTimeout(timer);
     return { valid: res.status >= 200 && res.status < 400, status: res.status };
@@ -141,7 +141,7 @@ async function verifyUrl(url, timeoutMs = 4000) {
       const timer2 = setTimeout(() => controller2.abort(), 3000);
       const res2 = await nodeFetch(url, {
         method: 'GET', signal: controller2.signal, redirect: 'follow',
-        headers: { 'User-Agent': 'SubMind/10.1 LinkVerifier', 'Range': 'bytes=0-0' }
+        headers: { 'User-Agent': 'SubMind/11.0 LinkVerifier', 'Range': 'bytes=0-0' }
       });
       clearTimeout(timer2);
       return { valid: res2.status >= 200 && res2.status < 400, status: res2.status };
@@ -374,7 +374,7 @@ async function generateBriefing(query, sourceContext) {
         model: CEREBRAS_MODEL,
         messages: [{
           role: "system",
-          content: `You are SubMind v10.1, a deep intelligence research engine that produces institutional-grade analysis. You hunt for Behavioral Divergence - the gap between what mainstream sources say and what raw data actually shows. You trace events from origin to present to future predictions with ruthless precision.
+          content: `You are SubMind v11.0, a deep intelligence research engine that produces institutional-grade analysis. You hunt for Behavioral Divergence - the gap between what mainstream sources say and what raw data actually shows. You trace events from origin to present to future predictions with ruthless precision.
 
 CRITICAL RULES FOR SOURCES:
 - ONLY cite URLs you are CERTAIN exist and are real
@@ -426,7 +426,9 @@ FORMAT: Return valid JSON with this structure:
     "key_metrics": ["metric1"]
   },
   "sources": [
-    { "title": "Descriptive Source Title", "url": "https://exact-verified-url", "type": "primary|supporting|official|data", "date": "YYYY-MM-DD", "credibility": "HIGH|MEDIUM" }
+    { "title": "Descriptive Source Title", "url": "https://exact-verified-url", "type": "primary|supporting|official|data", "date": "YYYY-MM-DD", "credibility": "HIGH|MEDIUM",
+              "snippet": "Key quote or data point from this source",
+              "relevance": "Why this source matters for the analysis" }
   ],
   "related_queries": ["Follow-up topic 1", "Deeper dive topic 2", "Adjacent macro trend 3"],
   "executive_actions": [
@@ -452,7 +454,7 @@ Requirements:
 1. Trace the ORIGIN - how this topic came to be, the foundational events
 2. Map the PRESENT state with specific data: names, dates (YYYY-MM-DD), dollar amounts, percentages
 3. Project the FUTURE using pattern recognition - what historical trends suggest
-4. Include AT LEAST 8 sources with REAL, WORKING URLs from diverse domains
+4. Include AT LEAST 12 sources with REAL, WORKING URLs from diverse domains
 5. Include a BEHAVIORAL DIVERGENCE section: what mainstream says vs what raw data shows
 6. Include a REASONING CHAIN of at least 4 steps showing analytical thinking with evidence
 7. Include EXECUTIVE ACTIONS - what someone should DO based on this
@@ -743,7 +745,7 @@ export default async function handler(req, res) {
       return res.status(health.pass ? 200 : 503).json({
         success: true,
         type: 'healthcheck',
-        version: '10.1',
+        version: '11.0',
         ...health
       });
     } catch(e) {
@@ -771,7 +773,7 @@ export default async function handler(req, res) {
   console.log('[Cache] MISS - running full pipeline');
 
   const supabase = makeSupabase();
-  console.log('[SubMind v10.1] Query:', query);
+  console.log('[SubMind v11.0] Query:', query);
 
   try {
     // ===== PHASE 1: PARALLEL SOURCE GATHERING =====
@@ -845,7 +847,7 @@ export default async function handler(req, res) {
     console.log('[Phase 9] Nemesis issues:', nemesis.count, '| Severity:', nemesis.severity);
 
     const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
-    console.log('[SubMind v10.1] Complete in', elapsed + 's');
+    console.log('[SubMind v11.0] Complete in', elapsed + 's');
 
     // ===== PERSIST TO SUPABASE + CACHE =====
     const responsePayload = {
@@ -865,7 +867,7 @@ export default async function handler(req, res) {
         provenance_summary: provenanceSummary
       },
       meta: {
-        version: '10.1',
+        version: '11.0',
         elapsed_seconds: parseFloat(elapsed),
         providers: {
           search: gemini.sources.length > 0 ? 'gemini' : 'openai',
@@ -898,7 +900,7 @@ export default async function handler(req, res) {
     // ===== RESPONSE =====
     return res.status(200).json(responsePayload);
   } catch(e) {
-    console.error('[SubMind v10.1] Fatal:', e.message);
+    console.error('[SubMind v11.0] Fatal:', e.message);
     return res.status(500).json({ error: 'Pipeline failed', detail: e.message });
   }
           }
