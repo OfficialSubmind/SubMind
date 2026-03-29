@@ -150,10 +150,20 @@ async function verifyUrl(url, timeoutMs = 4000) {
 }
 
 function buildSearchFallback(source) {
-  const title = (source.title || '').replace(/[^a-zA-Z0-9 ]/g, '').trim();
-  const domain = (() => { try { return new URL(source.url).hostname; } catch(e) { return ''; } })();
-  const q = domain ? `site:${domain} ${title}` : title;
-  return `https://www.google.com/search?q=${encodeURIComponent(q)}`;
+    const title = (source.title || '').replace(/[^a-zA-Z0-9 ]/g, '').trim();
+    const domain = (() => {
+      try { return new URL(source.url).hostname; } catch(e) { return ''; }
+    })();
+    // Build a focused search query
+    const q = domain ? `site:${domain} ${title}` : title;
+    // Use Google News for recent items, regular search otherwise
+    const dateStr = source.date || '';
+    const isRecent = dateStr && (dateStr.includes('2024') || dateStr.includes('2025'));
+    const base = isRecent 
+      ? 'https://www.google.com/search?q=' + encodeURIComponent(q) + '&tbm=nws'
+      : 'https://www.google.com/search?q=' + encodeURIComponent(q);
+    return base;
+  }`;
 }
 
 async function verifyAndFixSources(sources) {
@@ -251,7 +261,55 @@ async function openaiEnrichedContext(query) {
   } catch(e) { return { context: '', sources: [], provider: 'openai' }; }
 }
 
-// ===== BEHAVIORAL DIVERGENCE DETECTION ENGINE =====
+// ===== SECONDARY SOURCE DISCOVERY (Gemini Deep Links) =====
+  async function geminiDeepSourceSearch(query) {
+    // Second Gemini call focused purely on finding real, direct article URLs
+    for (let i = 0; i < GEMINI_KEYS.length; i++) {
+      try {
+        const res = await nodeFetch(
+          `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_KEYS[i]}`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              contents: [{ parts: [{ text: `Find the most important and recent news articles, reports, and official documents about: ${query}
+
+Focus on finding DIRECT ARTICLE URLS from these specific domains:
+- reuters.com, apnews.com, bbc.com (wire services)
+- cnbc.com, bloomberg.com, ft.com (financial)
+- techcrunch.com, arstechnica.com, theverge.com (tech)
+- .gov domains (government)
+- Official company press releases and investor relations pages
+- Academic papers on arxiv.org
+
+Find at least 8-10 different sources with working URLs.` }] }],
+              tools: [{ google_search: {} }],
+              generationConfig: { temperature: 0.1 }
+            })
+          }
+        );
+        if (!res.ok) continue;
+        const data = await res.json();
+        const sources = [];
+        const chunks = data?.candidates?.[0]?.groundingMetadata?.groundingChunks || [];
+        for (const chunk of chunks) {
+          if (chunk.web?.uri) {
+            sources.push({
+              title: chunk.web.title || 'Deep Source',
+              url: chunk.web.uri,
+              type: 'deep_search',
+              provider: 'gemini_deep',
+              verified_by_search: true
+            });
+          }
+        }
+        return { sources, provider: 'gemini_deep' };
+      } catch(e) { continue; }
+    }
+    return { sources: [], provider: 'gemini_deep' };
+  }
+
+  // ===== BEHAVIORAL DIVERGENCE DETECTION ENGINE =====
 // Identifies gaps between "what mainstream says" vs "what raw data shows"
 function detectBehavioralDivergence(briefing) {
   const divergences = [];
@@ -778,16 +836,18 @@ export default async function handler(req, res) {
   try {
     // ===== PHASE 1: PARALLEL SOURCE GATHERING =====
     console.log('[Phase 1] Parallel source gathering...');
-    const [geminiResult, openaiResult] = await Promise.allSettled([
+    const [geminiResult, openaiResult, deepResult] = await Promise.allSettled([
       geminiGroundedSearch(query),
-      openaiEnrichedContext(query)
+      openaiEnrichedContext(query),
+      geminiDeepSourceSearch(query)
     ]);
 
     const gemini = geminiResult.status === 'fulfilled' ? geminiResult.value : { sources: [], context: '' };
     const openai = openaiResult.status === 'fulfilled' ? openaiResult.value : { sources: [], context: '' };
-    const groundedSources = [...gemini.sources, ...openai.sources];
+    const deep = deepResult.status === 'fulfilled' ? deepResult.value : { sources: [] };
+    const groundedSources = [...gemini.sources, ...deep.sources, ...openai.sources];
     const combinedContext = [gemini.context, openai.context].filter(Boolean).join('\n\n');
-    console.log('[Phase 1] Gemini sources:', gemini.sources.length, '| OpenAI sources:', openai.sources.length);
+    console.log('[Phase 1] Gemini sources:', gemini.sources.length, '| Deep sources:', deep.sources.length, '| OpenAI sources:', openai.sources.length);
 
     // ===== PHASE 2: INTELLIGENCE BRIEFING =====
     console.log('[Phase 2] Generating intelligence briefing...');
@@ -873,7 +933,7 @@ export default async function handler(req, res) {
           search: gemini.sources.length > 0 ? 'gemini' : 'openai',
           briefing: briefingProvider,
           source_count: classifiedSources.length,
-          grounded_sources: gemini.sources.length,
+          grounded_sources: gemini.sources.length + deep.sources.length,
           ai_referenced_sources: openai.sources.length
         },
         source_verification: verificationStats,
