@@ -1,10 +1,82 @@
 import nodeFetch from "node-fetch";
 
-// SUBMIND v10.0 - DEEP INTELLIGENCE RESEARCH ENGINE
-// Behavioral Divergence Detection + Source Provenance Matrix + Semantic Clustering
-// Dark Matter Engine + Enhanced Glass Fang + Nemesis + URL Verification
-// Alt-Data weighted scoring + Self-test healthcheck + Full reasoning chain
+import { createClient } from "@supabase/supabase-js";
 
+// SUBMIND v10.1 - DEEP INTELLIGENCE RESEARCH ENGINE
+// Supabase persistence + Upstash Redis caching + Full pipeline
+// Behavioral Divergence + Source Provenance + Semantic Clustering
+// Dark Matter Engine + Glass Fang + Nemesis + URL Verification
+
+// ===== SUPABASE CLIENT =====
+function makeSupabase() {
+  const url = process.env.SUPABASE_URL;
+  const key = process.env.SUPABASE_SERVICE_ROLE;
+  if (!url || !key) return null;
+  return createClient(url, key, { auth: { persistSession: false } });
+}
+
+// ===== UPSTASH REDIS CACHE =====
+const REDIS_URL = process.env.UPSTASH_REDIS_REST_URL;
+const REDIS_TOKEN = process.env.UPSTASH_REDIS_REST_TOKEN;
+const CACHE_TTL = 3600;
+
+async function redisGet(key) {
+  if (!REDIS_URL || !REDIS_TOKEN) return null;
+  try {
+    const res = await nodeFetch(REDIS_URL + '/get/' + encodeURIComponent(key), {
+      headers: { Authorization: 'Bearer ' + REDIS_TOKEN }
+    });
+    if (!res.ok) return null;
+    const data = await res.json();
+    return data.result ? JSON.parse(data.result) : null;
+  } catch(e) { return null; }
+}
+
+async function redisSet(key, value, ttl) {
+  if (!REDIS_URL || !REDIS_TOKEN) return;
+  try {
+    await nodeFetch(REDIS_URL, {
+      method: 'POST',
+      headers: { Authorization: 'Bearer ' + REDIS_TOKEN, 'Content-Type': 'application/json' },
+      body: JSON.stringify(['SET', key, JSON.stringify(value), 'EX', ttl || CACHE_TTL])
+    });
+  } catch(e) {}
+}
+
+async function savePrediction(supabase, query, responseData) {
+  if (!supabase) return null;
+  try {
+    const b = responseData.briefing || {};
+    const gf = responseData.validation?.glass_fang || {};
+    const nem = responseData.validation?.nemesis || {};
+    const intel = responseData.intelligence || {};
+    const meta = responseData.meta || {};
+    const row = {
+      query,
+      briefing: b,
+      glass_fang_score: gf.score || 0,
+      nemesis_severity: nem.severity || 'UNKNOWN',
+      divergence_level: intel.behavioral_divergence?.divergence_level || 'BASELINE',
+      source_count: meta.providers?.source_count || 0,
+      verified_source_count: meta.source_verification?.verified || 0,
+      provenance_summary: intel.provenance_summary || {},
+      version: meta.version || '10.1',
+      created_at: new Date().toISOString()
+    };
+    const { data, error } = await supabase.from('predictions').insert(row).select('id').single();
+    if (error) { console.error('[Supabase] Save error:', error.message); return null; }
+    return data?.id || null;
+  } catch(e) { console.error('[Supabase] Save failed:', e.message); return null; }
+}
+
+async function saveSearchHistory(supabase, query, predictionId) {
+  if (!supabase) return;
+  try {
+    await supabase.from('search_history').insert({
+      query, prediction_id: predictionId || null, created_at: new Date().toISOString()
+    });
+  } catch(e) { console.error('[Supabase] History failed:', e.message); }
+}
 const GEMINI_KEYS = (() => {
   const keys = [];
   if (process.env.GEMINI_API_KEYS) keys.push(...process.env.GEMINI_API_KEYS.split(',').map(k => k.trim()).filter(Boolean));
@@ -59,7 +131,7 @@ async function verifyUrl(url, timeoutMs = 4000) {
     const timer = setTimeout(() => controller.abort(), timeoutMs);
     const res = await nodeFetch(url, {
       method: 'HEAD', signal: controller.signal, redirect: 'follow',
-      headers: { 'User-Agent': 'SubMind/10.0 LinkVerifier' }
+      headers: { 'User-Agent': 'SubMind/10.1 LinkVerifier' }
     });
     clearTimeout(timer);
     return { valid: res.status >= 200 && res.status < 400, status: res.status };
@@ -69,7 +141,7 @@ async function verifyUrl(url, timeoutMs = 4000) {
       const timer2 = setTimeout(() => controller2.abort(), 3000);
       const res2 = await nodeFetch(url, {
         method: 'GET', signal: controller2.signal, redirect: 'follow',
-        headers: { 'User-Agent': 'SubMind/10.0 LinkVerifier', 'Range': 'bytes=0-0' }
+        headers: { 'User-Agent': 'SubMind/10.1 LinkVerifier', 'Range': 'bytes=0-0' }
       });
       clearTimeout(timer2);
       return { valid: res2.status >= 200 && res2.status < 400, status: res2.status };
@@ -302,7 +374,7 @@ async function generateBriefing(query, sourceContext) {
         model: CEREBRAS_MODEL,
         messages: [{
           role: "system",
-          content: `You are SubMind v10.0, a deep intelligence research engine that produces institutional-grade analysis. You hunt for Behavioral Divergence - the gap between what mainstream sources say and what raw data actually shows. You trace events from origin to present to future predictions with ruthless precision.
+          content: `You are SubMind v10.1, a deep intelligence research engine that produces institutional-grade analysis. You hunt for Behavioral Divergence - the gap between what mainstream sources say and what raw data actually shows. You trace events from origin to present to future predictions with ruthless precision.
 
 CRITICAL RULES FOR SOURCES:
 - ONLY cite URLs you are CERTAIN exist and are real
@@ -671,7 +743,7 @@ export default async function handler(req, res) {
       return res.status(health.pass ? 200 : 503).json({
         success: true,
         type: 'healthcheck',
-        version: '10.0',
+        version: '10.1',
         ...health
       });
     } catch(e) {
@@ -685,7 +757,21 @@ export default async function handler(req, res) {
   if (!query) return res.status(400).json({ error: 'Query required' });
 
   const startTime = Date.now();
-  console.log('[SubMind v10.0] Query:', query);
+  const cacheKey = 'submind:q:' + query.toLowerCase().trim().replace(/\s+/g, '_').substring(0, 200);
+
+  // ===== REDIS CACHE CHECK =====
+  console.log('[Cache] Checking Redis for:', cacheKey);
+  const cached = await redisGet(cacheKey);
+  if (cached) {
+    console.log('[Cache] HIT - returning cached result');
+    const supabase = makeSupabase();
+    await saveSearchHistory(supabase, query, cached.predictionId || null);
+    return res.status(200).json({ ...cached.data, meta: { ...cached.data.meta, cache: 'HIT', cached_at: cached.timestamp } });
+  }
+  console.log('[Cache] MISS - running full pipeline');
+
+  const supabase = makeSupabase();
+  console.log('[SubMind v10.1] Query:', query);
 
   try {
     // ===== PHASE 1: PARALLEL SOURCE GATHERING =====
@@ -759,10 +845,10 @@ export default async function handler(req, res) {
     console.log('[Phase 9] Nemesis issues:', nemesis.count, '| Severity:', nemesis.severity);
 
     const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
-    console.log('[SubMind v10.0] Complete in', elapsed + 's');
+    console.log('[SubMind v10.1] Complete in', elapsed + 's');
 
-    // ===== RESPONSE =====
-    return res.status(200).json({
+    // ===== PERSIST TO SUPABASE + CACHE =====
+    const responsePayload = {
       success: true,
       query,
       briefing: {
@@ -779,7 +865,7 @@ export default async function handler(req, res) {
         provenance_summary: provenanceSummary
       },
       meta: {
-        version: '10.0',
+        version: '10.1',
         elapsed_seconds: parseFloat(elapsed),
         providers: {
           search: gemini.sources.length > 0 ? 'gemini' : 'openai',
@@ -789,11 +875,30 @@ export default async function handler(req, res) {
           ai_referenced_sources: openai.sources.length
         },
         source_verification: verificationStats,
-        pipeline: ['search', 'briefing', 'merge', 'verify_urls', 'provenance', 'cluster', 'divergence', 'glass_fang', 'nemesis']
+        pipeline: ['search', 'briefing', 'merge', 'verify_urls', 'provenance', 'cluster', 'divergence', 'glass_fang', 'nemesis', 'persist']
       }
-    });
+    };
+
+    // Save to Supabase (non-blocking)
+    let predictionId = null;
+    try {
+      predictionId = await savePrediction(supabase, query, responsePayload);
+      if (predictionId) {
+        await saveSearchHistory(supabase, query, predictionId);
+        console.log('[Supabase] Saved prediction:', predictionId);
+      }
+    } catch(e) { console.error('[Supabase] Persist error:', e.message); }
+
+    // Cache in Redis
+    try {
+      await redisSet(cacheKey, { data: responsePayload, predictionId, timestamp: new Date().toISOString() });
+      console.log('[Cache] Saved to Redis with TTL:', CACHE_TTL);
+    } catch(e) { console.error('[Cache] Redis save error:', e.message); }
+
+    // ===== RESPONSE =====
+    return res.status(200).json(responsePayload);
   } catch(e) {
-    console.error('[SubMind v10.0] Fatal:', e.message);
+    console.error('[SubMind v10.1] Fatal:', e.message);
     return res.status(500).json({ error: 'Pipeline failed', detail: e.message });
   }
           }
