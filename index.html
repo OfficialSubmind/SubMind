@@ -393,7 +393,7 @@
       <div class="logo">
         <div class="logo-icon">S</div>
         <span class="logo-text">SubMind</span>
-        <span class="logo-version">v13.1</span>
+        <span class="logo-version">v14.0</span>
       </div>
       </a>
       <div class="header-right">
@@ -628,6 +628,27 @@
         if(qi.expansions.length>0) qi.expansions.forEach(function(x){html+='<span class="qi-tag">'+esc(x.abbreviation)+' = '+esc(x.expanded)+'</span>'});
         html += '</div>';
       }
+
+
+            // ===== MULTI-MODEL CONSENSUS DISPLAY =====
+            if (data.multi_model_consensus && data.multi_model_consensus.consensusScore) {
+              const mc = data.multi_model_consensus;
+              const consensusColor = mc.consensusScore >= 70 ? '#00ff88' : mc.consensusScore >= 40 ? '#ffaa00' : '#ff4444';
+              html += '<div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 16px 20px; margin-bottom: 20px; display: flex; align-items: center; gap: 20px;">';
+              html += '<div style="text-align:center"><div style="font-size: 28px; font-weight: 700; color:' + consensusColor + ';">' + mc.consensusScore + '%</div><div style="font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: #888;">AI Consensus</div></div>';
+              html += '<div style="flex:1"><div style="font-size: 12px; color: #aaa; margin-bottom: 4px;">Multiple AI models analyzed this topic independently</div>';
+              html += '<div style="font-size: 12px; color: #ccc;">Agreement Level: <strong style="color:' + consensusColor + '">' + mc.modelAgreement + '</strong>';
+              if (mc.modelsUsed && mc.modelsUsed.length > 0) html += ' &middot; Models: ' + mc.modelsUsed.join(', ');
+              html += '</div></div></div>';
+            }
+
+            // ===== URL ANALYSIS INDICATOR =====
+            if (data.url_analysis && data.url_analysis.extracted) {
+              html += '<div style="background: rgba(0,150,255,0.08); border: 1px solid rgba(0,150,255,0.3); border-radius: 12px; padding: 12px 20px; margin-bottom: 20px; display: flex; align-items: center; gap: 12px;">';
+              html += '<span style="font-size: 20px;">🔗</span>';
+              html += '<div><div style="font-size: 13px; font-weight: 600; color: #4da6ff;">URL Content Extracted & Analyzed</div>';
+              html += '<div style="font-size: 11px; color: #888;">Source: ' + (data.url_analysis.site || 'Unknown') + ' &middot; ' + (data.url_analysis.contentLength || 0).toLocaleString() + ' characters extracted</div></div></div>';
+            }
 
       // ===== THE BOTTOM LINE (Most Important - Top of Page) =====
       html += '<div class="bottom-line fade-up">';
@@ -961,7 +982,7 @@
 
       // ===== PIPELINE FOOTER =====
           html += '<div style="text-align:center;padding:24px 0;font-size:11px;color:var(--text3)">';
-    html += 'SubMind v'+(meta.version||'12.0')+' \u2022 '+(meta.elapsed_seconds||0)+'s \u2022 '+(meta.pipeline?meta.pipeline.length:0)+' pipeline stages \u2022 Trust '+trustScore+'/100';
+    html += 'SubMind v'+(meta.version||'14.0')+' \u2022 '+(meta.elapsed_seconds||0)+'s \u2022 '+(meta.pipeline?meta.pipeline.length:0)+' pipeline stages \u2022 Trust '+trustScore+'/100';
     if(confCal.calibrated_confidence) html += ' \u2022 Calibrated confidence '+confCal.calibrated_confidence+'%';
     if(strategicIntel.overall_stance) html += ' \u2022 Stance: '+strategicIntel.overall_stance;
     html += '</div>';
