@@ -2,7 +2,7 @@ import nodeFetch from "node-fetch";
 
 import { createClient } from "@supabase/supabase-js";
 
-// SUBMIND v13.0 - DEEP INTELLIGENCE RESEARCH ENGINE
+// SUBMIND v14.0 - HYPER INTELLIGENCE RESEARCH ENGINE
 // Advanced: Contradiction Detection + Strategic Intelligence + Confidence Calibration
 // v13.0: Entity Verification + Souhrce Existence Check + Confidence Floor + Input Provenance Tagging
 // Multi-Source Consensus + Temporal Anomaly Detection + Enhanced Behavioral Divergence
@@ -195,6 +195,158 @@ async function verifyAndFixSources(sources) {
     }
   }
   return { sources: verified, stats: { total: verified.length, verified: verifiedCount, fixed: fixedCount, failed: failedCount } };
+}
+
+
+// ===== URL CONTENT EXTRACTION ENGINE =====
+async function fetchUrlContent(url, timeoutMs = 5000) {
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), timeoutMs);
+    const response = await nodeFetch(url, {
+      signal: controller.signal,
+      headers: {
+        'User-Agent': 'SubMind/13.1 Research Bot (+https://submind-blond.vercel.app)',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
+      },
+      redirect: 'follow'
+    });
+    clearTimeout(timeout);
+    
+    if (!response.ok) return { success: false, error: 'HTTP ' + response.status };
+    
+    const contentType = response.headers.get('content-type') || '';
+    if (!contentType.includes('text/html') && !contentType.includes('text/plain') && !contentType.includes('application/json')) {
+      return { success: false, error: 'Non-text content: ' + contentType };
+    }
+    
+    const html = await response.text();
+    
+    // Extract meaningful text content - strip HTML tags
+    let text = html
+      .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
+      .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
+      .replace(/<nav[^>]*>[\s\S]*?<\/nav>/gi, '')
+      .replace(/<footer[^>]*>[\s\S]*?<\/footer>/gi, '')
+      .replace(/<header[^>]*>[\s\S]*?<\/header>/gi, '')
+      .replace(/<[^>]+>/g, ' ')
+      .replace(/&nbsp;/g, ' ')
+      .replace(/&amp;/g, '&')
+      .replace(/&lt;/g, '<')
+      .replace(/&gt;/g, '>')
+      .replace(/&quot;/g, '"')
+      .replace(/\s+/g, ' ')
+      .trim();
+    
+    // Extract title
+    const titleMatch = html.match(/<title[^>]*>([^<]+)<\/title>/i);
+    const title = titleMatch ? titleMatch[1].trim() : '';
+    
+    // Extract meta description
+    const metaMatch = html.match(/<meta[^>]*name=["']description["'][^>]*content=["']([^"']+)["']/i);
+    const description = metaMatch ? metaMatch[1].trim() : '';
+    
+    // Extract Open Graph data
+    const ogTitle = (html.match(/<meta[^>]*property=["']og:title["'][^>]*content=["']([^"']+)["']/i) || [])[1] || '';
+    const ogDesc = (html.match(/<meta[^>]*property=["']og:description["'][^>]*content=["']([^"']+)["']/i) || [])[1] || '';
+    const ogSite = (html.match(/<meta[^>]*property=["']og:site_name["'][^>]*content=["']([^"']+)["']/i) || [])[1] || '';
+    
+    // Truncate to 4000 chars for context window efficiency
+    const truncatedText = text.substring(0, 4000);
+    
+    return {
+      success: true,
+      url: url,
+      title: title || ogTitle,
+      description: description || ogDesc,
+      siteName: ogSite,
+      content: truncatedText,
+      contentLength: text.length,
+      extractedAt: new Date().toISOString()
+    };
+  } catch (err) {
+    return { success: false, error: err.message || 'Fetch failed' };
+  }
+}
+
+// ===== MULTI-MODEL CONSENSUS ENGINE =====
+async function multiModelConsensus(query, sourceContext, urlContent) {
+  // Run Cerebras (fast) + Gemini (grounded) analysis in parallel
+  // Then compare for consensus scoring
+  
+  const contextBlock = urlContent 
+    ? `EXTRACTED URL CONTENT:\nTitle: ${urlContent.title}\nSite: ${urlContent.siteName}\nContent: ${urlContent.content}\n\nADDITIONAL CONTEXT:\n${sourceContext}`
+    : sourceContext;
+  
+  const quickAnalysisPrompt = `Analyze this topic and provide 3 key claims with evidence strength (strong/moderate/weak) and 2 non-obvious insights most people miss. Topic: ${query}\n\nContext: ${contextBlock.substring(0, 2000)}\n\nRespond as JSON: {"claims":[{"claim":"...","evidence":"strong|moderate|weak","source_type":"..."}],"hidden_insights":["...","..."]}`;
+  
+  try {
+    const [cerebrasQuick, geminiQuick] = await Promise.allSettled([
+      // Cerebras quick analysis
+      nodeFetch('https://api.cerebras.ai/v1/chat/completions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${CEREBRAS_KEY}` },
+        body: JSON.stringify({
+          model: CEREBRAS_MODEL,
+          messages: [{ role: 'user', content: quickAnalysisPrompt }],
+          max_tokens: 800,
+          temperature: 0.3
+        })
+      }).then(r => r.json()).then(d => d.choices?.[0]?.message?.content || '{}'),
+      
+      // Gemini quick analysis
+      GEMINI_KEYS.length > 0 ? nodeFetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_KEYS[0]}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: quickAnalysisPrompt }] }],
+            generationConfig: { temperature: 0.3, maxOutputTokens: 800 }
+          })
+        }
+      ).then(r => r.json()).then(d => d.candidates?.[0]?.content?.parts?.[0]?.text || '{}') : Promise.resolve('{}')
+    ]);
+    
+    const c1 = extractJSON(cerebrasQuick.status === 'fulfilled' ? cerebrasQuick.value : '{}');
+    const c2 = extractJSON(geminiQuick.status === 'fulfilled' ? geminiQuick.value : '{}');
+    
+    // Calculate consensus - how much the models agree
+    const claims1 = c1?.claims || [];
+    const claims2 = c2?.claims || [];
+    const insights1 = c1?.hidden_insights || [];
+    const insights2 = c2?.hidden_insights || [];
+    
+    // Merge unique insights
+    const allInsights = [...new Set([...insights1, ...insights2])];
+    
+    // Agreement scoring - check if models found similar claims
+    let agreementCount = 0;
+    for (const a of claims1) {
+      for (const b of claims2) {
+        if (a.claim && b.claim) {
+          const wordsA = a.claim.toLowerCase().split(' ');
+          const wordsB = b.claim.toLowerCase().split(' ');
+          const overlap = wordsA.filter(w => w.length > 4 && wordsB.includes(w)).length;
+          if (overlap >= 2) agreementCount++;
+        }
+      }
+    }
+    
+    const totalClaims = Math.max(claims1.length, claims2.length, 1);
+    const consensusScore = Math.min(100, Math.round((agreementCount / totalClaims) * 100) + 40);
+    
+    return {
+      consensusScore,
+      modelAgreement: agreementCount > 0 ? 'HIGH' : 'MODERATE',
+      mergedClaims: [...claims1, ...claims2].slice(0, 6),
+      hiddenInsights: allInsights.slice(0, 4),
+      modelsUsed: ['cerebras', 'gemini']
+    };
+  } catch (err) {
+    console.log('[Consensus] Error:', err.message);
+    return { consensusScore: 50, modelAgreement: 'UNKNOWN', mergedClaims: [], hiddenInsights: [], modelsUsed: [] };
+  }
 }
 
 // ===== SOURCE GATHERING: GEMINI GROUNDED SEARCH =====
@@ -434,7 +586,16 @@ async function generateBriefing(query, sourceContext) {
         model: CEREBRAS_MODEL,
         messages: [{
           role: "system",
-          content: `You are SubMind v13.0, a deep intelligence research engine that produces institutional-grade analysis. You hunt for Behavioral Divergence - the gap between what mainstream sources say and what raw data actually shows. You trace events from origin to present to future predictions with ruthless precision.
+          content: `You are SubMind v14.0, the most advanced deep intelligence research engine ever built. You produce analysis that surpasses what any single AI, search engine, or analyst can deliver alone.
+
+YOUR CORE MISSION: Find what others miss. Every query gets treated as an intelligence operation:
+1. SIGNAL EXTRACTION - Identify the 2-3 data points that actually matter vs. noise
+2. BEHAVIORAL DIVERGENCE - Map the gap between public narrative and underlying reality
+3. TEMPORAL PATTERN MATCHING - What historical parallels predict about this situation
+4. ADVERSARIAL ANALYSIS - What are the counter-arguments and who benefits from the current narrative
+5. ACTIONABLE ALPHA - Give the user something they can DO with this information that they couldnt get from Google
+
+You think like a hedge fund analyst, write like a journalist, and verify like a fact-checker. You never just summarize - you SYNTHESIZE across domains to find non-obvious connections.
 
 CRITICAL RULES FOR SOURCES:
 - ONLY cite URLs you are CERTAIN exist and are real
@@ -542,6 +703,11 @@ Requirements:
 14. PLAIN LANGUAGE SUMMARY: Include a one_sentence summary, what_changed, why_it_matters, and what_to_watch - all in language a high school student could understand
 15. Do NOT just summarize search results - synthesize, find patterns, detect contradictions, and produce ORIGINAL analytical insights
 16. REALITY GATE COMPLIANCE: If the source context contains a REALITY GATE WARNING or CAUTION, you MUST prominently acknowledge the lack of evidence. Never present unverified information as fact. If evidence is weak or absent, say so clearly: "SubMind could not independently verify this claim" and explain what evidence IS and IS NOT available. Your credibility depends on honesty about what you don't know.`
+17. COMPETITIVE ADVANTAGE: Your analysis must contain AT LEAST 2 insights that cannot be found by searching Google or asking ChatGPT. Think: cross-domain pattern matching, temporal anomalies, contrarian analysis, second-order effects.
+18. CONFIDENCE GRANULARITY: For each major claim, assign a micro-confidence (e.g., "this specific data point is 92% reliable, but the causal link is only 60% certain"). Dont just give one confidence number.
+19. CONTRARIAN STRESS TEST: Before finalizing, argue AGAINST your own conclusions. Include the strongest counter-argument in your analysis.
+20. NETWORK EFFECTS: Map who benefits and who loses from the current situation. Follow the money and incentives.
+21. If EXTRACTED URL CONTENT is provided above, deeply analyze that specific content - summarize it, fact-check its claims against your knowledge, identify what it gets right and wrong, and provide additional context the source doesnt mention.
         }],
         temperature: 0.3,
         max_tokens: 8000
@@ -1597,6 +1763,23 @@ export default async function handler(req, res) {
   const startTime = Date.now();
   const cacheKey = 'submind:q:' + query.toLowerCase().trim().replace(/\s+/g, '_').substring(0, 200);
 
+    // ===== URL CONTENT EXTRACTION (if URL detected) =====
+    let urlContent = null;
+    const urlMatch = query.match(/https?:\/\/[^\s]+/) || query.match(/(?:www\.)?[a-zA-Z0-9-]+\.[a-z]{2,}(?:\/[^\s]*)?/);
+    if (urlMatch) {
+      let extractUrl = urlMatch[0];
+      if (!extractUrl.startsWith('http')) extractUrl = 'https://' + extractUrl;
+      console.log('[URL Extract] Fetching content from:', extractUrl);
+      urlContent = await fetchUrlContent(extractUrl, 4000);
+      if (urlContent.success) {
+        console.log('[URL Extract] Success - Title:', urlContent.title, 'Content length:', urlContent.contentLength);
+      } else {
+        console.log('[URL Extract] Failed:', urlContent.error);
+        urlContent = null;
+      }
+    }
+
+
   // ===== REDIS CACHE CHECK =====
   console.log('[Cache] Checking Redis for:', cacheKey);
   const cached = await redisGet(cacheKey);
@@ -1674,8 +1857,27 @@ export default async function handler(req, res) {
     }
 
     console.log('[Phase 2] Generating intelligence briefing...');
+    // ===== ENRICH CONTEXT WITH URL CONTENT =====
+    if (urlContent && urlContent.success) {
+      const urlContextBlock = '\n\n=== EXTRACTED CONTENT FROM USER URL ===\n' +
+        'Source: ' + urlContent.url + '\n' +
+        'Title: ' + urlContent.title + '\n' +
+        'Site: ' + urlContent.siteName + '\n' +
+        'Content: ' + urlContent.content.substring(0, 3000) + '\n' +
+        '=== END EXTRACTED CONTENT ===\n';
+      gatedContext = urlContextBlock + gatedContext;
+      console.log('[URL Inject] Enriched context with URL content');
+    }
+
     
-    const { briefing, provider: briefingProvider, raw_length } = await generateBriefing(query, gatedContext);
+    // Run briefing + multi-model consensus in parallel for speed
+    const [briefingResult, consensusResult] = await Promise.allSettled([
+      generateBriefing(query, gatedContext),
+      multiModelConsensus(query, gatedContext, urlContent)
+    ]);
+    const { briefing, provider: briefingProvider, raw_length } = briefingResult.status === 'fulfilled' ? briefingResult.value : { briefing: null, provider: 'none', raw_length: 0 };
+    const consensus = consensusResult.status === 'fulfilled' ? consensusResult.value : { consensusScore: 50, modelAgreement: 'UNKNOWN', mergedClaims: [], hiddenInsights: [] };
+    console.log('[Consensus] Score:', consensus.consensusScore, 'Agreement:', consensus.modelAgreement);
 
     if (!briefing) {
       return res.status(500).json({
@@ -1788,6 +1990,8 @@ const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
     const responsePayload = {
       success: true,
       query,
+      multi_model_consensus: consensus,
+      url_analysis: urlContent ? { extracted: true, title: urlContent.title, site: urlContent.siteName, contentLength: urlContent.contentLength } : null,
       briefing: {
         ...briefing,
         sources: classifiedSources
@@ -1844,7 +2048,7 @@ const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
     // ===== RESPONSE =====
     return res.status(200).json(responsePayload);
   } catch(e) {
-    console.error('[SubMind v13.0] Fatal:', e.message);
+    console.error('[SubMind v14.0] Fatal:', e.message);
     return res.status(500).json({ error: 'Pipeline failed', detail: e.message });
   }
           }
