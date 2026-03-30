@@ -4,7 +4,7 @@ import { createClient } from "@supabase/supabase-js";
 
 // SUBMIND v13.0 - DEEP INTELLIGENCE RESEARCH ENGINE
 // Advanced: Contradiction Detection + Strategic Intelligence + Confidence Calibration
-// v13.0: Entity Verification + Source Existence Check + Confidence Floor + Input Provenance Tagging
+// v13.0: Entity Verification + Souhrce Existence Check + Confidence Floor + Input Provenance Tagging
 // Multi-Source Consensus + Temporal Anomaly Detection + Enhanced Behavioral Divergence
 // Supabase persistence + Upstash Redis caching + Full pipeline
 // Behavioral Divergence + Source Provenance + Semantic Clustering
@@ -1410,27 +1410,54 @@ function realityGate(query, sources, sourceContext) {
     details: {}
   };
 
-  // ---- CHECK 1: Source Quantity ----
-  // If we found very few or zero sources, that's a red flag
-  const sourceCount = sources.length;
+  // ---- QUERY TYPE DETECTION ----
+  // URLs, trend queries, and exploratory research should ALWAYS pass through
+  const isUrl = /^https?:\/\//i.test(query.trim()) || /\.(com|org|net|io|gov|edu)(\/|$)/i.test(query.trim());
+  const isExploration = /^(what|how|why|when|where|who|tell me|explain|show me|find|search|latest|trending|current|recent|top|best|compare)/i.test(query.trim());
+  const isTrendQuery = /(trend|viral|popular|buzz|hot topic|breaking|this week|today|tonight|tomorrow)/i.test(query);
+  const isClaim = /\b(discovered|invented|announced|confirmed|proved|found that|created|developed|achieved|broke)\b/i.test(query) && /\b(Dr\.|Prof\.|[A-Z][a-z]+ [A-Z][a-z]+)\b/.test(query);
+  
+  const queryType = isUrl ? 'URL_ANALYSIS' : isClaim ? 'CLAIM_VERIFICATION' : (isExploration || isTrendQuery) ? 'EXPLORATION' : 'GENERAL';
+  result.details.query_type = queryType;
+
+  // URLs and exploration queries get automatic pass - SubMind should analyze ANYTHING
+  if (queryType === 'URL_ANALYSIS' || queryType === 'EXPLORATION') {
+    result.passed = true;
+    result.verdict = 'VERIFIED';
+    result.reality_score = 75; // Default good score for explorations
+    result.recommendation = null;
+    // Still do light checks for scoring display purposes
+    const sourceCount = sources ? sources.length : 0;
+    const contextLen = (sourceContext || '').length;
+    if (sourceCount === 0) result.reality_score = 50;
+    if (contextLen < 200) result.reality_score = Math.min(result.reality_score, 45);
+    if (sourceCount > 3 && contextLen > 500) result.reality_score = 85;
+    result.evidence_density = Math.min(100, contextLen / 30);
+    result.source_corroboration = sourceCount > 0 ? Math.min(100, sourceCount * 15) : 0;
+    return result;
+  }
+
+  // ---- For CLAIM_VERIFICATION and GENERAL queries, run full checks ----
+  const sourceCount = sources ? sources.length : 0;
+  
+  // CHECK 1: Source Quantity
   let sourceScore = 100;
   if (sourceCount === 0) {
     sourceScore = 0;
     result.flags.push('ZERO_SOURCES: No external sources found for this claim');
   } else if (sourceCount <= 2) {
-    sourceScore = 30;
+    sourceScore = 40;
     result.flags.push('MINIMAL_SOURCES: Only ' + sourceCount + ' source(s) found');
   } else if (sourceCount <= 4) {
-    sourceScore = 60;
+    sourceScore = 70;
   }
   result.details.source_quantity_score = sourceScore;
 
-  // ---- CHECK 2: Source-Query Relevance ----
-  // Extract key terms from query and check how many appear in source text
+  // CHECK 2: Source-Query Relevance
   const queryWords = query.toLowerCase()
-    .replace(/[^a-z0-9\s]/g, '')
+    .replace(/[^a-z0-9\s]/g, ' ')
     .split(/\s+/)
-    .filter(w => w.length > 3 && !['what','when','where','which','that','this','from','with','about','have','will','been','more','than','them','they','their','some','could','would','should','into','also','does','most','just','over','only','such','after','before','other','very','much','each','between','through','these','those','being','during','without','again','further','then','once','here','there','both','under','same','until','while','because','against','among','since','within','along','across','around','toward','above','below','near','upon','onto','whether','though','although'].includes(w));
+    .filter(w => w.length > 3 && !['what','when','where','which','that','this','from','with','about','have','will','been','more','than','into','also','does','most','they','some','were','each','make','like','just','over','such','after','year','could','them','only','then','these','other'].includes(w));
   
   const contextLower = (sourceContext || '').toLowerCase();
   let matchedTerms = 0;
@@ -1442,75 +1469,59 @@ function realityGate(query, sources, sourceContext) {
       unmatchedTerms.push(word);
     }
   }
-  const relevanceRatio = queryWords.length > 0 ? matchedTerms / queryWords.length : 0;
-  let relevanceScore = Math.round(relevanceRatio * 100);
   
-  if (relevanceRatio < 0.2) {
-    result.flags.push('LOW_RELEVANCE: Sources do not mention most key terms from query (' + unmatchedTerms.slice(0, 5).join(', ') + ')');
-  } else if (relevanceRatio < 0.4) {
-    result.flags.push('PARTIAL_RELEVANCE: Sources only partially match query terms');
+  const relevanceRatio = queryWords.length > 0 ? matchedTerms / queryWords.length : 0.5;
+  let relevanceScore = Math.round(relevanceRatio * 100);
+  if (relevanceRatio < 0.2 && queryType === 'CLAIM_VERIFICATION') {
+    result.flags.push('LOW_RELEVANCE: Sources don\'t appear to discuss key claim terms');
   }
   result.details.relevance_score = relevanceScore;
-  result.details.query_terms = queryWords.length;
-  result.details.matched_terms = matchedTerms;
   result.details.unmatched_key_terms = unmatchedTerms.slice(0, 8);
 
-  // ---- CHECK 3: Evidence Density ----
-  // Check if source text is substantial or just filler
+  // CHECK 3: Evidence Density
   const contextLength = (sourceContext || '').length;
   let densityScore = 100;
   if (contextLength < 200) {
-    densityScore = 10;
+    densityScore = 15;
     result.flags.push('EMPTY_EVIDENCE: Almost no source content retrieved');
   } else if (contextLength < 500) {
-    densityScore = 30;
+    densityScore = 40;
     result.flags.push('THIN_EVIDENCE: Very little source content available');
   } else if (contextLength < 1000) {
-    densityScore = 60;
+    densityScore = 65;
   }
   result.details.evidence_density_score = densityScore;
-  result.details.context_chars = contextLength;
 
-  // ---- CHECK 4: Source URL Quality ----
-  // Check if sources have actual URLs or are fabricated
-  let validUrlCount = 0;
-  let brokenUrlCount = 0;
-  for (const src of sources) {
-    const url = src.url || src.link || '';
-    if (url && (url.startsWith('http://') || url.startsWith('https://'))) {
-      validUrlCount++;
-    } else if (url) {
-      brokenUrlCount++;
+  // CHECK 4: Source URL Quality
+  let urlQualityScore = 70; // Default reasonable
+  if (sources && sources.length > 0) {
+    const hasRealDomains = sources.some(s => s.url && !/google\.com\/search|bing\.com\/search/.test(s.url));
+    const hasAcademic = sources.some(s => s.url && /\.edu|arxiv|nature\.com|science\.org|pubmed|ieee/.test(s.url));
+    if (hasRealDomains) urlQualityScore = 80;
+    if (hasAcademic) urlQualityScore = 95;
+    if (!hasRealDomains) {
+      urlQualityScore = 30;
+      result.flags.push('SEARCH_ONLY_URLS: No direct source URLs, only search redirects');
     }
   }
-  const urlQualityScore = sourceCount > 0 ? Math.round((validUrlCount / sourceCount) * 100) : 0;
   result.details.url_quality_score = urlQualityScore;
-  result.details.valid_urls = validUrlCount;
-  
-  if (validUrlCount === 0 && sourceCount > 0) {
-    result.flags.push('NO_VALID_URLS: None of the sources have verifiable URLs');
-  }
 
-  // ---- CHECK 5: Fabrication Indicators ----
-  // Look for signs the query contains very specific claims that sources can't back
-  const hasSpecificNumbers = /\d{2,}/.test(query);
-  const hasSpecificNames = /[A-Z][a-z]+\s[A-Z][a-z]+/.test(query);
-  const hasQuotes = query.includes('"') || query.includes("'");
-  const specificityCues = (hasSpecificNumbers ? 1 : 0) + (hasSpecificNames ? 1 : 0) + (hasQuotes ? 1 : 0);
-  
-  // High specificity + low source match = likely fabricated
+  // CHECK 5: Fabrication Indicators (only for claims)
   let fabricationRisk = 0;
-  if (specificityCues >= 2 && relevanceRatio < 0.3) {
-    fabricationRisk = 80;
-    result.flags.push('FABRICATION_RISK: Query contains specific claims but sources cannot corroborate');
-  } else if (specificityCues >= 1 && relevanceRatio < 0.2) {
-    fabricationRisk = 60;
-    result.flags.push('UNVERIFIABLE_CLAIMS: Specific claims in query have no source backing');
+  if (queryType === 'CLAIM_VERIFICATION') {
+    const specificityCues = (query.match(/\b(Dr\.|Prof\.|January|February|March|April|May|June|July|August|September|October|November|December|\d{4})\b/gi) || []).length;
+    if (specificityCues >= 3 && relevanceRatio < 0.3) {
+      fabricationRisk = 80;
+      result.flags.push('FABRICATION_RISK: Highly specific claim with no corroborating evidence');
+    } else if (specificityCues >= 2 && relevanceRatio < 0.2) {
+      fabricationRisk = 60;
+      result.flags.push('UNVERIFIABLE_CLAIMS: Specific claims in query have no source backing');
+    }
   }
   result.details.fabrication_risk = fabricationRisk;
 
   // ---- AGGREGATE SCORING ----
-  const weights = { source: 0.25, relevance: 0.30, density: 0.20, urlQuality: 0.10, fabrication: 0.15 };
+  const weights = { source: 0.20, relevance: 0.25, density: 0.20, urlQuality: 0.10, fabrication: 0.25 };
   const fabricationPenalty = fabricationRisk > 0 ? (100 - fabricationRisk) : 100;
   
   result.reality_score = Math.round(
@@ -1525,18 +1536,24 @@ function realityGate(query, sources, sourceContext) {
   result.source_corroboration = relevanceScore;
 
   // ---- VERDICT ----
-  if (result.reality_score >= 70) {
+  // Only block reports that are clearly fabricated (very low score + fabrication flags)
+  if (result.reality_score >= 60) {
     result.verdict = 'VERIFIED';
     result.passed = true;
     result.recommendation = null;
-  } else if (result.reality_score >= 40) {
+  } else if (result.reality_score >= 30) {
     result.verdict = 'LOW_CONFIDENCE';
     result.passed = true; // Still passes but with warnings
-    result.recommendation = 'CAUTION: Limited evidence found. Results may rely heavily on AI inference rather than verified sources. Treat conclusions as speculative.';
-  } else {
+    result.recommendation = 'CAUTION: Limited evidence found. Results may rely heavily on AI inference rather than verified sources.';
+  } else if (fabricationRisk >= 60) {
     result.verdict = 'UNVERIFIED';
     result.passed = false;
     result.recommendation = 'WARNING: SubMind could not find credible sources to support this query. The information below is based on minimal or no external evidence and should NOT be treated as reliable intelligence.';
+  } else {
+    // Even low scores pass through - just with heavy warnings
+    result.verdict = 'LOW_CONFIDENCE';
+    result.passed = true;
+    result.recommendation = 'NOTE: Limited source material available. Treat conclusions as preliminary.';
   }
 
   return result;
