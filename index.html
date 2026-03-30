@@ -389,11 +389,13 @@
 <body>
     <!-- HEADER -->
     <div class="header">
+      <a href="/" style="text-decoration:none;color:inherit;cursor:pointer" class="logo-link">
       <div class="logo">
         <div class="logo-icon">S</div>
         <span class="logo-text">SubMind</span>
-        <span class="logo-version">v13.0</span>
+        <span class="logo-version">v13.1</span>
       </div>
+      </a>
       <div class="header-right">
         <span><span class="status-dot"></span>Live Intelligence</span>
         <span>Deep Intelligence Research Engine</span>
@@ -402,11 +404,16 @@
 
     <!-- HERO -->
     <div class="hero" id="hero">
-      <h1>Research Any Topic.<br>Get the Full Picture.</h1>
-      <p>SubMind analyzes dozens of sources, finds what mainstream coverage misses, and tells you exactly what to do with the information.</p>
+      <h1>Know More Than<br>Everyone Else.</h1>
+      <p class="hero-sub">Paste a link, ask a question, or explore any topic. SubMind cross-references real sources, spots what others miss, and tells you exactly what to do with the information.</p>
       <div class="search-box">
-        <input type="text" id="q" placeholder="What do you want to research?" autocomplete="off">
+        <input type="text" id="q" placeholder="Ask anything, paste a URL, or explore a topic..." autocomplete="off">
         <button onclick="runSearch()" aria-label="Search"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></button>
+      </div>
+      <div class="example-queries" style="margin-top:16px;display:flex;flex-wrap:wrap;gap:8px;justify-content:center">
+        <span class="example-pill" onclick="document.getElementById('q').value=this.textContent;runSearch()" style="cursor:pointer;padding:6px 14px;background:rgba(249,115,22,0.1);border:1px solid rgba(249,115,22,0.3);border-radius:20px;font-size:0.8rem;color:#f97316;transition:all 0.2s">This week's TikTok trends</span>
+        <span class="example-pill" onclick="document.getElementById('q').value=this.textContent;runSearch()" style="cursor:pointer;padding:6px 14px;background:rgba(249,115,22,0.1);border:1px solid rgba(249,115,22,0.3);border-radius:20px;font-size:0.8rem;color:#f97316;transition:all 0.2s">Should I buy Bitcoin right now?</span>
+        <span class="example-pill" onclick="document.getElementById('q').value=this.textContent;runSearch()" style="cursor:pointer;padding:6px 14px;background:rgba(249,115,22,0.1);border:1px solid rgba(249,115,22,0.3);border-radius:20px;font-size:0.8rem;color:#f97316;transition:all 0.2s">AI replacing jobs in 2026</span>
       </div>
       <div class="history-pills" id="history"></div>
     </div>
