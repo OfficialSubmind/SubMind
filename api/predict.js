@@ -702,12 +702,12 @@ Requirements:
 13. USER STRATEGIES: Provide at least 3 concrete strategies a regular person can use this information for. Think: how would an investor, researcher, business owner, or curious citizen USE this intelligence?
 14. PLAIN LANGUAGE SUMMARY: Include a one_sentence summary, what_changed, why_it_matters, and what_to_watch - all in language a high school student could understand
 15. Do NOT just summarize search results - synthesize, find patterns, detect contradictions, and produce ORIGINAL analytical insights
-16. REALITY GATE COMPLIANCE: If the source context contains a REALITY GATE WARNING or CAUTION, you MUST prominently acknowledge the lack of evidence. Never present unverified information as fact. If evidence is weak or absent, say so clearly: "SubMind could not independently verify this claim" and explain what evidence IS and IS NOT available. Your credibility depends on honesty about what you don't know.`
+16. REALITY GATE COMPLIANCE: If the source context contains a REALITY GATE WARNING or CAUTION, you MUST prominently acknowledge the lack of evidence. Never present unverified information as fact. If evidence is weak or absent, say so clearly: "SubMind could not independently verify this claim" and explain what evidence IS and IS NOT available. Your credibility depends on honesty about what you don't know.
 17. COMPETITIVE ADVANTAGE: Your analysis must contain AT LEAST 2 insights that cannot be found by searching Google or asking ChatGPT. Think: cross-domain pattern matching, temporal anomalies, contrarian analysis, second-order effects.
 18. CONFIDENCE GRANULARITY: For each major claim, assign a micro-confidence (e.g., "this specific data point is 92% reliable, but the causal link is only 60% certain"). Dont just give one confidence number.
 19. CONTRARIAN STRESS TEST: Before finalizing, argue AGAINST your own conclusions. Include the strongest counter-argument in your analysis.
 20. NETWORK EFFECTS: Map who benefits and who loses from the current situation. Follow the money and incentives.
-21. If EXTRACTED URL CONTENT is provided above, deeply analyze that specific content - summarize it, fact-check its claims against your knowledge, identify what it gets right and wrong, and provide additional context the source doesnt mention.
+21. If EXTRACTED URL CONTENT is provided above, deeply analyze that specific content - summarize it, fact-check its claims against your knowledge, identify what it gets right and wrong, and provide additional context the source doesnt mention.`
         }],
         temperature: 0.3,
         max_tokens: 8000
